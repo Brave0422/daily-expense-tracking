@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // 导入数据库配置函数
 import { getDatabaseConfig } from './config/database.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+// 导入用户模块
+import { UserModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       // 指定环境变量文件路径
       envFilePath: `.env.${process.env.NODE_ENV ?? 'development'}`,
     }),
+
     // TypeORM数据库模块
     TypeOrmModule.forRootAsync({
       // 把注入值(ConfigService)作为函数工厂的第一个参数传进去
@@ -23,6 +26,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       // 函数工厂
       useFactory: getDatabaseConfig,
     }),
+
+    // 用户模块
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
