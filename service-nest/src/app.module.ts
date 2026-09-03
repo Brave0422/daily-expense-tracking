@@ -8,6 +8,8 @@ import { getDatabaseConfig } from './config/database.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 // 导入用户模块
 import { UserModule } from './modules/users/users.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 @Module({
   imports: [
@@ -31,6 +33,14 @@ import { UserModule } from './modules/users/users.module';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+
+    // 全局注册响应拦截器
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+  ],
 })
 export class AppModule {}
