@@ -35,7 +35,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const startedAt = Date.now();
 
     // 获取请求方法
-    const method = request.method();
+    const method = request.method;
     // 获取请求路径
     const path = request.originalUrl ?? request.url;
     // 获取用户id

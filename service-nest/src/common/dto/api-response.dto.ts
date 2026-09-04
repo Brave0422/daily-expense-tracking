@@ -64,7 +64,7 @@ export class ApiResponseDto<T> {
    */
   static error<T>(
     msg: string = '操作失败',
-    data: T = null,
+    data: T,
     code: number = 500,
   ): ApiResponseDto<T> {
     return new ApiResponseDto(code, msg, data, false);
