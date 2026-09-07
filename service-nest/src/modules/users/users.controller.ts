@@ -9,7 +9,7 @@ import { RegisterDto } from './dto/register.dto';
 import { UserService } from './users.service';
 import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
 
-@Controller('users')
+@Controller('user')
 @ResonpseMsg('注册成功')
 export class UserController {
   // 注入用户服务

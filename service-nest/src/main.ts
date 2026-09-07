@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
+// import { HttpExceptionFilter } from "./common/filters/http-exception-filter";
 
 /**
  * 应用启动函数
@@ -24,6 +25,9 @@ async function bootstrap() {
 
   // 全局注册日志拦截器
   app.useGlobalInterceptors(new LoggingInterceptor());
+
+  // 全局注册异常过滤器。没什么意义，直接返回默认的HTTP状态就行了，暂时注释
+  // app.useGlobalFilters(new HttpExceptionFilter())
 
   // 全局注册管道
   app.useGlobalPipes(
