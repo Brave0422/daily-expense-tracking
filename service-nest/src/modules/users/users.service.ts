@@ -4,7 +4,12 @@
  * @description 用户模块服务层
  */
 
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -53,6 +58,8 @@ export class UserService {
       await this.userRepo.save(user);
 
       return true;
-    } catch (error) {}
+    } catch (error) {
+      throw new InternalServerErrorException('注册失败');
+    }
   }
 }

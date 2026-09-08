@@ -1,3 +1,8 @@
+/**
+ * @author Brave
+ * @date 2026-9-4 17:38:16
+ * @description 邮件模块服务层
+ */
 import {
   Injectable,
   InternalServerErrorException,
@@ -87,5 +92,51 @@ export class MailService {
     }
   }
 
-  
+  /**
+   * 发送验证码邮件
+   * @param to - 收件人邮箱
+   * @param code - 6位验证码
+   * @param purpose - 验证码用途标识（如 'register' / 'change_password'）
+   */
+  async sendVerificationCode(
+    to: string,
+    code: string,
+    purpose: string,
+  ): Promise<void> {
+    const LABEL_MAP = {
+      register: '注册',
+      change_password: '修改密码',
+      delete_account: '账号注销',
+      forgot_password: '忘记密码',
+    };
+
+    // 根据用途确定邮件标题和文字描述
+    const title = `${LABEL_MAP[purpose] || ''}验证码`;
+    const label = LABEL_MAP[purpose] || '操作';
+
+    // 读取验证码过期时间
+    const expiresMinutes = this.configService.get<number>(
+      'MAIL_CODE_EXPIRES_MINUTES',
+    );
+
+    // 设置邮件主题
+    const subject = `【日常消费记录系统】${title}`;
+
+    // 设置邮件HTML正文
+    const html = `
+      <div style="max-width:480px;margin:0 auto;padding:24px;font-family:Microsoft YaHei,sans-serif;color:#1f2937;">
+        <div style="font-size:20px;font-weight:bold;color:#153f3a;margin-bottom:16px;">${subject}</div>
+        <p style="font-size:14px;line-height:1.8;">您的${label}验证码为：</p>
+        <div style="background:#e7f7f4;border-radius:8px;padding:16px;text-align:center;margin:20px 0;">
+          <span style="font-size:28px;font-weight:bold;letter-spacing:6px;color:#0f766e;">${code}</span>
+        </div>
+        <p style="font-size:13px;color:#667085;line-height:1.6;">
+          该验证码 ${expiresMinutes} 分钟内有效，请勿告诉他人。<br/>
+          如非您本人操作，请忽略此邮件。
+        </p>
+      </div>
+    `;
+
+    await this.sendMail(to, subject, html);
+  }
 }
