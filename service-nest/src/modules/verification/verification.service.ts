@@ -4,15 +4,28 @@
  * @description 验证码模块服务层
  */
 
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, randomInt } from 'node:crypto';
+import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
+import { IsNull, MoreThan, Repository } from 'typeorm';
+import { UserVerificationCodeEntity } from './entities/user-verification-code.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 // 验证码用途
 type VerificationPurpose =
   'register' | 'change_password' | 'delete_account' | 'forgot_password';
 @Injectable()
 export class VerificationCodeService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    // 注入验证码实体的仓库
+    @InjectRepository(UserVerificationCodeEntity)
+    private readonly verificationCodeRepo: Repository<UserVerificationCodeEntity>,
+  ) {}
 
   // 生成验证码 1 已完成
   // 哈希验证码 2 已完成
@@ -38,7 +51,11 @@ export class VerificationCodeService {
    * @param purpose 验证码用途
    * @returns 哈希后的验证码字符串
    */
-  private hashCode(code: string, email: string, purpose: string): string {
+  private hashCode(
+    code: string,
+    email: string,
+    purpose: VerificationPurpose,
+  ): string {
     const secret = this.configService.getOrThrow<string>(
       'VERIFICATION_CODE_SECRET',
     );
@@ -49,19 +66,21 @@ export class VerificationCodeService {
 
   /**
    * 安全比较验证码
-   * @param storeHash 已经发送的验证码
-   * @param email 邮箱
-   * @param purpose 验证码用途
-   * @param submittedCode 用户输入的验证码
+   * @param storedHash 已经发送并存储的验证码
+   * @param submittedCodeHash 用户输入的验证码
    * @returns 验证结果
    */
-  private compareCode(
-    storeHash: string,
-    email: string,
-    purpose: VerificationPurpose,
-    submittedCode: string,
-  ): boolean {
-    return true;
+  private compareCode(storedHash: string, submittedCodeHash: string): boolean {
+    // 转为Buffer进行比较
+    const storedBuffer = Buffer.from(storedHash, 'hex');
+
+    const submittedBuffer = Buffer.from(submittedCodeHash, 'hex');
+
+    // 比较两个验证码
+    return (
+      storedBuffer.length === submittedBuffer.length &&
+      timingSafeEqual(storedBuffer, submittedBuffer)
+    );
   }
 
   /**
@@ -69,20 +88,88 @@ export class VerificationCodeService {
    * @param email 邮箱
    * @param purpose 验证码用途
    */
-  private ensureCanSend(
+  private async ensureCanSend(
     email: string,
     purpose: VerificationPurpose,
-  ): Promise<void> {}
+  ): Promise<void> {
+    // 获取验证码发送的冷却时间
+    const cooldownMs =
+      Number(this.configService.get<number>('MAIL_CODE_RESEND_SECONDS', 60)) *
+      1000;
+    // 查看最近一条同邮箱同用途的验证码的创建时间
+    const latestCode = await this.verificationCodeRepo.findOne({
+      where: {
+        email,
+        purpose,
+      },
+      order: { createdTime: 'DESC' },
+    });
+
+    // 1.处理验证码在冷却时间内频繁发送
+    if (latestCode) {
+      // 获取当前时间距验证码发送时间的间隔
+      const passedMs = Date.now() - latestCode.createdTime.getTime();
+
+      // 间隔小于冷却时间，提醒发送频繁
+      if (passedMs < cooldownMs) {
+        const retryAfterSeconds = Math.ceil((cooldownMs - passedMs) / 1000);
+        throw new HttpException(
+          {
+            message: `验证码发送过于频繁，请${retryAfterSeconds}秒后重试`,
+            retryAfterSeconds,
+          },
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+    }
+
+    // 2.处理验证码在一小时内频繁发送
+    // 获取当前时间一小时前的时间
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+    // 获取发送限制
+    const maxNumber = Number(
+      this.configService.get<number>('MAIL_CODE_SEND_MAX_NUMBER', 10),
+    );
+
+    // 获取这一个小时内发送给同一邮箱的验证码次数
+    const hourlyCount = await this.verificationCodeRepo.count({
+      where: {
+        email,
+        createdTime: MoreThan(oneHourAgo),
+      },
+    });
+
+    // 发送次数超出设定的最大数量，提醒发送频繁
+    if (hourlyCount >= maxNumber) {
+      throw new HttpException(
+        '验证码发送次数过多，请稍后再试',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
 
   /**
    * 使之前未使用的验证码失效
    * @param email 邮箱
    * @param purpose 验证码用途
    */
-  private invalidatePreviousCodes(
+  private async invalidatePreviousCodes(
     email: string,
     purpose: VerificationPurpose,
-  ): Promise<void> {}
+  ): Promise<void> {
+    await this.verificationCodeRepo.update(
+      {
+        email,
+        purpose,
+        consumedTime: IsNull(),
+        invalidatedTime: IsNull(),
+      },
+      {
+        invalidatedTime: new Date(),
+      },
+    );
+  }
 
   /**
    * 生成、保存并发送验证码
@@ -106,5 +193,61 @@ export class VerificationCodeService {
     email: string,
     purpose: VerificationPurpose,
     code: string,
-  ): Promise<void> {}
+  ): Promise<void> {
+    // 获取同一邮箱同一用途的最新未被使用的验证码哈希
+    const storedCode = await this.verificationCodeRepo.findOne({
+      where: {
+        email,
+        purpose,
+        consumedTime: IsNull(),
+        invalidatedTime: IsNull(),
+      },
+      order: { createdTime: 'DESC' },
+    });
+
+    if (!storedCode) {
+      throw new BadRequestException('未检测到已发送的验证码，请重新发送');
+    }
+    if (storedCode.expiresTime.getTime() <= Date.now()) {
+      // 已过期的验证码不再参与后续校验
+      await this.verificationCodeRepo.update(
+        {
+          id: storedCode.id,
+          consumedTime: IsNull(),
+          invalidatedTime: IsNull(),
+        },
+        {
+          invalidatedTime: new Date(),
+        },
+      );
+
+      throw new BadRequestException('验证码已过期，请重新发送');
+    }
+
+    // 对传入的验证码进行哈希
+    const submittedCodeHash = this.hashCode(code, email, purpose);
+
+    // 安全比较两者
+    const mached = this.compareCode(storedCode.codeHash, submittedCodeHash);
+
+    if (!mached) {
+      throw new BadRequestException('验证码错误');
+    }
+
+    // 核销验证码
+    const updateResult = await this.verificationCodeRepo.update(
+      {
+        id: storedCode.id,
+        consumedTime: IsNull(),
+        invalidatedTime: IsNull(),
+      },
+      {
+        consumedTime: new Date(),
+      },
+    );
+
+    if (updateResult.affected !== 1) {
+      throw new BadRequestException('验证码已失效或已被使用，请重新发送');
+    }
+  }
 }

@@ -13,7 +13,7 @@ import {
 
 // 定义实体类，映射到数据库表 user_verification_code
 @Entity('user_verification_code')
-export class UserVerificationCode {
+export class UserVerificationCodeEntity {
   // 主键列，自增ID
   @PrimaryGeneratedColumn()
   id!: number;
@@ -35,31 +35,31 @@ export class UserVerificationCode {
     length: 100,
     nullable: false,
   })
-  emial!: string;
+  email!: string;
 
   // 验证码用途：register / change_password / delete_account / forgot_password
   @Column({
-    type: 'string',
+    type: 'varchar',
     length: 45,
   })
   purpose!: string;
 
   // 验证码哈希，不存明文
   @Column({
-    name: 'code_hase',
-    type: 'string',
-    length: 255,
+    name: 'code_hash',
+    type: 'varchar',
+    length: 64,
     nullable: false,
   })
   codeHash!: string;
 
   // 过期时间
   @Column({
-    name: 'exprise_time',
+    name: 'expires_time',
     type: 'datetime',
     nullable: false,
   })
-  expriseTime!: Date;
+  expiresTime!: Date;
 
   // 核销时间(null表示未使用)
   @Column({
@@ -69,11 +69,19 @@ export class UserVerificationCode {
   })
   consumedTime!: Date | null;
 
+  // 失效时间(null表示未被主动废弃，例如未被新验证码替代)
+  @Column({
+    name: 'invalidated_time',
+    type: 'datetime',
+    nullable: true,
+  })
+  invalidatedTime!: Date | null;
+
   // 创建时间
   @CreateDateColumn({
     name: 'created_time',
     type: 'datetime',
     nullable: false,
   })
-  CreatedTime!: Date;
+  createdTime!: Date;
 }
