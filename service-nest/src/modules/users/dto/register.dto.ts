@@ -5,13 +5,17 @@
  */
 
 import { Transform, Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+} from 'class-validator';
 
 export class RegisterDto {
   // 去空并转换成小写
   @Transform(({ value }) => value.trim().toLowerCase())
   @IsString()
-  @Type(() => String)
   @IsEmail({}, { message: '邮箱格式不正确' })
   @IsNotEmpty({ message: '邮箱不能为空' })
   email!: string;
@@ -19,4 +23,7 @@ export class RegisterDto {
   @Length(6, 20, { message: '密码长度要在6~20之间' })
   @IsNotEmpty({ message: '密码不能为空' })
   password!: string;
+
+  @IsNotEmpty({ message: '验证码不能为空' })
+  code!: string;
 }

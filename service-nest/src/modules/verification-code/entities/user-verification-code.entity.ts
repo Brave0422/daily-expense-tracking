@@ -10,6 +10,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { VerificationPurpose } from '../enums/verification-purpose-enum';
 
 // 定义实体类，映射到数据库表 user_verification_code
 @Entity('user_verification_code')
@@ -42,7 +43,7 @@ export class UserVerificationCodeEntity {
     type: 'varchar',
     length: 45,
   })
-  purpose!: string;
+  purpose!: VerificationPurpose;
 
   // 验证码哈希，不存明文
   @Column({

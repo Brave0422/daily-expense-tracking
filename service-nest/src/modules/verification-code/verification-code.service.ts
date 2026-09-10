@@ -9,15 +9,16 @@ import {
   Injectable,
   HttpStatus,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
-import { IsNull, MoreThan, Repository } from 'typeorm';
+import { IsNull, MoreThan, Repository, LessThan } from 'typeorm';
 import { UserVerificationCodeEntity } from './entities/user-verification-code.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-// 验证码用途
-type VerificationPurpose =
-  'register' | 'change_password' | 'delete_account' | 'forgot_password';
+import { MailService } from '../mail/mail.service';
+import { VerificationPurpose } from './enums/verification-purpose-enum';
+
 @Injectable()
 export class VerificationCodeService {
   constructor(
@@ -25,16 +26,8 @@ export class VerificationCodeService {
     // 注入验证码实体的仓库
     @InjectRepository(UserVerificationCodeEntity)
     private readonly verificationCodeRepo: Repository<UserVerificationCodeEntity>,
+    private readonly mailService: MailService,
   ) {}
-
-  // 生成验证码 1 已完成
-  // 哈希验证码 2 已完成
-  // 校验验证码 3
-  // 判断是否过期 4
-  // 判断是否相等 5
-  // 发送验证码
-  // 判断是否发送频繁 6
-  // 自动核销上次未使用的验证码 7
 
   /**
    * 生成6位数字验证码
@@ -102,7 +95,7 @@ export class VerificationCodeService {
         email,
         purpose,
       },
-      order: { createdTime: 'DESC' },
+      order: { createdTime: 'DESC', id: 'DESC' },
     });
 
     // 1.处理验证码在冷却时间内频繁发送
@@ -153,15 +146,18 @@ export class VerificationCodeService {
    * 使之前未使用的验证码失效
    * @param email 邮箱
    * @param purpose 验证码用途
+   * @param currentCodeId 此次操作需要排除的验证码id
    */
   private async invalidatePreviousCodes(
     email: string,
     purpose: VerificationPurpose,
+    currentCodeId: number,
   ): Promise<void> {
     await this.verificationCodeRepo.update(
       {
         email,
         purpose,
+        id: LessThan(currentCodeId),
         consumedTime: IsNull(),
         invalidatedTime: IsNull(),
       },
@@ -175,13 +171,52 @@ export class VerificationCodeService {
    * 生成、保存并发送验证码
    * @param email 邮箱
    * @param purpose 验证码用途
-   * @param userId 用户id
+   * @param userId 用户id，注册时没有userId
    */
   async sendCode(
     email: string,
     purpose: VerificationPurpose,
     userId?: number,
-  ): Promise<void> {}
+  ): Promise<void> {
+    // 检查发送频率
+    await this.ensureCanSend(email, purpose);
+
+    // 生成验证码及哈希值
+    const code = this.generateVerificationCode();
+    const codeHash = this.hashCode(code, email, purpose);
+
+    // 获取验证码有效期
+    const expiresMinutes = Number(
+      this.configService.get<number>('MAIL_CODE_EXPIRES_MINUTES', 5),
+    );
+
+    // 保存验证码。先保存再发送，避免邮件发送成功但是验证码存储失败的问题
+    const saveCode = this.verificationCodeRepo.create({
+      userId: userId ?? null,
+      email,
+      purpose,
+      codeHash,
+      expiresTime: new Date(Date.now() + expiresMinutes * 60 * 1000),
+      consumedTime: null,
+      invalidatedTime: null,
+    });
+    await this.verificationCodeRepo.save(saveCode);
+
+    // 发送邮件
+    try {
+      await this.mailService.sendVerificationCode(email, code, purpose);
+    } catch (error) {
+      // 邮件发送失败，废弃刚刚存储的验证码
+      await this.verificationCodeRepo.update(saveCode.id, {
+        invalidatedTime: new Date(),
+      });
+
+      throw new InternalServerErrorException('邮件发送失败，请重新尝试');
+    }
+
+    // 邮件发送成功，使之前未使用的验证码失效
+    await this.invalidatePreviousCodes(email, purpose, saveCode.id);
+  }
 
   /**
    * 校验并核销验证码
@@ -202,11 +237,11 @@ export class VerificationCodeService {
         consumedTime: IsNull(),
         invalidatedTime: IsNull(),
       },
-      order: { createdTime: 'DESC' },
+      order: { createdTime: 'DESC', id: 'DESC' },
     });
 
     if (!storedCode) {
-      throw new BadRequestException('未检测到已发送的验证码，请重新发送');
+      throw new BadRequestException('未检测到已发送的验证码，请检查邮箱是否正确');
     }
     if (storedCode.expiresTime.getTime() <= Date.now()) {
       // 已过期的验证码不再参与后续校验
@@ -240,6 +275,7 @@ export class VerificationCodeService {
         id: storedCode.id,
         consumedTime: IsNull(),
         invalidatedTime: IsNull(),
+        expiresTime: MoreThan(new Date()),
       },
       {
         consumedTime: new Date(),

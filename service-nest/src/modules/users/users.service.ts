@@ -14,6 +14,8 @@ import { Repository } from 'typeorm';
 import { UserEntity } from './entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { VerificationCodeService } from '../verification-code/verification-code.service';
+import { VerificationPurpose } from '../verification-code/enums/verification-purpose-enum';
 
 @Injectable()
 export class UserService {
@@ -21,6 +23,8 @@ export class UserService {
     // 注入用户实体的仓库
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    // 注入验证码服务
+    private readonly verificationService: VerificationCodeService,
   ) {}
 
   private async hashPassword(password: string): Promise<string> {
@@ -35,7 +39,7 @@ export class UserService {
    * @param code - 注册验证码
    * @returns 注册成功消息
    */
-  async register(email: string, password: string) {
+  async register(email: string, password: string, code: string) {
     // 检查邮箱是否已注册
     const existingUser = await this.userRepo.findOneBy({
       email,
@@ -43,6 +47,13 @@ export class UserService {
 
     // 如果邮箱已存在则抛出冲突异常
     if (existingUser) throw new ConflictException('该邮箱已被注册');
+
+    // 校验验证码
+    await this.verificationService.verifyAndConsume(
+      email,
+      VerificationPurpose.REGISTER,
+      code,
+    );
 
     try {
       // 对密码进行哈希处理

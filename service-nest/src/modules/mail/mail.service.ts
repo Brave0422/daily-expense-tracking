@@ -11,6 +11,7 @@ import {
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import { Transporter } from 'nodemailer';
+import { VerificationPurpose } from '../verification-code/enums/verification-purpose-enum';
 
 @Injectable()
 export class MailService {
@@ -77,9 +78,18 @@ export class MailService {
 
     // 获取发件人标识
     const from = this.configService.get<string>('MAIL_FROM', '');
+    const fromAddress = this.configService.get<string>('MAIL_USER', '');
 
     // 组装 nodemailer 发送邮件所需的完整参数。
-    const mailOptions = { from, to, subject, html };
+    const mailOptions = {
+      from: {
+        name: from,
+        address: fromAddress,
+      },
+      to,
+      subject,
+      html,
+    };
 
     try {
       await transporter.sendMail(mailOptions);
@@ -101,7 +111,7 @@ export class MailService {
   async sendVerificationCode(
     to: string,
     code: string,
-    purpose: string,
+    purpose: VerificationPurpose,
   ): Promise<void> {
     const LABEL_MAP = {
       register: '注册',
@@ -117,6 +127,7 @@ export class MailService {
     // 读取验证码过期时间
     const expiresMinutes = this.configService.get<number>(
       'MAIL_CODE_EXPIRES_MINUTES',
+      5,
     );
 
     // 设置邮件主题
