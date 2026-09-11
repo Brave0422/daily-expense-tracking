@@ -5,14 +5,16 @@
  */
 
 import {
+  UnauthorizedException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { hash } from 'bcrypt';
+import { hash, compare } from 'bcrypt';
 import { UserService } from '../../users/users.service';
 import { VerificationCodeService } from '../../verification-code/verification-code.service';
 import { VerificationPurpose } from '../../verification-code/enums/verification-purpose-enum';
+import { AuthTokenService } from './auth-token.service';
 
 @Injectable()
 export class AuthService {
@@ -21,11 +23,30 @@ export class AuthService {
     private readonly userService: UserService,
     // 注入验证码服务
     private readonly verificationService: VerificationCodeService,
+    private readonly authTokenService: AuthTokenService,
   ) {}
 
-  private hashPassword(password: string): Promise<string> {
+  /**
+   * 哈希密码
+   * @param password 密码
+   * @returns 密码哈希值
+   */
+  private async hashPassword(password: string): Promise<string> {
     // 使用bcrypt加盐哈希，盐轮数为10
-    return hash(password, 10);
+    return await hash(password, 10);
+  }
+
+  /**
+   * 验证密码是否匹配
+   * @param inputPassword 用户输入的明文密码
+   * @param passwordHash 数据存储的密码哈希
+   * @returns 比较结果
+   */
+  private async comparePassword(
+    inputPassword: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    return await compare(inputPassword, passwordHash);
   }
 
   /**
@@ -41,7 +62,7 @@ export class AuthService {
     code: string,
   ): Promise<boolean> {
     // 检查邮箱是否已注册
-    const existingUser = await this.userService.findByEmail(email);
+    const existingUser = await this.userService.findOneByEmail(email);
 
     // 如果邮箱已存在则抛出冲突异常
     if (existingUser) throw new ConflictException('该邮箱已被注册');
@@ -67,5 +88,26 @@ export class AuthService {
     } catch {
       throw new InternalServerErrorException('注册失败');
     }
+  }
+
+  /**
+   * 用户登录
+   * @param email 邮箱
+   * @param password 密码
+   * @returns token
+   */
+  async login(email: string, password: string): Promise<string> {
+    // 根据邮箱查找对应用户
+    const user = await this.userService.findOneByEmail(email);
+    if (!user) throw new UnauthorizedException('用户名或密码错误');
+
+    const matched = await this.comparePassword(password, user.passwordHash);
+
+    if (!matched) throw new UnauthorizedException('用户名或密码错误');
+
+    // 匹配成功，生成token返回给客户端，登录成功
+    const token = await this.authTokenService.createToken(user.id, email);
+
+    return token;
   }
 }

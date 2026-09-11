@@ -20,7 +20,7 @@ export class UserService {
   /**
    * 根据邮箱查找用户。
    */
-  findByEmail(email: string): Promise<UserEntity | null> {
+  findOneByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepo.findOneBy({ email });
   }
 
