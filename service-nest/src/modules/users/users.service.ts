@@ -4,18 +4,10 @@
  * @description 用户模块服务层
  */
 
-import {
-  ConflictException,
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
-import { VerificationCodeService } from '../verification-code/verification-code.service';
-import { VerificationPurpose } from '../verification-code/enums/verification-purpose-enum';
 
 @Injectable()
 export class UserService {
@@ -23,54 +15,29 @@ export class UserService {
     // 注入用户实体的仓库
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
-    // 注入验证码服务
-    private readonly verificationService: VerificationCodeService,
   ) {}
 
-  private async hashPassword(password: string): Promise<string> {
-    // 使用bcrypt加盐哈希，盐轮数为10
-    return bcrypt.hash(password, 10);
+  /**
+   * 根据邮箱查找用户。
+   */
+  findByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepo.findOneBy({ email });
   }
 
   /**
-   * 用户注册（两步式：需先通过 sendRegisterCode 获取验证码）
-   * @param email - 邮箱
-   * @param password - 明文密码
-   * @param code - 注册验证码
-   * @returns 注册成功消息
+   * 创建用户实体，但不立即持久化。
    */
-  async register(email: string, password: string, code: string) {
-    // 检查邮箱是否已注册
-    const existingUser = await this.userRepo.findOneBy({
+  create(email: string, passwordHash: string): UserEntity {
+    return this.userRepo.create({
       email,
+      passwordHash,
     });
+  }
 
-    // 如果邮箱已存在则抛出冲突异常
-    if (existingUser) throw new ConflictException('该邮箱已被注册');
-
-    // 校验验证码
-    await this.verificationService.verifyAndConsume(
-      email,
-      VerificationPurpose.REGISTER,
-      code,
-    );
-
-    try {
-      // 对密码进行哈希处理
-      const passwordHash = await this.hashPassword(password);
-
-      // 创建用户实体
-      const user = this.userRepo.create({
-        email,
-        passwordHash,
-      });
-
-      // 保存用户
-      await this.userRepo.save(user);
-
-      return true;
-    } catch (error) {
-      throw new InternalServerErrorException('注册失败');
-    }
+  /**
+   * 保存用户实体。
+   */
+  save(user: UserEntity): Promise<UserEntity> {
+    return this.userRepo.save(user);
   }
 }

@@ -5,14 +5,14 @@
  */
 
 import { Body, Controller, Post } from '@nestjs/common';
-import { RegisterDto } from './dto/register.dto';
-import { UserService } from './users.service';
 import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
+import { RegisterDto } from './dto/register.dto';
+import { AuthService } from './services/auth.service';
 
-@Controller('user')
-export class UserController {
+@Controller('auth')
+export class AuthController {
   // 注入用户服务
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly authService: AuthService) {}
 
   /**
    * 注册用户
@@ -27,7 +27,7 @@ export class UserController {
   ) {
     const { email, password, code } = body;
     // 调用用户服务执行注册逻辑
-    const result = await this.userService.register(email, password, code);
+    const result = await this.authService.register(email, password, code);
 
     return result;
   }

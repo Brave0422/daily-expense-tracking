@@ -6,8 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 // 导入数据库配置函数
 import { getDatabaseConfig } from './config/database.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-// 导入用户模块
-import { UserModule } from './modules/users/users.module';
+// 导入认证模块
+import { AuthModule } from './modules/auth/auth.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
@@ -29,8 +29,8 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
       useFactory: getDatabaseConfig,
     }),
 
-    // 用户模块
-    UserModule,
+    // 认证模块（内部引入用户和验证码模块）
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
