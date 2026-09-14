@@ -15,6 +15,10 @@ import { UserService } from '../../users/users.service';
 import { VerificationCodeService } from '../../verification-code/verification-code.service';
 import { VerificationPurpose } from '../../verification-code/enums/verification-purpose-enum';
 import { AuthTokenService } from './auth-token.service';
+import { randomUUID } from 'node:crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AuthSessionsEntity } from '../entities/authSessions.entity';
+import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +28,8 @@ export class AuthService {
     // 注入验证码服务
     private readonly verificationService: VerificationCodeService,
     private readonly authTokenService: AuthTokenService,
+    @InjectRepository(AuthSessionsEntity)
+    private readonly authServiceRepo: Repository<AuthSessionsEntity>,
   ) {}
 
   /**
@@ -96,7 +102,7 @@ export class AuthService {
    * @param password 密码
    * @returns token
    */
-  async login(email: string, password: string): Promise<string> {
+  async login(email: string, password: string): Promise<object> {
     // 根据邮箱查找对应用户
     const user = await this.userService.findOneByEmail(email);
     if (!user) throw new UnauthorizedException('用户名或密码错误');
@@ -105,9 +111,39 @@ export class AuthService {
 
     if (!matched) throw new UnauthorizedException('用户名或密码错误');
 
-    // 匹配成功，生成token返回给客户端，登录成功
-    const token = await this.authTokenService.createToken(user.id, email);
+    // 生成sessionId
+    const sessionId = randomUUID();
 
-    return token;
+    // 匹配成功，生成token返回给客户端，登录成功
+    const [accessToken, refreshToken] = await Promise.all([
+      this.authTokenService.generateAccessToken(user.id),
+      this.authTokenService.generateRefreshToken(user.id, sessionId),
+    ]);
+
+    return { accessToken, refreshToken };
+  }
+
+  /**
+   * 刷新token
+   * @param refreshToken 时间token
+   */
+  async refresh(refreshToken: string) {
+    // 1.先验证token
+    const payload =
+      await this.authTokenService.verifyRefreshToken(refreshToken);
+    const userId = Number(payload.sub);
+    if (!Number.isSafeInteger(userId)) {
+      throw new UnauthorizedException('Refresh Token 无效');
+    }
+
+    // 2. 查询数据库中的登录会话
+    const session = await this.authServiceRepo.findOneBy({
+      sid: payload.sid,
+      revokedTime: IsNull(),
+    });
+
+    if (!session || session.userId !== userId) {
+      throw new UnauthorizedException('登录状态已失效');
+    }
   }
 }

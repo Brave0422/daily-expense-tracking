@@ -45,7 +45,7 @@ export class UserEntity {
   })
   passwordHash!: string;
 
-  //   创建时间，自动增加
+  // 创建时间，自动增加
   @CreateDateColumn({
     // 数据库列名
     name: 'created_time',

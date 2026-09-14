@@ -13,6 +13,8 @@ import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthTokenService } from './services/auth-token.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthSessionsEntity } from './entities/authSessions.entity';
 
 @Module({
   //在当前模块里注册相关模块
@@ -21,19 +23,16 @@ import { AuthTokenService } from './services/auth-token.service';
     UserModule,
     // 验证码模块
     VerificationCodeModule,
+    // 注册authService实体
+    TypeOrmModule.forFeature([AuthSessionsEntity]),
     // JWT模块
     JwtModule.registerAsync({
       inject: [ConfigService],
 
       // 工厂函数配置JWT
       useFactory: (configService: ConfigService) => ({
-        // 配置JWT密钥
-        secret: configService.getOrThrow<string>('JWT_SECRET'),
-
         // 签名配置
         signOptions: {
-          // 有效期
-          expiresIn: Number(configService.getOrThrow<string>('JWT_EXPIRES_IN')),
           // 签名算法
           algorithm: 'HS256',
           // 签发者
