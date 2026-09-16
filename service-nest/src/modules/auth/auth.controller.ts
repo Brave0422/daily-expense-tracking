@@ -8,6 +8,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './services/auth.service';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,8 +28,13 @@ export class AuthController {
   ) {
     const { email, password, code } = body;
     // 调用用户服务执行注册逻辑
-    const result = await this.authService.register(email, password, code);
+    return await this.authService.register(email, password, code);
+  }
 
-    return result;
+  @Post('login')
+  @ResonpseMsg('登录成功')
+  async login(@Body() body: LoginDto) {
+    const { email, password } = body;
+    return await this.authService.login(email, password);
   }
 }

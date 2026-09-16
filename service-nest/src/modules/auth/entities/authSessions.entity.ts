@@ -47,6 +47,7 @@ export class AuthSessionsEntity {
   @Column({
     // 数据库列名
     name: 'expires_time',
+    type: 'datetime',
     nullable: false,
   })
   expiresTime!: Date;
@@ -55,6 +56,7 @@ export class AuthSessionsEntity {
   @Column({
     // 数据库列名
     name: 'revoked_time',
+    type: 'datetime',
     // 允许为空
     nullable: true,
   })
