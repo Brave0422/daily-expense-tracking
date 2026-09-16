@@ -25,7 +25,7 @@ export class UserEntity {
     type: 'varchar',
     // 最大长度
     length: 100,
-    // 不可为空
+    // 允许为空
     nullable: false,
     // 唯一约束
     unique: true,
@@ -40,7 +40,7 @@ export class UserEntity {
     type: 'varchar',
     // 最大长度255
     length: 255,
-    // 不可为空
+    // 允许为空
     nullable: false,
   })
   passwordHash!: string;
@@ -49,7 +49,7 @@ export class UserEntity {
   @CreateDateColumn({
     // 数据库列名
     name: 'created_time',
-    // 不可为空
+    // 允许为空
     nullable: false,
   })
   createdTime!: Date;
@@ -57,7 +57,7 @@ export class UserEntity {
   @UpdateDateColumn({
     // 数据库列名
     name: 'update_time',
-    // 不可为空
+    // 允许为空
     nullable: false,
   })
   updateTime!: Date;

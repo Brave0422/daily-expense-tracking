@@ -4,12 +4,17 @@
  * @description refresh token的会话实体
  */
 
-import { Column, Entity, PrimaryColumn, CreateDateColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('auth_sessions')
 export class AuthSessionsEntity {
   // 主键
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   id!: number;
 
   // sessionId
@@ -26,7 +31,6 @@ export class AuthSessionsEntity {
     name: 'user_id',
     type: 'int',
     nullable: false,
-    unique: true,
   })
   userId!: number;
 
@@ -43,7 +47,6 @@ export class AuthSessionsEntity {
   @Column({
     // 数据库列名
     name: 'expires_time',
-    // 不可为空
     nullable: false,
   })
   expiresTime!: Date;
@@ -52,7 +55,7 @@ export class AuthSessionsEntity {
   @Column({
     // 数据库列名
     name: 'revoked_time',
-    // 不可为空
+    // 允许为空
     nullable: true,
   })
   revokedTime!: Date | null;
@@ -61,7 +64,7 @@ export class AuthSessionsEntity {
   @CreateDateColumn({
     // 数据库列名
     name: 'created_time',
-    // 不可为空
+    // 允许为空
     nullable: false,
   })
   createdTime!: Date;

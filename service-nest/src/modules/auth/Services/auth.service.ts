@@ -18,7 +18,12 @@ import { AuthTokenService } from './auth-token.service';
 import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthSessionsEntity } from '../entities/authSessions.entity';
-import { IsNull, Repository } from 'typeorm';
+import { IsNull, MoreThan, Repository } from 'typeorm';
+
+export interface dualToken {
+  accessToken: string;
+  refreshToken: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -29,7 +34,7 @@ export class AuthService {
     private readonly verificationService: VerificationCodeService,
     private readonly authTokenService: AuthTokenService,
     @InjectRepository(AuthSessionsEntity)
-    private readonly authServiceRepo: Repository<AuthSessionsEntity>,
+    private readonly authSessionRepo: Repository<AuthSessionsEntity>,
   ) {}
 
   /**
@@ -102,7 +107,7 @@ export class AuthService {
    * @param password 密码
    * @returns token
    */
-  async login(email: string, password: string): Promise<object> {
+  async login(email: string, password: string): Promise<dualToken> {
     // 根据邮箱查找对应用户
     const user = await this.userService.findOneByEmail(email);
     if (!user) throw new UnauthorizedException('用户名或密码错误');
@@ -120,6 +125,9 @@ export class AuthService {
       this.authTokenService.generateRefreshToken(user.id, sessionId),
     ]);
 
+    // token获取成功则存入数据库
+    await this.authTokenService.saveToken(user.id, sessionId, refreshToken);
+
     return { accessToken, refreshToken };
   }
 
@@ -127,23 +135,47 @@ export class AuthService {
    * 刷新token
    * @param refreshToken 时间token
    */
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string): Promise<dualToken> {
     // 1.先验证token
     const payload =
       await this.authTokenService.verifyRefreshToken(refreshToken);
     const userId = Number(payload.sub);
     if (!Number.isSafeInteger(userId)) {
-      throw new UnauthorizedException('Refresh Token 无效');
+      throw new UnauthorizedException('登录状态已失效');
     }
 
-    // 2. 查询数据库中的登录会话
-    const session = await this.authServiceRepo.findOneBy({
+    // 2.查询数据库中的登录会话
+    const session = await this.authSessionRepo.findOneBy({
       sid: payload.sid,
       revokedTime: IsNull(),
+      // 只查询有效期内的
+      expiresTime: MoreThan(new Date(Date.now())),
     });
 
     if (!session || session.userId !== userId) {
       throw new UnauthorizedException('登录状态已失效');
     }
+
+    // 3.与数据库存储的token进行比较
+    const matched = await compare(refreshToken, session.refreshTokenHash);
+
+    if (!matched) {
+      throw new UnauthorizedException('登录状态已失效');
+    }
+
+    // 4.签发新的token
+    const [newAccessToken, newRefreshToken] = await Promise.all([
+      this.authTokenService.generateAccessToken(userId),
+      // refreshToken是在原来的那条token上刷新哈希值和持续时间，不是新增一条数据
+      this.authTokenService.generateRefreshToken(userId, session.sid),
+    ]);
+
+    // 5.更新旧的refresh token
+    await this.authTokenService.updateToken(session.sid, newRefreshToken);
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
   }
 }
