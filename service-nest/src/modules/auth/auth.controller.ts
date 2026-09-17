@@ -4,22 +4,81 @@
  * @description 用户模块控制层
  */
 
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './services/auth.service';
 import { LoginDto } from './dto/login.dto';
+import { Public } from './decorators/public.decorator';
+import { ConfigService } from '@nestjs/config';
+import type { CookieOptions, Response, Request } from 'express';
+
+// Cookie 在浏览器中保存时使用的名字。
+const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
+
+// 要和 JWT_REFRESH_EXPIRES_IN=7d 保持一致
+const REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 @Controller('auth')
 export class AuthController {
-  // 注入用户服务
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    // 注入用户服务
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  /**
+   * 配置refresh token cookie选项
+   * @returns Cookie 的公共配置
+   */
+  private getRefreshTokenCookieOptions(): CookieOptions {
+    const isProduction =
+      this.configService.get<string>('NODE_ENV') === 'production';
+
+    return {
+      // cookie设置为httpOnly。HttpOnly 开启后前端无法通过 JavaScript 读取 ，这可以降低 XSS 风险
+      httpOnly: true,
+      // 表示只允许浏览器通过 HTTPS 发送这个 Cookie。生产环境一般使用 HTTPS，因此生产环境开启 Secure。
+      secure: isProduction,
+      // 前后端只是端口不同或使用同一主域名时，一般可以使用 Lax 。Lax 可以阻止大部分跨站请求携带 Cookie，从而降低 CSRF 风险
+      sameSite: 'lax',
+      // 限制 Cookie 只发送给path指定的接口
+      path: '/auth/refresh',
+      // 浏览器保存 Cookie 的时间，单位是毫秒
+      maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE,
+    };
+  }
+
+  /**
+   * 把 refresh token 写入 HttpOnly Cookie
+   * @param response 响应体
+   * @param refreshToken
+   */
+  private setRefreshTokenCookie(
+    response: Response,
+    refreshToken: string,
+  ): void {
+    // response.cookie() 会在响应头中添加 Set-Cookie。refresh token 不会出现在 Controller 返回的 JSON 数据里。
+    response.cookie(
+      REFRESH_TOKEN_COOKIE_NAME,
+      refreshToken,
+      this.getRefreshTokenCookieOptions(),
+    );
+  }
 
   /**
    * 注册用户
    * @param body 注册用户dto
    * @returns
    */
+  @Public()
   @Post('register')
   @ResonpseMsg('注册成功')
   async register(
@@ -31,10 +90,59 @@ export class AuthController {
     return await this.authService.register(email, password, code);
   }
 
+  /**
+   * 登录
+   * @param body 登录dto
+   * @returns access token
+   */
+  @Public()
   @Post('login')
   @ResonpseMsg('登录成功')
-  async login(@Body() body: LoginDto) {
+  async login(
+    @Body() body: LoginDto,
+
+    // passthrough: true 表示只使用 Response 设置 Cookie，
+    // 最终响应数据仍然交给 Nest 和 ResponseInterceptor 处理。
+    @Res({ passthrough: true }) response: Response,
+  ) {
     const { email, password } = body;
-    return await this.authService.login(email, password);
+
+    const { accessToken, refreshToken } = await this.authService.login(
+      email,
+      password,
+    );
+
+    // 把refresh token写入HttpOnly Cookie
+    this.setRefreshTokenCookie(response, refreshToken);
+
+    // 把access token返回给前端
+    return { accessToken };
+  }
+
+  @Public()
+  @Post('refresh')
+  @ResonpseMsg('Token 刷新成功')
+  async refresh(
+    @Req() request: Request,
+    // Response 用于覆盖浏览器中的旧 refresh token Cookie。
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    // cookie-parser 会把 Cookie 解析到 request.cookies
+    const oldRefreshToken = request.cookies?.[REFRESH_TOKEN_COOKIE_NAME] as
+      string | undefined;
+
+    if (!oldRefreshToken) {
+      throw new UnauthorizedException('Refresh Token 不存在，请重新登录');
+    }
+
+    // 刷新token并获取
+    const { accessToken, refreshToken } =
+      await this.authService.refresh(oldRefreshToken);
+
+    // 把refresh token写入HttpOnly Cookie
+    this.setRefreshTokenCookie(response, refreshToken);
+
+    // 把access token返回给前端
+    return { accessToken };
   }
 }

@@ -52,6 +52,6 @@ import { AuthSessionsEntity } from './entities/authSessions.entity';
 
   // 注册本模块的服务提供者
   providers: [AuthService, AuthTokenService],
-  exports: [AuthService],
+  exports: [AuthService, AuthTokenService],
 })
 export class AuthModule {}

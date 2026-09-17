@@ -105,7 +105,7 @@ export class AuthService {
    * 用户登录
    * @param email 邮箱
    * @param password 密码
-   * @returns token
+   * @returns 双token
    */
   async login(email: string, password: string): Promise<dualToken> {
     // 根据邮箱查找对应用户
@@ -133,7 +133,11 @@ export class AuthService {
 
   /**
    * 刷新token
-   * @param refreshToken 时间token
+   * @param refreshToken
+   * @returns 双token    const { accessToken, refreshToken } = await this.authService.login(
+      email,
+      password,
+    );
    */
   async refresh(refreshToken: string): Promise<dualToken> {
     // 1.先验证token

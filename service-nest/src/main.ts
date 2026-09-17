@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
 // import { HttpExceptionFilter } from "./common/filters/http-exception-filter";
 
 /**
@@ -23,11 +25,24 @@ async function bootstrap() {
     }),
   });
 
+  const configService = app.get(ConfigService);
+
   // 全局注册日志拦截器
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // 全局注册异常过滤器。没什么意义，直接返回默认的HTTP状态就行了，暂时注释
   // app.useGlobalFilters(new HttpExceptionFilter())
+
+  // 全局注册cookie-parser中间件。可以通过 request.cookies 读取浏览器发送过来的 Cookie
+  app.use(cookieParser());
+
+  // 允许跨域的设置
+  app.enableCors({
+    // 指定允许访问后端的前端地址。携带 Cookie 时不能写成 "*"
+    origin: configService.getOrThrow<string>('FRONTEND_ORIGIN'),
+    // 允许浏览器在跨域请求中接受和发送cookie
+    credentials: true,
+  });
 
   // 全局注册管道
   app.useGlobalPipes(
