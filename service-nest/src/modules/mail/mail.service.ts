@@ -117,7 +117,7 @@ export class MailService {
       register: '注册',
       change_password: '修改密码',
       delete_account: '账号注销',
-      forgot_password: '忘记密码',
+      reset_password: '重置密码',
     };
 
     // 根据用途确定邮件标题和文字描述

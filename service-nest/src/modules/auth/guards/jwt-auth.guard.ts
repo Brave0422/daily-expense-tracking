@@ -45,19 +45,19 @@ export class JwtAuthGuard implements CanActivate {
     // 获取请求体
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
-    console.log('path', request.path, 'body', request.body);
+    console.log('path', request.path, 'purpose', request.body.purpose);
 
-    // 发送验证码请求,如果是注册和忘记密码不用鉴权,其他需要鉴权
+    // 发送验证码请求,如果是注册和重置密码不用鉴权,其他需要鉴权
     const path = request.path;
     const codePurpose = request.body.purpose;
-    const publicPath = [
+    const publicPurpose = [
       VerificationPurpose.REGISTER,
-      VerificationPurpose.FORGOT_PASSWORD,
+      VerificationPurpose.RESET_PASSWORD,
     ];
     if (
-      path === '/auth/changePassword' &&
+      path === '/verificationCode/sendCode' &&
       codePurpose &&
-      publicPath.includes(codePurpose)
+      publicPurpose.includes(codePurpose)
     ) {
       return true;
     }

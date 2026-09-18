@@ -5,7 +5,7 @@
  */
 
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsEnum, IsInt } from 'class-validator';
 import { VerificationPurpose } from '../enums/verification-purpose-enum';
 
 export class SendVerificationCodeDto {

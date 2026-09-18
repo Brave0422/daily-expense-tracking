@@ -21,6 +21,13 @@ import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response, Request } from 'express';
 import { changePasswordDto } from './dto/change-password.dto';
 import { PasswordService } from './services/password.service';
+import { AuthenticatedUser } from './guards/jwt-auth.guard';
+import { VerificationPurpose } from '../verification-code/enums/verification-purpose-enum';
+import { ResetPassword } from './dto/reset-password.dto';
+
+type AuthenticatedRequest = Request & {
+  user: AuthenticatedUser;
+};
 
 // Cookie 在浏览器中保存时使用的名字。
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
@@ -164,13 +171,46 @@ export class AuthController {
   /**
    * 修改用户密码
    * @param body 修改密码dto
+   * @param request 已认证修改的请求
    * @returns 是否修改成功
    */
   @Post('changePassword')
   @ResonpseMsg('修改密码成功')
-  async changePassword(@Body() body: changePasswordDto): Promise<boolean> {
-    const { email, newPassword, code, purpose } = body;
+  async changePassword(
+    @Body() body: changePasswordDto,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<boolean> {
+    const { newPassword, code } = body;
+
+    // 获取守卫中添加的用户id
+    const userId = request.user.id;
+
+    // 设置验证码用途
+    const purpose = VerificationPurpose.CHANGE_PASSWORD;
+
     return await this.passwordService.changePassword(
+      userId,
+      newPassword,
+      code,
+      purpose,
+    );
+  }
+
+  /**
+   * 重置密码
+   * @param body 重置密码dto
+   * @returns 是否重置成功
+   */
+  @Public()
+  @Post('resetPassword')
+  @ResonpseMsg('修改密码成功')
+  async resetPassword(@Body() body: ResetPassword) {
+    const { email, newPassword, code } = body;
+
+    // 设置验证码用途
+    const purpose = VerificationPurpose.RESET_PASSWORD;
+
+    return await this.passwordService.resetPassword(
       email,
       newPassword,
       code,

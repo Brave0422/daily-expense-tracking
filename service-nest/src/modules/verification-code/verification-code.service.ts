@@ -190,6 +190,15 @@ export class VerificationCodeService {
       this.configService.get<number>('MAIL_CODE_EXPIRES_MINUTES', 5),
     );
 
+    // 除了注册外和重置密码外，其他形式发送验证码必须要传userId
+    const allow = [
+      VerificationPurpose.CHANGE_PASSWORD,
+      VerificationPurpose.DELETE_ACCOUNT,
+    ];
+    if (allow.includes(purpose) && !userId) {
+      throw new BadRequestException('缺少userId');
+    }
+
     // 保存验证码。先保存再发送，避免邮件发送成功但是验证码存储失败的问题
     const saveCode = this.verificationCodeRepo.create({
       userId: userId ?? null,
@@ -241,7 +250,9 @@ export class VerificationCodeService {
     });
 
     if (!storedCode) {
-      throw new BadRequestException('未检测到已发送的验证码，请检查邮箱是否正确');
+      throw new BadRequestException(
+        '未检测到已发送的验证码，请检查邮箱是否正确',
+      );
     }
     if (storedCode.expiresTime.getTime() <= Date.now()) {
       // 已过期的验证码不再参与后续校验

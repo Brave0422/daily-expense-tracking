@@ -25,6 +25,15 @@ export class UserService {
   }
 
   /**
+   * 根据id查找用户
+   * @param id 用户id
+   * @returns 用户实体
+   */
+  findeOneById(id: number): Promise<UserEntity | null> {
+    return this.userRepo.findOneBy({ id });
+  }
+
+  /**
    * 创建用户实体，但不立即持久化。
    */
   create(email: string, passwordHash: string): UserEntity {
@@ -43,18 +52,13 @@ export class UserService {
 
   /**
    * 修改用户密码
-   * @param email 邮箱
+   * @param userId 用户id
    * @param passwordHash 新密码哈希
    */
-  async updatePassword(email: string, passwordHash: string): Promise<void> {
-    const result = await this.userRepo.update(
-      {
-        email,
-      },
-      {
-        passwordHash,
-      },
-    );
+  async updatePassword(userId: number, passwordHash: string): Promise<void> {
+    const result = await this.userRepo.update(userId, {
+      passwordHash,
+    });
     if (result.affected !== 1) {
       throw new InternalServerErrorException('修改密码失败');
     }

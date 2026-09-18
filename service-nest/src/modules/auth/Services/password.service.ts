@@ -13,6 +13,7 @@ import { UserService } from 'src/modules/users/users.service';
 import { VerificationPurpose } from 'src/modules/verification-code/enums/verification-purpose-enum';
 import { VerificationCodeService } from 'src/modules/verification-code/verification-code.service';
 import { hash, compare } from 'bcrypt';
+import { UserEntity } from 'src/modules/users/entities/users.entity';
 
 @Injectable()
 export class PasswordService {
@@ -45,29 +46,24 @@ export class PasswordService {
   }
 
   /**
-   * 检查邮箱存在性和验证码是否匹配
-   * @param email - 邮箱
-   * @param password - 明文密码
-   * @param code - 注册验证码
-   * @param purpose - 验证码用途
+   * 检查验证码并且哈希密码
+   * @param email 邮箱
+   * @param purpose 验证码用途
+   * @param code 验证码
+   * @param newPassword 新密码
+   * @returns 密码哈希
    */
-  async checkEmailAndCode(
+  async checkCodeAndHash(
     email: string,
-    password: string,
-    code: string,
     purpose: VerificationPurpose,
+    code: string,
+    newPassword: string,
   ): Promise<string> {
-    // 检查邮箱是否存在
-    const existingUser = await this.userService.findOneByEmail(email);
-
-    // 邮箱不存在则抛出冲突异常
-    if (!existingUser) throw new BadRequestException('用户不存在');
-
     // 校验验证码
     await this.verificationService.verifyAndConsume(email, purpose, code);
 
     // 对密码进行哈希处理
-    return await this.hashPassword(password);
+    return await this.hashPassword(newPassword);
   }
 
   /**
@@ -78,23 +74,70 @@ export class PasswordService {
    * @param purpose 验证码用途
    */
   async changePassword(
+    userId: number,
+    newPassword: string,
+    code: string,
+    purpose: VerificationPurpose,
+  ): Promise<boolean> {
+    // 根据id查询用户
+    const user = await this.userService.findeOneById(userId);
+
+    if (!user) {
+      throw new BadRequestException('用户不存在');
+    }
+
+    await this.updatePassword(user, purpose, code, newPassword);
+    return true;
+  }
+
+  /**
+   * 重置密码
+   * @param email 邮箱
+   * @param newPassword 新密码
+   * @param code 验证码
+   * @param purpose 验证码用途
+   * @returns 重置成功
+   */
+  async resetPassword(
     email: string,
     newPassword: string,
     code: string,
     purpose: VerificationPurpose,
   ): Promise<boolean> {
-    const passwordHash = await this.checkEmailAndCode(
-      email,
-      newPassword,
-      code,
-      purpose,
-    );
-    try {
-      // 修改密码
-      await this.userService.updatePassword(email, passwordHash);
-    } catch {
-      throw new InternalServerErrorException('修改密码失败');
+    // 根据邮箱查询用户
+    const user = await this.userService.findOneByEmail(email);
+
+    if (!user) {
+      throw new BadRequestException('用户不存在');
     }
+    await this.updatePassword(user, purpose, code, newPassword);
     return true;
+  }
+
+  /**
+   * 更新密码
+   * @param user 用户实体
+   * @param purpose 验证码用途
+   * @param code 验证码
+   * @param password 密码
+   */
+  async updatePassword(
+    user: UserEntity,
+    purpose: VerificationPurpose,
+    code: string,
+    password: string,
+  ): Promise<void> {
+    const passwordHash = await this.checkCodeAndHash(
+      user.email,
+      purpose,
+      code,
+      password,
+    );
+
+    try {
+      await this.userService.updatePassword(user.id, passwordHash);
+    } catch {
+      throw new InternalServerErrorException('重置密码失败');
+    }
   }
 }

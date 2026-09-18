@@ -10,6 +10,6 @@ export enum VerificationPurpose {
   CHANGE_PASSWORD = 'change_password',
   //   注销账号
   DELETE_ACCOUNT = 'delete_account',
-  //   忘记密码
-  FORGOT_PASSWORD = 'forgot_password',
+  //   重置密码
+  RESET_PASSWORD = 'reset_password',
 }
