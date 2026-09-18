@@ -49,10 +49,10 @@ export class AuthController {
   ) {}
 
   /**
-   * 配置refresh token cookie选项
+   * 获取 refresh token Cookie 的公共配置
    * @returns Cookie 的公共配置
    */
-  private getRefreshTokenCookieOptions(): CookieOptions {
+  private getRefreshTokenCookieBaseOptions(): CookieOptions {
     const isProduction =
       this.configService.get<string>('NODE_ENV') === 'production';
 
@@ -64,7 +64,17 @@ export class AuthController {
       // 前后端只是端口不同或使用同一主域名时，一般可以使用 Lax 。Lax 可以阻止大部分跨站请求携带 Cookie，从而降低 CSRF 风险
       sameSite: 'lax',
       // 限制 Cookie 只发送给path指定的接口
-      path: '/auth/refresh',
+      path: '/auth',
+    };
+  }
+
+  /**
+   * 获取 refresh token Cookie 的完整配置
+   * @returns Cookie 的公共配置
+   */
+  private getRefreshTokenCookieOptions(): CookieOptions {
+    return {
+      ...this.getRefreshTokenCookieBaseOptions(),
       // 浏览器保存 Cookie 的时间，单位是毫秒
       maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE,
     };
@@ -85,6 +95,18 @@ export class AuthController {
       REFRESH_TOKEN_COOKIE_NAME,
       refreshToken,
       this.getRefreshTokenCookieOptions(),
+    );
+  }
+
+  /**
+   * 清除 refresh token Cookie
+   * @param response 响应体
+   * @returns 无返回值
+   */
+  private clearRefreshTokenCookie(response: Response): void {
+    response.clearCookie(
+      REFRESH_TOKEN_COOKIE_NAME,
+      this.getRefreshTokenCookieBaseOptions(),
     );
   }
 
@@ -183,7 +205,7 @@ export class AuthController {
     const { newPassword, code } = body;
 
     // 获取守卫中添加的用户id
-    const userId = request.user.id;
+    const userId = request.user.uid;
 
     // 设置验证码用途
     const purpose = VerificationPurpose.CHANGE_PASSWORD;
@@ -216,5 +238,26 @@ export class AuthController {
       code,
       purpose,
     );
+  }
+
+  /**
+   * 退出登录
+   * @param request
+   * @param response
+   */
+  @Post('logout')
+  @ResonpseMsg('退出成功')
+  async logout(
+    @Req() request: AuthenticatedRequest,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    // 获取守卫中添加的信息
+    const { uid, sid } = request.user;
+
+    // 执行退出登录
+    await this.authService.logout(uid, sid);
+
+    // 清除 refresh token Cookie
+    this.clearRefreshTokenCookie(response);
   }
 }

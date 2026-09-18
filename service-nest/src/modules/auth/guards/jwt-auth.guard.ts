@@ -17,11 +17,18 @@ import { Public } from '../decorators/public.decorator';
 import { VerificationPurpose } from 'src/modules/verification-code/enums/verification-purpose-enum';
 
 export interface AuthenticatedUser {
-  id: number;
+  // 用户id
+  uid: number;
+  // sessionId
+  sid: string;
 }
 
 // 声明权限请求类型
-type AuthenticatedRequest = Request & {
+type AuthenticatedRequest = Request<
+  Record<string, string>,
+  unknown,
+  { purpose?: unknown }
+> & {
   user?: AuthenticatedUser;
 };
 
@@ -45,19 +52,17 @@ export class JwtAuthGuard implements CanActivate {
     // 获取请求体
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
-    console.log('path', request.path, 'purpose', request.body.purpose);
-
     // 发送验证码请求,如果是注册和重置密码不用鉴权,其他需要鉴权
     const path = request.path;
-    const codePurpose = request.body.purpose;
-    const publicPurpose = [
+    const codePurpose = request.body?.purpose;
+    const publicPurposes: readonly string[] = [
       VerificationPurpose.REGISTER,
       VerificationPurpose.RESET_PASSWORD,
     ];
     if (
       path === '/verificationCode/sendCode' &&
-      codePurpose &&
-      publicPurpose.includes(codePurpose)
+      typeof codePurpose === 'string' &&
+      publicPurposes.includes(codePurpose)
     ) {
       return true;
     }
@@ -78,9 +83,20 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('登录状态已失效');
     }
 
+    // 查询 access token 对应的有效登录会话
+    const session = await this.authTokenService.findSessionBySid(
+      payload,
+      userId,
+    );
+
+    if (!session) {
+      throw new UnauthorizedException('登录状态已失效');
+    }
+
     // 写入请求中，给后面的 Controller、日志拦截器使用
     request.user = {
-      id: userId,
+      uid: userId,
+      sid: payload.sid,
     };
 
     return true;

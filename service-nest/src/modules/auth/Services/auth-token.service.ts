@@ -13,11 +13,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthSessionsEntity } from '../entities/auth-sessions.entity';
-import { Repository } from 'typeorm';
+import { IsNull, MoreThan, Repository } from 'typeorm';
 import { hash } from 'bcrypt';
 
 export interface AccessTokenPayload {
   sub: string;
+  sid: string;
   tokenType: 'access';
   iat?: number;
   exp?: number;
@@ -46,12 +47,17 @@ export class AuthTokenService {
   /**
    * 生成access token
    * @param userId 用户id
+   * @param sessionId 会话id
    * @returns access token
    */
-  async generateAccessToken(userId: number): Promise<string> {
+  async generateAccessToken(
+    userId: number,
+    sessionId: string,
+  ): Promise<string> {
     const token = await this.jwtService.signAsync(
       {
         sub: String(userId),
+        sid: sessionId,
         tokenType: 'access',
       },
       {
@@ -121,7 +127,7 @@ export class AuthTokenService {
   }
 
   /**
-   * 哈希token并保存至数据库
+   * 哈希refresh token并保存至数据库
    * @param token refresh token
    * @param userId 用户id
    * @param sid 会话id
@@ -155,7 +161,7 @@ export class AuthTokenService {
   }
 
   /**
-   * 验证身份token
+   * 验证access token
    * @param token access token
    * @returns payload
    */
@@ -169,7 +175,11 @@ export class AuthTokenService {
           audience: 'daily-expense-api',
         },
       );
-      if (payload.tokenType !== 'access' || typeof payload.sub !== 'string') {
+      if (
+        payload.tokenType !== 'access' ||
+        typeof payload.sub !== 'string' ||
+        typeof payload.sid !== 'string'
+      ) {
         throw new UnauthorizedException('登录状态已失效');
       }
       return payload;
@@ -179,7 +189,7 @@ export class AuthTokenService {
   }
 
   /**
-   * 验证时间token
+   * 验证refresh token
    * @param token refresh token
    * @returns payload
    */
@@ -205,5 +215,26 @@ export class AuthTokenService {
     } catch {
       throw new UnauthorizedException('登录状态已失效');
     }
+  }
+
+  /**
+   * 根据 access token 中的 sid 查询有效会话
+   * @param payload access token的payload
+   * @param userId 用户id
+   * @returns session实体
+   */
+  async findSessionBySid(
+    payload: AccessTokenPayload,
+    userId: number,
+  ): Promise<AuthSessionsEntity | null> {
+    // 查找对应的sessionId
+    const session = await this.authSessionRepo.findOneBy({
+      sid: payload.sid,
+      userId,
+      revokedTime: IsNull(),
+      expiresTime: MoreThan(new Date()),
+    });
+
+    return session;
   }
 }

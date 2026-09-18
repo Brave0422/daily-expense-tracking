@@ -9,9 +9,8 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
-  BadRequestException,
 } from '@nestjs/common';
-import { hash, compare } from 'bcrypt';
+import { compare } from 'bcrypt';
 import { UserService } from '../../users/users.service';
 import { VerificationCodeService } from '../../verification-code/verification-code.service';
 import { VerificationPurpose } from '../../verification-code/enums/verification-purpose-enum';
@@ -105,7 +104,7 @@ export class AuthService {
 
     // 匹配成功，生成token返回给客户端，登录成功
     const [accessToken, refreshToken] = await Promise.all([
-      this.authTokenService.generateAccessToken(user.id),
+      this.authTokenService.generateAccessToken(user.id, sessionId),
       this.authTokenService.generateRefreshToken(user.id, sessionId),
     ]);
 
@@ -150,7 +149,7 @@ export class AuthService {
 
     // 4.签发新的token
     const [newAccessToken, newRefreshToken] = await Promise.all([
-      this.authTokenService.generateAccessToken(userId),
+      this.authTokenService.generateAccessToken(userId, session.sid),
       // refreshToken是在原来的那条token上刷新哈希值和持续时间，不是新增一条数据
       this.authTokenService.generateRefreshToken(userId, session.sid),
     ]);
@@ -162,5 +161,24 @@ export class AuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
+  }
+
+  /**
+   * 退出登录
+   * @param userId 用户id
+   * @param sid sessionId
+   */
+  async logout(userId: number, sid: string): Promise<void> {
+    // 销毁对应的session
+    await this.authSessionRepo.update(
+      {
+        userId,
+        sid,
+        revokedTime: IsNull(),
+      },
+      {
+        revokedTime: new Date(),
+      },
+    );
   }
 }

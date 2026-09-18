@@ -8,7 +8,8 @@ import { Body, Controller, Post, Req } from '@nestjs/common';
 import { VerificationCodeService } from './verification-code.service';
 import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
 import { SendVerificationCodeDto } from './dto/send-verification-code.dto';
-import { AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
+import type { Request } from 'express';
+import type { AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 
 type AuthenticatedRequest = Request & {
   user?: AuthenticatedUser;
@@ -28,11 +29,11 @@ export class VerificationCodeController {
   async sendCode(
     @Body() body: SendVerificationCodeDto,
     @Req() request: AuthenticatedRequest,
-  ) {
+  ): Promise<void> {
     const { email, purpose } = body;
 
     // 获取守卫中添加的用户id
-    const userId = request.user?.id;
+    const userId = request.user?.uid;
 
     await this.verificationService.sendCode(email, purpose, userId);
   }
