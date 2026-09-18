@@ -14,7 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthTokenService } from './services/auth-token.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthSessionsEntity } from './entities/authSessions.entity';
+import { AuthSessionsEntity } from './entities/auth-sessions.entity';
 
 @Module({
   //在当前模块里注册相关模块

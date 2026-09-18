@@ -9,6 +9,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { hash, compare } from 'bcrypt';
 import { UserService } from '../../users/users.service';
@@ -17,7 +18,7 @@ import { VerificationPurpose } from '../../verification-code/enums/verification-
 import { AuthTokenService } from './auth-token.service';
 import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthSessionsEntity } from '../entities/authSessions.entity';
+import { AuthSessionsEntity } from '../entities/auth-sessions.entity';
 import { IsNull, MoreThan, Repository } from 'typeorm';
 
 export interface dualToken {
@@ -61,7 +62,33 @@ export class AuthService {
   }
 
   /**
-   * 用户注册（两步式：需先通过 sendRegisterCode 获取验证码）
+   * 检查邮箱存在性和验证码是否匹配
+   * @param email - 邮箱
+   * @param password - 明文密码
+   * @param code - 注册验证码
+   * @param purpose - 验证码用途
+   */
+  async checkEmailAndCode(
+    email: string,
+    password: string,
+    code: string,
+    purpose: VerificationPurpose,
+  ): Promise<string> {
+    // 检查邮箱是否存在
+    const existingUser = await this.userService.findOneByEmail(email);
+
+    // 邮箱不存在则抛出冲突异常
+    if (!existingUser) throw new BadRequestException('用户不存在');
+
+    // 校验验证码
+    await this.verificationService.verifyAndConsume(email, purpose, code);
+
+    // 对密码进行哈希处理
+    return await this.hashPassword(password);
+  }
+
+  /**
+   * 用户注册
    * @param email - 邮箱
    * @param password - 明文密码
    * @param code - 注册验证码
@@ -84,11 +111,9 @@ export class AuthService {
       VerificationPurpose.REGISTER,
       code,
     );
+    const passwordHash = await this.hashPassword(password);
 
     try {
-      // 对密码进行哈希处理
-      const passwordHash = await this.hashPassword(password);
-
       // 创建用户实体
       const user = this.userService.create(email, passwordHash);
 
@@ -134,10 +159,7 @@ export class AuthService {
   /**
    * 刷新token
    * @param refreshToken
-   * @returns 双token    const { accessToken, refreshToken } = await this.authService.login(
-      email,
-      password,
-    );
+   * @returns 双token
    */
   async refresh(refreshToken: string): Promise<dualToken> {
     // 1.先验证token
@@ -181,5 +203,33 @@ export class AuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
+  }
+
+  /**
+   * 修改密码
+   * @param email 邮箱
+   * @param newPassword 新密码
+   * @param code 验证码
+   * @param purpose 验证码用途
+   */
+  async changePassword(
+    email: string,
+    newPassword: string,
+    code: string,
+    purpose: VerificationPurpose,
+  ): Promise<boolean> {
+    const passwordHash = await this.checkEmailAndCode(
+      email,
+      newPassword,
+      code,
+      purpose,
+    );
+    try {
+      // 修改密码
+      await this.userService.updatePassword(email, passwordHash);
+    } catch {
+      throw new InternalServerErrorException('修改密码失败');
+    }
+    return true;
   }
 }

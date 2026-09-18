@@ -8,6 +8,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { VerificationCodeService } from './verification-code.service';
 import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
 import { SendVerificationCodeDto } from './dto/send-verification-code.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('verificationCode')
 export class VerificationCodeController {
@@ -17,6 +18,7 @@ export class VerificationCodeController {
    * 发送验证码
    * @param body 发送验证码dto
    */
+  @Public()
   @Post('sendCode')
   @ResonpseMsg('验证码已发送')
   async sendCode(@Body() body: SendVerificationCodeDto) {

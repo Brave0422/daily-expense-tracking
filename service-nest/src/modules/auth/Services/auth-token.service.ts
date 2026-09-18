@@ -12,7 +12,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthSessionsEntity } from '../entities/authSessions.entity';
+import { AuthSessionsEntity } from '../entities/auth-sessions.entity';
 import { Repository } from 'typeorm';
 import { hash } from 'bcrypt';
 

@@ -4,7 +4,7 @@
  * @description 用户模块服务层
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -39,5 +39,24 @@ export class UserService {
    */
   save(user: UserEntity): Promise<UserEntity> {
     return this.userRepo.save(user);
+  }
+
+  /**
+   * 修改用户密码
+   * @param email 邮箱
+   * @param passwordHash 新密码哈希
+   */
+  async updatePassword(email: string, passwordHash: string): Promise<void> {
+    const result = await this.userRepo.update(
+      {
+        email,
+      },
+      {
+        passwordHash,
+      },
+    );
+    if (result.affected !== 1) {
+      throw new InternalServerErrorException('修改密码失败');
+    }
   }
 }

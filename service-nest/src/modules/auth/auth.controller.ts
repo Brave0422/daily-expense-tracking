@@ -19,6 +19,7 @@ import { LoginDto } from './dto/login.dto';
 import { Public } from './decorators/public.decorator';
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response, Request } from 'express';
+import { changePasswordDto } from './dto/change-password.dto';
 
 // Cookie 在浏览器中保存时使用的名字。
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
@@ -119,6 +120,12 @@ export class AuthController {
     return { accessToken };
   }
 
+  /**
+   * 刷新token
+   * @param request
+   * @param response
+   * @returns access token
+   */
   @Public()
   @Post('refresh')
   @ResonpseMsg('Token 刷新成功')
@@ -144,5 +151,17 @@ export class AuthController {
 
     // 把access token返回给前端
     return { accessToken };
+  }
+
+  @Post('changePassword')
+  @ResonpseMsg('修改密码成功')
+  async changePassword(@Body() body: changePasswordDto) {
+    const { email, newPassword, code, purpose } = body;
+    return await this.authService.changePassword(
+      email,
+      newPassword,
+      code,
+      purpose,
+    );
   }
 }

@@ -9,11 +9,13 @@ import {
   ExecutionContext,
   Injectable,
   NestInterceptor,
+  HttpStatus,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, map } from 'rxjs';
 import { ResonpseMsg } from '../decorators/response-message.decorator';
 import { ApiResponseDto } from '../dto/api-response.dto';
+import type { Response } from 'express';
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<
@@ -39,9 +41,17 @@ export class ResponseInterceptor<T> implements NestInterceptor<
       context.getClass(),
     ]);
 
+    // 获取响应体
+    const response = context.switchToHttp().getResponse<Response>();
+
     // 处理响应数据
-    return next
-      .handle()
-      .pipe(map((data) => ApiResponseDto.success(data, message ?? '操作成功')));
+    return next.handle().pipe(
+      map((data) => {
+        // 将 Nest 给 POST 请求默认设置的 201 强制覆盖成 200。
+        response.status(HttpStatus.OK);
+        // 修改响应msg
+        return ApiResponseDto.success(data, message ?? '操作成功');
+      }),
+    );
   }
 }
