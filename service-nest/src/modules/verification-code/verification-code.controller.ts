@@ -18,7 +18,6 @@ export class VerificationCodeController {
    * 发送验证码
    * @param body 发送验证码dto
    */
-  @Public()
   @Post('sendCode')
   @ResonpseMsg('验证码已发送')
   async sendCode(@Body() body: SendVerificationCodeDto) {

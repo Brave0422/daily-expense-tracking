@@ -14,6 +14,7 @@ import type { Request } from 'express';
 import { AuthTokenService } from '../services/auth-token.service';
 import { Reflector } from '@nestjs/core';
 import { Public } from '../decorators/public.decorator';
+import { VerificationPurpose } from 'src/modules/verification-code/enums/verification-purpose-enum';
 
 export interface AuthenticatedUser {
   id: number;
@@ -43,6 +44,23 @@ export class JwtAuthGuard implements CanActivate {
 
     // 获取请求体
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+
+    console.log('path', request.path, 'body', request.body);
+
+    // 发送验证码请求,如果是注册和忘记密码不用鉴权,其他需要鉴权
+    const path = request.path;
+    const codePurpose = request.body.purpose;
+    const publicPath = [
+      VerificationPurpose.REGISTER,
+      VerificationPurpose.FORGOT_PASSWORD,
+    ];
+    if (
+      path === '/auth/changePassword' &&
+      codePurpose &&
+      publicPath.includes(codePurpose)
+    ) {
+      return true;
+    }
 
     // 从请求中获取access token
     const token = this.extractBearerToken(request);
@@ -80,7 +98,7 @@ export class JwtAuthGuard implements CanActivate {
       return undefined;
     }
 
-    // 提取token。jwt通过bearer传输：bearer eyJhbGciOiJIUzI1...
+    // 提取token。jwt通过bearer传输：Bearer eyJhbGciOiJIUzI1...
     const [scheme, token] = authorization.trim().split(/\s+/);
 
     if (scheme?.toLowerCase() !== 'bearer' || !token) {

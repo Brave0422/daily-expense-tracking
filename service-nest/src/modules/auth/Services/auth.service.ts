@@ -20,6 +20,7 @@ import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthSessionsEntity } from '../entities/auth-sessions.entity';
 import { IsNull, MoreThan, Repository } from 'typeorm';
+import { PasswordService } from './password.service';
 
 export interface dualToken {
   accessToken: string;
@@ -36,56 +37,8 @@ export class AuthService {
     private readonly authTokenService: AuthTokenService,
     @InjectRepository(AuthSessionsEntity)
     private readonly authSessionRepo: Repository<AuthSessionsEntity>,
+    private readonly passwordService: PasswordService,
   ) {}
-
-  /**
-   * 哈希密码
-   * @param password 密码
-   * @returns 密码哈希值
-   */
-  private async hashPassword(password: string): Promise<string> {
-    // 使用bcrypt加盐哈希，盐轮数为10
-    return await hash(password, 10);
-  }
-
-  /**
-   * 验证密码是否匹配
-   * @param inputPassword 用户输入的明文密码
-   * @param passwordHash 数据存储的密码哈希
-   * @returns 比较结果
-   */
-  private async comparePassword(
-    inputPassword: string,
-    passwordHash: string,
-  ): Promise<boolean> {
-    return await compare(inputPassword, passwordHash);
-  }
-
-  /**
-   * 检查邮箱存在性和验证码是否匹配
-   * @param email - 邮箱
-   * @param password - 明文密码
-   * @param code - 注册验证码
-   * @param purpose - 验证码用途
-   */
-  async checkEmailAndCode(
-    email: string,
-    password: string,
-    code: string,
-    purpose: VerificationPurpose,
-  ): Promise<string> {
-    // 检查邮箱是否存在
-    const existingUser = await this.userService.findOneByEmail(email);
-
-    // 邮箱不存在则抛出冲突异常
-    if (!existingUser) throw new BadRequestException('用户不存在');
-
-    // 校验验证码
-    await this.verificationService.verifyAndConsume(email, purpose, code);
-
-    // 对密码进行哈希处理
-    return await this.hashPassword(password);
-  }
 
   /**
    * 用户注册
@@ -111,7 +64,9 @@ export class AuthService {
       VerificationPurpose.REGISTER,
       code,
     );
-    const passwordHash = await this.hashPassword(password);
+
+    // 哈希密码
+    const passwordHash = await this.passwordService.hashPassword(password);
 
     try {
       // 创建用户实体
@@ -137,7 +92,11 @@ export class AuthService {
     const user = await this.userService.findOneByEmail(email);
     if (!user) throw new UnauthorizedException('用户名或密码错误');
 
-    const matched = await this.comparePassword(password, user.passwordHash);
+    // 匹配密码
+    const matched = await this.passwordService.comparePassword(
+      password,
+      user.passwordHash,
+    );
 
     if (!matched) throw new UnauthorizedException('用户名或密码错误');
 
@@ -203,33 +162,5 @@ export class AuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
-  }
-
-  /**
-   * 修改密码
-   * @param email 邮箱
-   * @param newPassword 新密码
-   * @param code 验证码
-   * @param purpose 验证码用途
-   */
-  async changePassword(
-    email: string,
-    newPassword: string,
-    code: string,
-    purpose: VerificationPurpose,
-  ): Promise<boolean> {
-    const passwordHash = await this.checkEmailAndCode(
-      email,
-      newPassword,
-      code,
-      purpose,
-    );
-    try {
-      // 修改密码
-      await this.userService.updatePassword(email, passwordHash);
-    } catch {
-      throw new InternalServerErrorException('修改密码失败');
-    }
-    return true;
   }
 }

@@ -20,6 +20,7 @@ import { Public } from './decorators/public.decorator';
 import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response, Request } from 'express';
 import { changePasswordDto } from './dto/change-password.dto';
+import { PasswordService } from './services/password.service';
 
 // Cookie 在浏览器中保存时使用的名字。
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
@@ -27,12 +28,17 @@ const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
 // 要和 JWT_REFRESH_EXPIRES_IN=7d 保持一致
 const REFRESH_TOKEN_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
+interface AccessTokenResponse {
+  accessToken: string;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(
     // 注入用户服务
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly passwordService: PasswordService,
   ) {}
 
   /**
@@ -60,7 +66,8 @@ export class AuthController {
   /**
    * 把 refresh token 写入 HttpOnly Cookie
    * @param response 响应体
-   * @param refreshToken
+   * @param refreshToken refresh token
+   * @returns 无返回值
    */
   private setRefreshTokenCookie(
     response: Response,
@@ -77,7 +84,7 @@ export class AuthController {
   /**
    * 注册用户
    * @param body 注册用户dto
-   * @returns
+   * @returns 是否注册成功
    */
   @Public()
   @Post('register')
@@ -85,7 +92,7 @@ export class AuthController {
   async register(
     // 从请求体中提取并验证注册DTO
     @Body() body: RegisterDto,
-  ) {
+  ): Promise<boolean> {
     const { email, password, code } = body;
     // 调用用户服务执行注册逻辑
     return await this.authService.register(email, password, code);
@@ -94,7 +101,8 @@ export class AuthController {
   /**
    * 登录
    * @param body 登录dto
-   * @returns access token
+   * @param response 用于写入 refresh token Cookie 的响应体
+   * @returns 包含 access token 的响应数据
    */
   @Public()
   @Post('login')
@@ -105,7 +113,7 @@ export class AuthController {
     // passthrough: true 表示只使用 Response 设置 Cookie，
     // 最终响应数据仍然交给 Nest 和 ResponseInterceptor 处理。
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<AccessTokenResponse> {
     const { email, password } = body;
 
     const { accessToken, refreshToken } = await this.authService.login(
@@ -122,9 +130,9 @@ export class AuthController {
 
   /**
    * 刷新token
-   * @param request
-   * @param response
-   * @returns access token
+   * @param request 用于读取 refresh token Cookie 的请求体
+   * @param response 用于更新 refresh token Cookie 的响应体
+   * @returns 包含新 access token 的响应数据
    */
   @Public()
   @Post('refresh')
@@ -133,7 +141,7 @@ export class AuthController {
     @Req() request: Request,
     // Response 用于覆盖浏览器中的旧 refresh token Cookie。
     @Res({ passthrough: true }) response: Response,
-  ) {
+  ): Promise<AccessTokenResponse> {
     // cookie-parser 会把 Cookie 解析到 request.cookies
     const oldRefreshToken = request.cookies?.[REFRESH_TOKEN_COOKIE_NAME] as
       string | undefined;
@@ -153,11 +161,16 @@ export class AuthController {
     return { accessToken };
   }
 
+  /**
+   * 修改用户密码
+   * @param body 修改密码dto
+   * @returns 是否修改成功
+   */
   @Post('changePassword')
   @ResonpseMsg('修改密码成功')
-  async changePassword(@Body() body: changePasswordDto) {
+  async changePassword(@Body() body: changePasswordDto): Promise<boolean> {
     const { email, newPassword, code, purpose } = body;
-    return await this.authService.changePassword(
+    return await this.passwordService.changePassword(
       email,
       newPassword,
       code,

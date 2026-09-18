@@ -15,6 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthTokenService } from './services/auth-token.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthSessionsEntity } from './entities/auth-sessions.entity';
+import { PasswordService } from './services/password.service';
 
 @Module({
   //在当前模块里注册相关模块
@@ -51,7 +52,7 @@ import { AuthSessionsEntity } from './entities/auth-sessions.entity';
   controllers: [AuthController],
 
   // 注册本模块的服务提供者
-  providers: [AuthService, AuthTokenService],
+  providers: [AuthService, AuthTokenService, PasswordService],
   exports: [AuthService, AuthTokenService],
 })
 export class AuthModule {}
