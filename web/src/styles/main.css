@@ -1,13 +1,12 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:23:51+08:00
- * @description 应用全局样式入口，加载 Tailwind、设计变量与本地图标字体。
+ * @description 应用全局样式入口，加载 Tailwind、设计变量与页面公共样式。
  */
 
 @import 'tailwindcss';
 @import './tokens.css';
 @import './auth.css';
-@import '../assets/icons/iconfont/iconfont.css';
 
 /* 全局盒模型与应用根节点尺寸 */
 * {

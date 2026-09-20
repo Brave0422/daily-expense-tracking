@@ -2,12 +2,23 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:25:44+08:00
- * @description 本地 Iconfont 语义包装，只暴露业务图标名并继承当前文字颜色。
+ * @description Iconfont Symbol 语义包装，将稳定业务名称映射为图标库的 Symbol ID。
  */
 
 import { computed } from 'vue'
 
-export type IconName = 'records' | 'statistics' | 'management'
+export type IconName =
+  'records' | 'statistics' | 'management' | 'changePassword' | 'logout' | 'hide' | 'show'
+
+const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
+  records: 'icon-shouye',
+  statistics: 'icon-bingtu-F',
+  management: 'icon-wrench-full',
+  changePassword: 'icon-xiugaimima01',
+  logout: 'icon-exit-full',
+  hide: 'icon-yincang',
+  show: 'icon-xianshikejian',
+}
 
 interface Props {
   name: IconName
@@ -18,26 +29,28 @@ const props = withDefaults(defineProps<Props>(), {
   size: 24,
 })
 
-const iconClass = computed(() => `expense-icon--${props.name}`)
+const symbolHref = computed(() => `#${ICON_SYMBOL_ID_BY_NAME[props.name]}`)
 </script>
 
 <template>
-  <!-- 字形仅作装饰，图标语义由外层按钮或链接的 aria-label 提供 -->
-  <span
+  <!-- Symbol 仅作装饰，图标语义由外层按钮或链接的 aria-label 提供 -->
+  <svg
     aria-hidden="true"
-    class="expense-iconfont base-icon"
-    :class="iconClass"
-    :style="{ fontSize: `${props.size}px` }"
-  />
+    class="base-icon"
+    focusable="false"
+    :style="{ width: `${props.size}px`, height: `${props.size}px` }"
+  >
+    <use :href="symbolHref" />
+  </svg>
 </template>
 
 <style scoped>
 /* 图标尺寸由行内变量控制，颜色始终继承交互元素状态 */
 .base-icon {
-  display: inline-flex;
+  display: inline-block;
   flex: none;
-  align-items: center;
-  justify-content: center;
   color: inherit;
+  fill: currentcolor;
+  overflow: hidden;
 }
 </style>

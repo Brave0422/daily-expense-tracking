@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-09-18T17:49:29+08:00
- * @description 前端应用初始化入口，装配状态、鉴权桥接、路由和全局样式。
+ * @description 前端应用初始化入口，装配图标、状态、鉴权桥接、路由和全局样式。
  */
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -9,10 +9,13 @@ import 'tdesign-vue-next/es/style/index.css'
 
 import App from './App.vue'
 import { configureAuthSessionBridge } from './api/http'
+import { loadIconfontSymbols } from './plugins/iconfont-symbol'
 import router from './router'
 import { setupRouterGuards } from './router/guards'
 import { useAuthStore } from './stores/auth.store'
 import './styles/main.css'
+
+loadIconfontSymbols()
 
 const app = createApp(App)
 const pinia = createPinia()
