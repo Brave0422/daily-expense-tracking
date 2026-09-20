@@ -83,16 +83,30 @@ async function handleLogout(): Promise<void> {
           账
         </button>
         <div v-if="isProfileOpen" class="profile-menu" role="menu">
-          <button role="menuitem" type="button" @click="handleOpenChangePassword">修改密码</button>
-          <button class="profile-menu__danger" role="menuitem" type="button" @click="handleOpenLogout">
-            退出登录
+          <button role="menuitem" type="button" @click="handleOpenChangePassword">
+            <BaseIcon name="changePassword" :size="18" />
+            <span>修改密码</span>
+          </button>
+          <button
+            class="profile-menu__danger"
+            role="menuitem"
+            type="button"
+            @click="handleOpenLogout"
+          >
+            <BaseIcon name="logout" :size="18" />
+            <span>退出登录</span>
           </button>
         </div>
       </div>
 
       <!-- Iconfont 导航：默认灰色，当前路由使用主题色 -->
       <nav class="default-layout__navigation">
-        <TTooltip v-for="item in navigationItems" :key="item.routeName" :content="item.label" placement="right">
+        <TTooltip
+          v-for="item in navigationItems"
+          :key="item.routeName"
+          :content="item.label"
+          placement="right"
+        >
           <RouterLink
             :aria-label="item.label"
             class="default-layout__nav-link"
@@ -189,8 +203,12 @@ async function handleLogout(): Promise<void> {
 }
 
 .profile-menu button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   min-height: 42px;
   padding: 0 16px;
+  font-size: 14px;
   text-align: left;
   background: transparent;
   border: 0;
@@ -227,7 +245,7 @@ async function handleLogout(): Promise<void> {
     border-color 0.2s;
 }
 
-.default-layout__nav-link:hover {
+.default-layout__nav-link:hover:not(.default-layout__nav-link--active) {
   color: #696d73;
   background: #f6f7f8;
 }

@@ -7,7 +7,7 @@
 :root {
   /* 品牌主题色及交互状态 */
   --color-primary: #ffe639;
-  --color-primary-hover: #f3d900;
+  --color-primary-hover: #ffe639;
   --color-primary-active: #dec500;
   --color-primary-soft: #fff9cc;
 
@@ -28,7 +28,7 @@
 
   /* TDesign 品牌变量与产品主题保持一致 */
   --td-brand-color: #ffe639;
-  --td-brand-color-hover: #f3d900;
+  --td-brand-color-hover: #ffe639;
   --td-brand-color-active: #dec500;
   --td-brand-color-focus: #fff9cc;
 }

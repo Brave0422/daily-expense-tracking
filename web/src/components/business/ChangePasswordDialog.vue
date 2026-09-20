@@ -12,12 +12,7 @@ import { changePassword } from '@/api/auth.api'
 import { normalizeApiError } from '@/api/http'
 import BaseFormField from '@/components/base/BaseFormField.vue'
 import AuthCodeField from '@/components/business/AuthCodeField.vue'
-import {
-  changePasswordSchema,
-  type FieldErrors,
-  normalizeEmail,
-  validateForm,
-} from '@/utils/auth-validation'
+import { changePasswordSchema, type FieldErrors, validateForm } from '@/utils/auth-validation'
 
 interface Props {
   visible: boolean
@@ -28,7 +23,6 @@ const emit = defineEmits<{
   'update:visible': [visible: boolean]
 }>()
 
-const email = ref('')
 const code = ref('')
 const newPassword = ref('')
 const errors = ref<FieldErrors>({})
@@ -42,7 +36,6 @@ const dialogVisible = computed({
 
 /** 清空弹窗草稿和错误，防止再次打开时暴露上次输入。 */
 function resetForm(): void {
-  email.value = ''
   code.value = ''
   newPassword.value = ''
   errors.value = {}
@@ -56,7 +49,6 @@ function resetForm(): void {
 async function handleSubmit(): Promise<void> {
   formMessage.value = ''
   const validation = validateForm(changePasswordSchema, {
-    email: normalizeEmail(email.value),
     code: code.value,
     newPassword: newPassword.value,
   })
@@ -101,24 +93,13 @@ watch(
     header="修改密码"
     width="460px"
   >
-    <!-- 修改密码表单：邮箱仅用于发送验证码，提交接口不携带邮箱 -->
+    <!-- 修改密码表单：服务端根据登录态将验证码发送到注册邮箱 -->
     <form class="change-password-form" novalidate @submit.prevent="handleSubmit">
-      <p class="change-password-form__hint">验证码将发送到你的注册邮箱。</p>
-      <BaseFormField
-        id="change-password-email"
-        v-model="email"
-        autocomplete="email"
-        :error="errors.email"
-        inputmode="email"
-        label="邮箱"
-        placeholder="name@example.com"
-        type="email"
-      />
+      <p class="change-password-form__hint">验证码将发送到当前账号的注册邮箱。</p>
       <AuthCodeField
         id="change-password-code"
         v-model="code"
         :disabled="isSubmitting"
-        :email="email"
         :error="errors.code"
         purpose="change_password"
         @send-error="formMessage = $event"
@@ -137,7 +118,12 @@ watch(
       <p v-if="formMessage" class="auth-form__message" role="alert">{{ formMessage }}</p>
       <!-- 提交期间禁用关闭操作，避免重复请求或状态丢失 -->
       <div class="change-password-form__actions">
-        <TButton :disabled="isSubmitting" theme="default" type="button" @click="dialogVisible = false">
+        <TButton
+          :disabled="isSubmitting"
+          theme="default"
+          type="button"
+          @click="dialogVisible = false"
+        >
           取消
         </TButton>
         <TButton :loading="isSubmitting" theme="primary" type="submit">确认修改</TButton>

@@ -8,13 +8,13 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
 import { sendVerificationCode } from '@/api/auth.api'
-import type { VerificationPurpose } from '@/api/auth.types'
+import type { SendVerificationCodeBody, VerificationPurpose } from '@/api/auth.types'
 import { ApiRequestError, normalizeApiError } from '@/api/http'
 import { loginSchema, normalizeEmail, validateForm } from '@/utils/auth-validation'
 
 interface Props {
   disabled?: boolean
-  email: string
+  email?: string
   error?: string
   id: string
   modelValue: string
@@ -23,6 +23,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
+  email: '',
   error: '',
 })
 
@@ -69,7 +70,7 @@ function startCountdown(seconds: number): void {
 }
 
 /**
- * 校验邮箱并发送当前业务用途的验证码。
+ * 发送当前业务用途的验证码；公共场景会先校验邮箱。
  * @returns 请求完成后结束；失败信息通过 send-error 交给所属表单展示
  */
 async function handleSendCode(): Promise<void> {
@@ -77,23 +78,31 @@ async function handleSendCode(): Promise<void> {
     return
   }
 
-  const validation = validateForm(loginSchema.pick({ email: true }), { email: props.email })
-  if (!validation.isValid) {
-    emit('send-error', validation.errors.email ?? '请输入正确的邮箱地址')
-    return
+  let requestBody: SendVerificationCodeBody
+  if (props.purpose === 'change_password') {
+    requestBody = { purpose: props.purpose }
+  } else {
+    const validation = validateForm(loginSchema.pick({ email: true }), { email: props.email })
+    if (!validation.isValid) {
+      emit('send-error', validation.errors.email ?? '请输入正确的邮箱地址')
+      return
+    }
+    requestBody = {
+      email: normalizeEmail(props.email),
+      purpose: props.purpose,
+    }
   }
 
-  const email = normalizeEmail(props.email)
   isSending.value = true
   try {
-    await sendVerificationCode({ email, purpose: props.purpose })
-    sentEmail.value = email
+    await sendVerificationCode(requestBody)
+    sentEmail.value = 'email' in requestBody ? requestBody.email : null
     startCountdown(60)
     emit('send-success')
   } catch (error) {
     const apiError = normalizeApiError(error, '验证码发送失败，请稍后重试')
     if (apiError instanceof ApiRequestError && apiError.retryAfterSeconds) {
-      sentEmail.value = email
+      sentEmail.value = 'email' in requestBody ? requestBody.email : null
       startCountdown(apiError.retryAfterSeconds)
     }
     emit('send-error', apiError.message)
@@ -115,7 +124,11 @@ function handleInput(event: Event): void {
 watch(
   () => props.email,
   (email) => {
-    if (sentEmail.value && normalizeEmail(email) !== sentEmail.value) {
+    if (
+      props.purpose !== 'change_password' &&
+      sentEmail.value &&
+      normalizeEmail(email) !== sentEmail.value
+    ) {
       sentEmail.value = null
       stopCountdown()
       emit('update:modelValue', '')

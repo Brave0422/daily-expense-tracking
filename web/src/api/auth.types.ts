@@ -39,9 +39,13 @@ export interface ChangePasswordBody {
   newPassword: string
 }
 
-export interface SendVerificationCodeBody {
-  /** 验证码接收邮箱。 */
-  email: string
-  /** 决定验证码校验场景及接口是否需要登录态。 */
-  purpose: VerificationPurpose
-}
+export type SendVerificationCodeBody =
+  | {
+      /** 注册或重置密码时的验证码接收邮箱。 */
+      email: string
+      purpose: Exclude<VerificationPurpose, 'change_password'>
+    }
+  | {
+      /** 修改密码时由服务端根据登录态确定注册邮箱。 */
+      purpose: 'change_password'
+    }

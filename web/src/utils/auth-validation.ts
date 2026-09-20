@@ -25,10 +25,9 @@ export const resetPasswordSchema = z.object({
   newPassword: passwordSchema,
 })
 
-export const changePasswordSchema = resetPasswordSchema.pick({
-  email: true,
-  code: true,
-  newPassword: true,
+export const changePasswordSchema = z.object({
+  code: codeSchema,
+  newPassword: passwordSchema,
 })
 
 export type FieldErrors = Record<string, string>

@@ -22,9 +22,9 @@
   border-radius: 10px;
 }
 
-/* 主提交按钮保持完整触控高度 */
-.auth-form__submit {
-  height: 46px;
+/* 主提交按钮固定高度，圆角与账号密码输入框一致 */
+.t-button.auth-form__submit {
+  height: 40px;
   margin-top: 2px;
   border-radius: 12px;
 }

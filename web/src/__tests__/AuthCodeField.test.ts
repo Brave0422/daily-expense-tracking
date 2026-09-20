@@ -70,4 +70,22 @@ describe('AuthCodeField', () => {
     resolveRequest?.()
     await flushPromises()
   })
+
+  it('sends a password-change code using only the authenticated purpose', async () => {
+    vi.useFakeTimers()
+    vi.mocked(sendVerificationCode).mockResolvedValue()
+    const wrapper = mount(AuthCodeField, {
+      props: {
+        id: 'change-password-code',
+        modelValue: '',
+        purpose: 'change_password',
+      },
+    })
+
+    await wrapper.get('button').trigger('click')
+    await flushPromises()
+
+    expect(sendVerificationCode).toHaveBeenCalledWith({ purpose: 'change_password' })
+    wrapper.unmount()
+  })
 })

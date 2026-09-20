@@ -5,7 +5,7 @@
  */
 
 /** 从 Iconfont 项目的 Symbol 页面复制最新在线 JS 链接并粘贴到这里。 */
-export const ICONFONT_SYMBOL_SCRIPT_URL = '//at.alicdn.com/t/c/font_5236708_wribuqi1qon.js'
+export const ICONFONT_SYMBOL_SCRIPT_URL = '//at.alicdn.com/t/c/font_5236708_nm8240jipm.js'
 
 const SCRIPT_ELEMENT_ID = 'expense-iconfont-symbol-script'
 

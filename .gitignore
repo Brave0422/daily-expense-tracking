@@ -57,3 +57,4 @@ project.private.config.json
 /cypress/videos/
 /cypress/screenshots/
 __screenshots__/
+.playwright-cli

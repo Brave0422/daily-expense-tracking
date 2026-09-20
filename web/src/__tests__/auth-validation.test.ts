@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  changePasswordSchema,
   loginSchema,
   normalizeEmail,
   registerSchema,
@@ -46,5 +47,15 @@ describe('auth validation', () => {
 
     expect(invalidResult.errors.code).toBe('请输入 6 位数字验证码')
     expect(validResult.isValid).toBe(true)
+  })
+
+  it('validates a password change without requiring an email', () => {
+    const result = validateForm(changePasswordSchema, {
+      code: '012345',
+      newPassword: '123456',
+    })
+
+    expect(result.isValid).toBe(true)
+    expect(result.data).toEqual({ code: '012345', newPassword: '123456' })
   })
 })

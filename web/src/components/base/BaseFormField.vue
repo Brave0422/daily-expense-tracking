@@ -7,6 +7,8 @@
 
 import { computed, ref } from 'vue'
 
+import BaseIcon from '@/components/base/BaseIcon.vue'
+
 interface Props {
   autocomplete?: string
   error?: string
@@ -72,7 +74,7 @@ function handleInput(event: Event): void {
         type="button"
         @click="isPasswordVisible = !isPasswordVisible"
       >
-        {{ isPasswordVisible ? '隐藏' : '显示' }}
+        <BaseIcon :name="isPasswordVisible ? 'hide' : 'show'" :size="20" />
       </button>
     </div>
     <p v-if="props.error" class="form-field__error" role="alert">{{ props.error }}</p>
@@ -132,13 +134,15 @@ function handleInput(event: Event): void {
 }
 
 .form-field__toggle {
+  display: grid;
   flex: none;
-  min-width: 58px;
-  padding: 0 14px;
+  width: 48px;
+  padding: 0;
   color: var(--color-text-secondary);
   background: transparent;
   border: 0;
   cursor: pointer;
+  place-items: center;
 }
 
 .form-field__toggle:hover {
