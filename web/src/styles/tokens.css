@@ -1,0 +1,34 @@
+/**
+ * @author Brave
+ * @date 2026-09-20T15:23:51+08:00
+ * @description 全局视觉变量，统一主题色、文字色、间距与圆角。
+ */
+
+:root {
+  /* 品牌主题色及交互状态 */
+  --color-primary: #ffe639;
+  --color-primary-hover: #f3d900;
+  --color-primary-active: #dec500;
+  --color-primary-soft: #fff9cc;
+
+  /* 页面、文本和边框基础色 */
+  --color-page: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-text: #202124;
+  --color-text-secondary: #70737a;
+  --color-icon: #92969d;
+  --color-border: #e6e8ec;
+  --color-danger: #d54941;
+
+  /* 页面结构共用尺寸 */
+  --space-page: 16px;
+  --radius-card: 16px;
+  --radius-auth-card: 24px;
+  --shadow-card: 0 12px 36px rgb(32 33 36 / 7%);
+
+  /* TDesign 品牌变量与产品主题保持一致 */
+  --td-brand-color: #ffe639;
+  --td-brand-color-hover: #f3d900;
+  --td-brand-color-active: #dec500;
+  --td-brand-color-focus: #fff9cc;
+}

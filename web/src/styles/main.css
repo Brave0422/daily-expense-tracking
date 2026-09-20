@@ -1,0 +1,58 @@
+/**
+ * @author Brave
+ * @date 2026-09-20T15:23:51+08:00
+ * @description 应用全局样式入口，加载 Tailwind、设计变量与本地图标字体。
+ */
+
+@import 'tailwindcss';
+@import './tokens.css';
+@import './auth.css';
+@import '../assets/icons/iconfont/iconfont.css';
+
+/* 全局盒模型与应用根节点尺寸 */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-width: 760px;
+  min-height: 100%;
+  margin: 0;
+}
+
+/* 页面基础配色与中文字体回退顺序 */
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-page);
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+/* 所有键盘交互元素共享清晰可见的焦点环 */
+:focus-visible {
+  outline: 3px solid rgb(255 230 57 / 55%);
+  outline-offset: 2px;
+}
+
+/* TDesign 主按钮使用黄色背景时保持深色文字对比度 */
+.t-button--theme-primary {
+  color: #202124;
+  font-weight: 600;
+}

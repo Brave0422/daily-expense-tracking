@@ -1,0 +1,53 @@
+/**
+ * @author Brave
+ * @date 2026-09-20T15:25:44+08:00
+ * @description 鉴权表单页面共享布局与反馈样式。
+ */
+
+/* 登录、注册和密码重置表单共享纵向节奏 */
+.auth-form {
+  display: grid;
+  gap: 18px;
+}
+
+/* 表单级请求错误与字段级校验错误分开展示 */
+.auth-form__message {
+  margin: -2px 0 0;
+  padding: 10px 12px;
+  color: #9f322d;
+  font-size: 13px;
+  line-height: 1.5;
+  background: #fff1f0;
+  border: 1px solid #ffd7d4;
+  border-radius: 10px;
+}
+
+/* 主提交按钮保持完整触控高度 */
+.auth-form__submit {
+  height: 46px;
+  margin-top: 2px;
+  border-radius: 12px;
+}
+
+/* 鉴权场景之间的辅助导航 */
+.auth-form__links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 2px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.auth-form__link {
+  text-decoration: none;
+}
+
+.auth-form__link:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary-active);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
