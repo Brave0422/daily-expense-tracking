@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">服饰穿搭 - 内衣袜子</title>
+  <path fill="#EC6683" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M4 3h16v6.2c0 5.4-3.3 9.9-8 11.8-4.7-1.9-8-6.4-8-11.8V3Zm3 3v3.2c0 3.5 1.9 6.7 5 8.4 3.1-1.7 5-4.9 5-8.4V6h-3.5L12 9 10.5 6H7Z" fill-rule="evenodd"/></g>
+</svg>

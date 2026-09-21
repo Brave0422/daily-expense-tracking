@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">日用家居 - 个人清洁</title>
+  <path fill="#35B99D" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M9 2h6v3l2 2v3.2c1.2.7 2 2 2 3.5V22H5v-8.3c0-1.5.8-2.8 2-3.5V7l2-2V2Zm2 2v2L9 8v1h6V8l-2-2V4h-2Zm-4 9v7h10v-7.1c0-1-.8-1.9-1.9-1.9H8.9C7.8 11 7 11.9 7 13Z" fill-rule="evenodd"/></g>
+</svg>

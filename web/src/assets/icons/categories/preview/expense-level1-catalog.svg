@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1008 346">
+  <rect width="100%" height="100%" fill="#fff"/>
+  <text x="28" y="42" fill="#111827" font-family="Microsoft YaHei, sans-serif" font-size="24" font-weight="700">支出一级分类图标</text>
+  <g font-family="Microsoft YaHei, sans-serif"><g>
+      <rect x="36" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-meals.svg" x="68" y="80" width="56" height="56"/>
+      <text x="96" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">三餐</text>
+      
+    </g><g>
+      <rect x="172" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-snacks-drinks.svg" x="204" y="80" width="56" height="56"/>
+      <text x="232" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">零食饮品</text>
+      
+    </g><g>
+      <rect x="308" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-entertainment.svg" x="340" y="80" width="56" height="56"/>
+      <text x="368" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">休闲娱乐</text>
+      
+    </g><g>
+      <rect x="444" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-household.svg" x="476" y="80" width="56" height="56"/>
+      <text x="504" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">日用家居</text>
+      
+    </g><g>
+      <rect x="580" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-clothing.svg" x="612" y="80" width="56" height="56"/>
+      <text x="640" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">服饰穿搭</text>
+      
+    </g><g>
+      <rect x="716" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-personal-care.svg" x="748" y="80" width="56" height="56"/>
+      <text x="776" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">个人护理</text>
+      
+    </g><g>
+      <rect x="852" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-housing.svg" x="884" y="80" width="56" height="56"/>
+      <text x="912" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">住房</text>
+      
+    </g><g>
+      <rect x="36" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-digital.svg" x="68" y="204" width="56" height="56"/>
+      <text x="96" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">数码产品</text>
+      
+    </g><g>
+      <rect x="172" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-transport.svg" x="204" y="204" width="56" height="56"/>
+      <text x="232" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">交通出行</text>
+      
+    </g><g>
+      <rect x="308" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-communication.svg" x="340" y="204" width="56" height="56"/>
+      <text x="368" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">通讯网络</text>
+      
+    </g><g>
+      <rect x="444" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-medical.svg" x="476" y="204" width="56" height="56"/>
+      <text x="504" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">医疗健康</text>
+      
+    </g><g>
+      <rect x="580" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-education.svg" x="612" y="204" width="56" height="56"/>
+      <text x="640" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">学习教育</text>
+      
+    </g><g>
+      <rect x="716" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-digital-services.svg" x="748" y="204" width="56" height="56"/>
+      <text x="776" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">数字服务</text>
+      
+    </g><g>
+      <rect x="852" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level1/expense-social.svg" x="884" y="204" width="56" height="56"/>
+      <text x="912" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">人情往来</text>
+      
+    </g></g>
+</svg>

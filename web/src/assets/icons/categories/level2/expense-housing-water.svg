@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">住房 - 水费</title>
+  <path fill="#3EBB70" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M12 2s8 8.2 8 13a8 8 0 1 1-16 0c0-4.8 8-13 8-13Zm-4 13a4 4 0 0 0 4 4v-2a2 2 0 0 1-2-2H8Z" fill-rule="evenodd"/></g>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">交通出行 - 游轮</title>
+  <path fill="#3290DF" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M9 2h6v4h4l2 8h2l-2.3 5.2A4.7 4.7 0 0 1 16.4 22H7.6a4.7 4.7 0 0 1-4.3-2.8L1 14h2l2-8h4V2Zm2 2v2h2V4h-2ZM7 8l-1.5 6h13L17 8H7Zm-3.8 8 1.9 2.4c.6.8 1.5 1.2 2.5 1.2h8.8c1 0 1.9-.4 2.5-1.2l1.9-2.4H3.2Z" fill-rule="evenodd"/></g>
+</svg>

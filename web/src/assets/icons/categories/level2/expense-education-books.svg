@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">学习教育 - 书籍资料</title>
+  <path fill="#D59419" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M7 2C4.79086 2 3 3.79086 3 6V18C3 20.2091 4.79086 22 7 22H21V2H7ZM11 5H18V7H11V5ZM5 18C5 16.8954 5.89543 16 7 16H19V20H7C5.89543 20 5 19.1046 5 18Z"></path></g>
+</svg>

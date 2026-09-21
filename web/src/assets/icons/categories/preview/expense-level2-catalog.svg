@@ -1,0 +1,315 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1144 1090">
+  <rect width="100%" height="100%" fill="#fff"/>
+  <text x="28" y="42" fill="#111827" font-family="Microsoft YaHei, sans-serif" font-size="24" font-weight="700">支出二级分类图标</text>
+  <g font-family="Microsoft YaHei, sans-serif"><g>
+      <rect x="36" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-meals-breakfast.svg" x="68" y="80" width="56" height="56"/>
+      <text x="96" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">早餐</text>
+      <text x="96" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+    </g><g>
+      <rect x="172" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-meals-lunch.svg" x="204" y="80" width="56" height="56"/>
+      <text x="232" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">午餐</text>
+      <text x="232" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+    </g><g>
+      <rect x="308" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-meals-dinner.svg" x="340" y="80" width="56" height="56"/>
+      <text x="368" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">晚餐</text>
+      <text x="368" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+    </g><g>
+      <rect x="444" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-meals-groceries.svg" x="476" y="80" width="56" height="56"/>
+      <text x="504" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">买菜食材</text>
+      <text x="504" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+    </g><g>
+      <rect x="580" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-meals-staple-food.svg" x="612" y="80" width="56" height="56"/>
+      <text x="640" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">基础食品</text>
+      <text x="640" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+    </g><g>
+      <rect x="716" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-meals-daily-fruit.svg" x="748" y="80" width="56" height="56"/>
+      <text x="776" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">日常水果</text>
+      <text x="776" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+    </g><g>
+      <rect x="852" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-snacks-drinks-leisure-snacks.svg" x="884" y="80" width="56" height="56"/>
+      <text x="912" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">休闲零食</text>
+      <text x="912" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">零食饮品</text>
+    </g><g>
+      <rect x="988" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-snacks-drinks-late-night-snack.svg" x="1020" y="80" width="56" height="56"/>
+      <text x="1048" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">夜宵</text>
+      <text x="1048" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">零食饮品</text>
+    </g><g>
+      <rect x="36" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-snacks-drinks-beverages.svg" x="68" y="204" width="56" height="56"/>
+      <text x="96" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">饮料茶饮</text>
+      <text x="96" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">零食饮品</text>
+    </g><g>
+      <rect x="172" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-snacks-drinks-desserts-snacks.svg" x="204" y="204" width="56" height="56"/>
+      <text x="232" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">甜品小吃</text>
+      <text x="232" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">零食饮品</text>
+    </g><g>
+      <rect x="308" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-entertainment-games.svg" x="340" y="204" width="56" height="56"/>
+      <text x="368" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">游戏</text>
+      <text x="368" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">休闲娱乐</text>
+    </g><g>
+      <rect x="444" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-entertainment-tickets.svg" x="476" y="204" width="56" height="56"/>
+      <text x="504" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">门票</text>
+      <text x="504" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">休闲娱乐</text>
+    </g><g>
+      <rect x="580" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-entertainment-movies.svg" x="612" y="204" width="56" height="56"/>
+      <text x="640" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">电影</text>
+      <text x="640" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">休闲娱乐</text>
+    </g><g>
+      <rect x="716" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-household-personal-cleaning.svg" x="748" y="204" width="56" height="56"/>
+      <text x="776" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">个人清洁</text>
+      <text x="776" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">日用家居</text>
+    </g><g>
+      <rect x="852" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-household-home-cleaning.svg" x="884" y="204" width="56" height="56"/>
+      <text x="912" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">家居清洁</text>
+      <text x="912" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">日用家居</text>
+    </g><g>
+      <rect x="988" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-household-paper-consumables.svg" x="1020" y="204" width="56" height="56"/>
+      <text x="1048" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">纸品耗材</text>
+      <text x="1048" y="298" fill="#8A94A6" font-size="11" text-anchor="middle">日用家居</text>
+    </g><g>
+      <rect x="36" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-household-kitchen.svg" x="68" y="328" width="56" height="56"/>
+      <text x="96" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">厨房用品</text>
+      <text x="96" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">日用家居</text>
+    </g><g>
+      <rect x="172" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-household-home-furnishing.svg" x="204" y="328" width="56" height="56"/>
+      <text x="232" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">家居用品</text>
+      <text x="232" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">日用家居</text>
+    </g><g>
+      <rect x="308" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-household-other-daily.svg" x="340" y="328" width="56" height="56"/>
+      <text x="368" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">其他日用</text>
+      <text x="368" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">日用家居</text>
+    </g><g>
+      <rect x="444" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-clothing-tops.svg" x="476" y="328" width="56" height="56"/>
+      <text x="504" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">上衣</text>
+      <text x="504" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">服饰穿搭</text>
+    </g><g>
+      <rect x="580" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-clothing-bottoms.svg" x="612" y="328" width="56" height="56"/>
+      <text x="640" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">下装</text>
+      <text x="640" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">服饰穿搭</text>
+    </g><g>
+      <rect x="716" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-clothing-shoes.svg" x="748" y="328" width="56" height="56"/>
+      <text x="776" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">鞋子</text>
+      <text x="776" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">服饰穿搭</text>
+    </g><g>
+      <rect x="852" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-clothing-underwear-socks.svg" x="884" y="328" width="56" height="56"/>
+      <text x="912" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">内衣袜子</text>
+      <text x="912" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">服饰穿搭</text>
+    </g><g>
+      <rect x="988" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-personal-care-haircut.svg" x="1020" y="328" width="56" height="56"/>
+      <text x="1048" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">理发</text>
+      <text x="1048" y="422" fill="#8A94A6" font-size="11" text-anchor="middle">个人护理</text>
+    </g><g>
+      <rect x="36" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-personal-care-skincare.svg" x="68" y="452" width="56" height="56"/>
+      <text x="96" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">护肤品</text>
+      <text x="96" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">个人护理</text>
+    </g><g>
+      <rect x="172" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-housing-rent.svg" x="204" y="452" width="56" height="56"/>
+      <text x="232" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">房租</text>
+      <text x="232" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">住房</text>
+    </g><g>
+      <rect x="308" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-housing-water.svg" x="340" y="452" width="56" height="56"/>
+      <text x="368" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">水费</text>
+      <text x="368" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">住房</text>
+    </g><g>
+      <rect x="444" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-housing-electricity.svg" x="476" y="452" width="56" height="56"/>
+      <text x="504" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">电费</text>
+      <text x="504" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">住房</text>
+    </g><g>
+      <rect x="580" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-housing-gas.svg" x="612" y="452" width="56" height="56"/>
+      <text x="640" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">燃气费</text>
+      <text x="640" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">住房</text>
+    </g><g>
+      <rect x="716" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-housing-mortgage.svg" x="748" y="452" width="56" height="56"/>
+      <text x="776" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">房贷</text>
+      <text x="776" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">住房</text>
+    </g><g>
+      <rect x="852" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-housing-property-fee.svg" x="884" y="452" width="56" height="56"/>
+      <text x="912" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">物业费</text>
+      <text x="912" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">住房</text>
+    </g><g>
+      <rect x="988" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-phone.svg" x="1020" y="452" width="56" height="56"/>
+      <text x="1048" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">手机平板</text>
+      <text x="1048" y="546" fill="#8A94A6" font-size="11" text-anchor="middle">数码产品</text>
+    </g><g>
+      <rect x="36" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-computer.svg" x="68" y="576" width="56" height="56"/>
+      <text x="96" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">电脑</text>
+      <text x="96" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">数码产品</text>
+    </g><g>
+      <rect x="172" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-digital-accessories.svg" x="204" y="576" width="56" height="56"/>
+      <text x="232" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">数码配件</text>
+      <text x="232" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">数码产品</text>
+    </g><g>
+      <rect x="308" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-digital-repair.svg" x="340" y="576" width="56" height="56"/>
+      <text x="368" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">数码维修</text>
+      <text x="368" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">数码产品</text>
+    </g><g>
+      <rect x="444" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-public-transit.svg" x="476" y="576" width="56" height="56"/>
+      <text x="504" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">公交地铁</text>
+      <text x="504" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="580" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-taxi.svg" x="612" y="576" width="56" height="56"/>
+      <text x="640" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">打车</text>
+      <text x="640" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="716" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-shared-bike.svg" x="748" y="576" width="56" height="56"/>
+      <text x="776" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">共享单车</text>
+      <text x="776" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="852" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-train.svg" x="884" y="576" width="56" height="56"/>
+      <text x="912" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">火车</text>
+      <text x="912" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="988" y="566" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-high-speed-rail.svg" x="1020" y="576" width="56" height="56"/>
+      <text x="1048" y="652" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">高铁</text>
+      <text x="1048" y="670" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="36" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-flight.svg" x="68" y="700" width="56" height="56"/>
+      <text x="96" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">飞机</text>
+      <text x="96" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="172" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-cruise.svg" x="204" y="700" width="56" height="56"/>
+      <text x="232" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">游轮</text>
+      <text x="232" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="308" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-transport-parking.svg" x="340" y="700" width="56" height="56"/>
+      <text x="368" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">停车</text>
+      <text x="368" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">交通出行</text>
+    </g><g>
+      <rect x="444" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-communication-phone-bill.svg" x="476" y="700" width="56" height="56"/>
+      <text x="504" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">手机话费</text>
+      <text x="504" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">通讯网络</text>
+    </g><g>
+      <rect x="580" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-communication-mobile-data.svg" x="612" y="700" width="56" height="56"/>
+      <text x="640" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">流量费</text>
+      <text x="640" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">通讯网络</text>
+    </g><g>
+      <rect x="716" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-communication-broadband.svg" x="748" y="700" width="56" height="56"/>
+      <text x="776" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">宽带费</text>
+      <text x="776" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">通讯网络</text>
+    </g><g>
+      <rect x="852" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-medical-medicine.svg" x="884" y="700" width="56" height="56"/>
+      <text x="912" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">药品</text>
+      <text x="912" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">医疗健康</text>
+    </g><g>
+      <rect x="988" y="690" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-medical-doctor.svg" x="1020" y="700" width="56" height="56"/>
+      <text x="1048" y="776" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">就诊</text>
+      <text x="1048" y="794" fill="#8A94A6" font-size="11" text-anchor="middle">医疗健康</text>
+    </g><g>
+      <rect x="36" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-medical-examination.svg" x="68" y="824" width="56" height="56"/>
+      <text x="96" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">检查</text>
+      <text x="96" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">医疗健康</text>
+    </g><g>
+      <rect x="172" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-education-books.svg" x="204" y="824" width="56" height="56"/>
+      <text x="232" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">书籍资料</text>
+      <text x="232" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">学习教育</text>
+    </g><g>
+      <rect x="308" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-education-exam-certification.svg" x="340" y="824" width="56" height="56"/>
+      <text x="368" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">考试认证</text>
+      <text x="368" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">学习教育</text>
+    </g><g>
+      <rect x="444" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-education-course-training.svg" x="476" y="824" width="56" height="56"/>
+      <text x="504" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">课程培训</text>
+      <text x="504" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">学习教育</text>
+    </g><g>
+      <rect x="580" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-education-tuition.svg" x="612" y="824" width="56" height="56"/>
+      <text x="640" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">学费</text>
+      <text x="640" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">学习教育</text>
+    </g><g>
+      <rect x="716" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-education-study-supplies.svg" x="748" y="824" width="56" height="56"/>
+      <text x="776" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">学习用品</text>
+      <text x="776" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">学习教育</text>
+    </g><g>
+      <rect x="852" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-services-software-subscription.svg" x="884" y="824" width="56" height="56"/>
+      <text x="912" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">软件订阅</text>
+      <text x="912" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">数字服务</text>
+    </g><g>
+      <rect x="988" y="814" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-services-cloud-server.svg" x="1020" y="824" width="56" height="56"/>
+      <text x="1048" y="900" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">云服务器</text>
+      <text x="1048" y="918" fill="#8A94A6" font-size="11" text-anchor="middle">数字服务</text>
+    </g><g>
+      <rect x="36" y="938" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-services-cloud-storage.svg" x="68" y="948" width="56" height="56"/>
+      <text x="96" y="1024" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">云存储</text>
+      <text x="96" y="1042" fill="#8A94A6" font-size="11" text-anchor="middle">数字服务</text>
+    </g><g>
+      <rect x="172" y="938" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-digital-services-network-service.svg" x="204" y="948" width="56" height="56"/>
+      <text x="232" y="1024" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">网络服务</text>
+      <text x="232" y="1042" fill="#8A94A6" font-size="11" text-anchor="middle">数字服务</text>
+    </g><g>
+      <rect x="308" y="938" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-social-family-support.svg" x="340" y="948" width="56" height="56"/>
+      <text x="368" y="1024" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">孝亲支出</text>
+      <text x="368" y="1042" fill="#8A94A6" font-size="11" text-anchor="middle">人情往来</text>
+    </g><g>
+      <rect x="444" y="938" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-social-red-packet.svg" x="476" y="948" width="56" height="56"/>
+      <text x="504" y="1024" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">红包礼金</text>
+      <text x="504" y="1042" fill="#8A94A6" font-size="11" text-anchor="middle">人情往来</text>
+    </g><g>
+      <rect x="580" y="938" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-social-donation.svg" x="612" y="948" width="56" height="56"/>
+      <text x="640" y="1024" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">捐赠</text>
+      <text x="640" y="1042" fill="#8A94A6" font-size="11" text-anchor="middle">人情往来</text>
+    </g><g>
+      <rect x="716" y="938" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../level2/expense-social-gifts.svg" x="748" y="948" width="56" height="56"/>
+      <text x="776" y="1024" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">礼物</text>
+      <text x="776" y="1042" fill="#8A94A6" font-size="11" text-anchor="middle">人情往来</text>
+    </g></g>
+</svg>

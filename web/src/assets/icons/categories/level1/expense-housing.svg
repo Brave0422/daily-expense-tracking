@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">住房</title>
+  <path fill="#3EBB70" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M11.9968 1.6582L22.4127 10.9168L21.084 12.4116L20.0009 11.4489V21.9998H15.5V15H8.5V21.9998H4.00092V11.4536L2.90685 12.4109L1.58984 10.9058L6.00092 7.04607V2.99984H8.00092V5.25448L11.9968 1.6582Z"></path><path fill="#fff" d="M10.5 22V17H13.5V22H10.5Z"></path></g>
+</svg>
