@@ -6,8 +6,8 @@
 
 /** 通用 UI 图标项目的 Symbol 在线 JS。 */
 export const APP_ICONFONT_SYMBOL_SCRIPT_URL = '//at.alicdn.com/t/c/font_5236708_nm8240jipm.js'
-/** DET-category-icon 发布后，将其 Symbol 在线 JS 链接粘贴到这里。 */
-export const CATEGORY_ICONFONT_SYMBOL_SCRIPT_URL = ''
+/** 账单分类图标项目 DET-category-icon 的 Symbol 在线 JS。 */
+export const CATEGORY_ICONFONT_SYMBOL_SCRIPT_URL = '//at.alicdn.com/t/c/font_5237186_dzhj2dbu5zt.js'
 
 interface IconfontSymbolSource {
   id: string

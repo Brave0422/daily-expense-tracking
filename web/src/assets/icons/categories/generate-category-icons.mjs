@@ -14,7 +14,7 @@ const tdesignIconDirectory = join(
   '../../../../node_modules/tdesign-icons-vue-next/esm/components',
 )
 const ICONFONT_PROJECT_NAME = 'DET-category-icon'
-const ICONFONT_SYMBOL_PREFIX = 'det-cat-'
+const ICONFONT_SYMBOL_PREFIX = 'icon-'
 
 const PALETTES = {
   meals: '#FF873D',

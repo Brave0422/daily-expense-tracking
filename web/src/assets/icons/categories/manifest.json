@@ -3,7 +3,7 @@
   "iconfontMode": "symbol",
   "iconfontProject": {
     "name": "DET-category-icon",
-    "symbolPrefix": "det-cat-",
+    "symbolPrefix": "icon-",
     "namingPattern": "expense-{一级英文名}[-{二级英文名}] / income-{收入英文名}"
   },
   "canvas": {
@@ -19,7 +19,7 @@
       "color": "#FF873D",
       "file": "level1/expense-meals.svg",
       "iconfontName": "expense-meals",
-      "symbolId": "det-cat-expense-meals"
+      "symbolId": "icon-expense-meals"
     },
     {
       "id": "snacks-drinks",
@@ -28,7 +28,7 @@
       "color": "#F2A82F",
       "file": "level1/expense-snacks-drinks.svg",
       "iconfontName": "expense-snacks-drinks",
-      "symbolId": "det-cat-expense-snacks-drinks"
+      "symbolId": "icon-expense-snacks-drinks"
     },
     {
       "id": "entertainment",
@@ -37,7 +37,7 @@
       "color": "#8A63E8",
       "file": "level1/expense-entertainment.svg",
       "iconfontName": "expense-entertainment",
-      "symbolId": "det-cat-expense-entertainment"
+      "symbolId": "icon-expense-entertainment"
     },
     {
       "id": "household",
@@ -46,7 +46,7 @@
       "color": "#35B99D",
       "file": "level1/expense-household.svg",
       "iconfontName": "expense-household",
-      "symbolId": "det-cat-expense-household"
+      "symbolId": "icon-expense-household"
     },
     {
       "id": "clothing",
@@ -55,7 +55,7 @@
       "color": "#EC6683",
       "file": "level1/expense-clothing.svg",
       "iconfontName": "expense-clothing",
-      "symbolId": "det-cat-expense-clothing"
+      "symbolId": "icon-expense-clothing"
     },
     {
       "id": "personal-care",
@@ -64,7 +64,7 @@
       "color": "#DC65A0",
       "file": "level1/expense-personal-care.svg",
       "iconfontName": "expense-personal-care",
-      "symbolId": "det-cat-expense-personal-care"
+      "symbolId": "icon-expense-personal-care"
     },
     {
       "id": "housing",
@@ -73,7 +73,7 @@
       "color": "#3EBB70",
       "file": "level1/expense-housing.svg",
       "iconfontName": "expense-housing",
-      "symbolId": "det-cat-expense-housing"
+      "symbolId": "icon-expense-housing"
     },
     {
       "id": "digital",
@@ -82,7 +82,7 @@
       "color": "#4F8BE8",
       "file": "level1/expense-digital.svg",
       "iconfontName": "expense-digital",
-      "symbolId": "det-cat-expense-digital"
+      "symbolId": "icon-expense-digital"
     },
     {
       "id": "transport",
@@ -91,7 +91,7 @@
       "color": "#3290DF",
       "file": "level1/expense-transport.svg",
       "iconfontName": "expense-transport",
-      "symbolId": "det-cat-expense-transport"
+      "symbolId": "icon-expense-transport"
     },
     {
       "id": "communication",
@@ -100,7 +100,7 @@
       "color": "#6674D9",
       "file": "level1/expense-communication.svg",
       "iconfontName": "expense-communication",
-      "symbolId": "det-cat-expense-communication"
+      "symbolId": "icon-expense-communication"
     },
     {
       "id": "medical",
@@ -109,7 +109,7 @@
       "color": "#EB6076",
       "file": "level1/expense-medical.svg",
       "iconfontName": "expense-medical",
-      "symbolId": "det-cat-expense-medical"
+      "symbolId": "icon-expense-medical"
     },
     {
       "id": "education",
@@ -118,7 +118,7 @@
       "color": "#D59419",
       "file": "level1/expense-education.svg",
       "iconfontName": "expense-education",
-      "symbolId": "det-cat-expense-education"
+      "symbolId": "icon-expense-education"
     },
     {
       "id": "digital-services",
@@ -127,7 +127,7 @@
       "color": "#5368D8",
       "file": "level1/expense-digital-services.svg",
       "iconfontName": "expense-digital-services",
-      "symbolId": "det-cat-expense-digital-services"
+      "symbolId": "icon-expense-digital-services"
     },
     {
       "id": "social",
@@ -136,7 +136,7 @@
       "color": "#EF5B7A",
       "file": "level1/expense-social.svg",
       "iconfontName": "expense-social",
-      "symbolId": "det-cat-expense-social"
+      "symbolId": "icon-expense-social"
     },
     {
       "id": "income-salary",
@@ -145,7 +145,7 @@
       "color": "#29AD68",
       "file": "level1/income-salary.svg",
       "iconfontName": "income-salary",
-      "symbolId": "det-cat-income-salary"
+      "symbolId": "icon-income-salary"
     },
     {
       "id": "income-bonus",
@@ -154,7 +154,7 @@
       "color": "#36B577",
       "file": "level1/income-bonus.svg",
       "iconfontName": "income-bonus",
-      "symbolId": "det-cat-income-bonus"
+      "symbolId": "icon-income-bonus"
     },
     {
       "id": "income-side-business",
@@ -163,7 +163,7 @@
       "color": "#2EA982",
       "file": "level1/income-side-business.svg",
       "iconfontName": "income-side-business",
-      "symbolId": "det-cat-income-side-business"
+      "symbolId": "icon-income-side-business"
     },
     {
       "id": "income-investment",
@@ -172,7 +172,7 @@
       "color": "#25A1A1",
       "file": "level1/income-investment.svg",
       "iconfontName": "income-investment",
-      "symbolId": "det-cat-income-investment"
+      "symbolId": "icon-income-investment"
     },
     {
       "id": "income-secondhand-sale",
@@ -181,7 +181,7 @@
       "color": "#45AA6F",
       "file": "level1/income-secondhand-sale.svg",
       "iconfontName": "income-secondhand-sale",
-      "symbolId": "det-cat-income-secondhand-sale"
+      "symbolId": "icon-income-secondhand-sale"
     }
   ],
   "secondaryCategories": [
@@ -194,7 +194,7 @@
       "color": "#FF873D",
       "file": "level2/expense-meals-breakfast.svg",
       "iconfontName": "expense-meals-breakfast",
-      "symbolId": "det-cat-expense-meals-breakfast"
+      "symbolId": "icon-expense-meals-breakfast"
     },
     {
       "id": "lunch",
@@ -205,7 +205,7 @@
       "color": "#FF873D",
       "file": "level2/expense-meals-lunch.svg",
       "iconfontName": "expense-meals-lunch",
-      "symbolId": "det-cat-expense-meals-lunch"
+      "symbolId": "icon-expense-meals-lunch"
     },
     {
       "id": "dinner",
@@ -216,7 +216,7 @@
       "color": "#FF873D",
       "file": "level2/expense-meals-dinner.svg",
       "iconfontName": "expense-meals-dinner",
-      "symbolId": "det-cat-expense-meals-dinner"
+      "symbolId": "icon-expense-meals-dinner"
     },
     {
       "id": "groceries",
@@ -227,7 +227,7 @@
       "color": "#FF873D",
       "file": "level2/expense-meals-groceries.svg",
       "iconfontName": "expense-meals-groceries",
-      "symbolId": "det-cat-expense-meals-groceries"
+      "symbolId": "icon-expense-meals-groceries"
     },
     {
       "id": "staple-food",
@@ -238,7 +238,7 @@
       "color": "#FF873D",
       "file": "level2/expense-meals-staple-food.svg",
       "iconfontName": "expense-meals-staple-food",
-      "symbolId": "det-cat-expense-meals-staple-food"
+      "symbolId": "icon-expense-meals-staple-food"
     },
     {
       "id": "daily-fruit",
@@ -249,7 +249,7 @@
       "color": "#FF873D",
       "file": "level2/expense-meals-daily-fruit.svg",
       "iconfontName": "expense-meals-daily-fruit",
-      "symbolId": "det-cat-expense-meals-daily-fruit"
+      "symbolId": "icon-expense-meals-daily-fruit"
     },
     {
       "id": "leisure-snacks",
@@ -260,7 +260,7 @@
       "color": "#F2A82F",
       "file": "level2/expense-snacks-drinks-leisure-snacks.svg",
       "iconfontName": "expense-snacks-drinks-leisure-snacks",
-      "symbolId": "det-cat-expense-snacks-drinks-leisure-snacks"
+      "symbolId": "icon-expense-snacks-drinks-leisure-snacks"
     },
     {
       "id": "late-night-snack",
@@ -271,7 +271,7 @@
       "color": "#F2A82F",
       "file": "level2/expense-snacks-drinks-late-night-snack.svg",
       "iconfontName": "expense-snacks-drinks-late-night-snack",
-      "symbolId": "det-cat-expense-snacks-drinks-late-night-snack"
+      "symbolId": "icon-expense-snacks-drinks-late-night-snack"
     },
     {
       "id": "beverages",
@@ -282,7 +282,7 @@
       "color": "#F2A82F",
       "file": "level2/expense-snacks-drinks-beverages.svg",
       "iconfontName": "expense-snacks-drinks-beverages",
-      "symbolId": "det-cat-expense-snacks-drinks-beverages"
+      "symbolId": "icon-expense-snacks-drinks-beverages"
     },
     {
       "id": "desserts-snacks",
@@ -293,7 +293,7 @@
       "color": "#F2A82F",
       "file": "level2/expense-snacks-drinks-desserts-snacks.svg",
       "iconfontName": "expense-snacks-drinks-desserts-snacks",
-      "symbolId": "det-cat-expense-snacks-drinks-desserts-snacks"
+      "symbolId": "icon-expense-snacks-drinks-desserts-snacks"
     },
     {
       "id": "games",
@@ -304,7 +304,7 @@
       "color": "#8A63E8",
       "file": "level2/expense-entertainment-games.svg",
       "iconfontName": "expense-entertainment-games",
-      "symbolId": "det-cat-expense-entertainment-games"
+      "symbolId": "icon-expense-entertainment-games"
     },
     {
       "id": "tickets",
@@ -315,7 +315,7 @@
       "color": "#8A63E8",
       "file": "level2/expense-entertainment-tickets.svg",
       "iconfontName": "expense-entertainment-tickets",
-      "symbolId": "det-cat-expense-entertainment-tickets"
+      "symbolId": "icon-expense-entertainment-tickets"
     },
     {
       "id": "movies",
@@ -326,7 +326,7 @@
       "color": "#8A63E8",
       "file": "level2/expense-entertainment-movies.svg",
       "iconfontName": "expense-entertainment-movies",
-      "symbolId": "det-cat-expense-entertainment-movies"
+      "symbolId": "icon-expense-entertainment-movies"
     },
     {
       "id": "personal-cleaning",
@@ -337,7 +337,7 @@
       "color": "#35B99D",
       "file": "level2/expense-household-personal-cleaning.svg",
       "iconfontName": "expense-household-personal-cleaning",
-      "symbolId": "det-cat-expense-household-personal-cleaning"
+      "symbolId": "icon-expense-household-personal-cleaning"
     },
     {
       "id": "home-cleaning",
@@ -348,7 +348,7 @@
       "color": "#35B99D",
       "file": "level2/expense-household-home-cleaning.svg",
       "iconfontName": "expense-household-home-cleaning",
-      "symbolId": "det-cat-expense-household-home-cleaning"
+      "symbolId": "icon-expense-household-home-cleaning"
     },
     {
       "id": "paper-consumables",
@@ -359,7 +359,7 @@
       "color": "#35B99D",
       "file": "level2/expense-household-paper-consumables.svg",
       "iconfontName": "expense-household-paper-consumables",
-      "symbolId": "det-cat-expense-household-paper-consumables"
+      "symbolId": "icon-expense-household-paper-consumables"
     },
     {
       "id": "kitchen",
@@ -370,7 +370,7 @@
       "color": "#35B99D",
       "file": "level2/expense-household-kitchen.svg",
       "iconfontName": "expense-household-kitchen",
-      "symbolId": "det-cat-expense-household-kitchen"
+      "symbolId": "icon-expense-household-kitchen"
     },
     {
       "id": "home-furnishing",
@@ -381,7 +381,7 @@
       "color": "#35B99D",
       "file": "level2/expense-household-home-furnishing.svg",
       "iconfontName": "expense-household-home-furnishing",
-      "symbolId": "det-cat-expense-household-home-furnishing"
+      "symbolId": "icon-expense-household-home-furnishing"
     },
     {
       "id": "other-daily",
@@ -392,7 +392,7 @@
       "color": "#35B99D",
       "file": "level2/expense-household-other-daily.svg",
       "iconfontName": "expense-household-other-daily",
-      "symbolId": "det-cat-expense-household-other-daily"
+      "symbolId": "icon-expense-household-other-daily"
     },
     {
       "id": "tops",
@@ -403,7 +403,7 @@
       "color": "#EC6683",
       "file": "level2/expense-clothing-tops.svg",
       "iconfontName": "expense-clothing-tops",
-      "symbolId": "det-cat-expense-clothing-tops"
+      "symbolId": "icon-expense-clothing-tops"
     },
     {
       "id": "bottoms",
@@ -414,7 +414,7 @@
       "color": "#EC6683",
       "file": "level2/expense-clothing-bottoms.svg",
       "iconfontName": "expense-clothing-bottoms",
-      "symbolId": "det-cat-expense-clothing-bottoms"
+      "symbolId": "icon-expense-clothing-bottoms"
     },
     {
       "id": "shoes",
@@ -425,7 +425,7 @@
       "color": "#EC6683",
       "file": "level2/expense-clothing-shoes.svg",
       "iconfontName": "expense-clothing-shoes",
-      "symbolId": "det-cat-expense-clothing-shoes"
+      "symbolId": "icon-expense-clothing-shoes"
     },
     {
       "id": "underwear-socks",
@@ -436,7 +436,7 @@
       "color": "#EC6683",
       "file": "level2/expense-clothing-underwear-socks.svg",
       "iconfontName": "expense-clothing-underwear-socks",
-      "symbolId": "det-cat-expense-clothing-underwear-socks"
+      "symbolId": "icon-expense-clothing-underwear-socks"
     },
     {
       "id": "haircut",
@@ -447,7 +447,7 @@
       "color": "#DC65A0",
       "file": "level2/expense-personal-care-haircut.svg",
       "iconfontName": "expense-personal-care-haircut",
-      "symbolId": "det-cat-expense-personal-care-haircut"
+      "symbolId": "icon-expense-personal-care-haircut"
     },
     {
       "id": "skincare",
@@ -458,7 +458,7 @@
       "color": "#DC65A0",
       "file": "level2/expense-personal-care-skincare.svg",
       "iconfontName": "expense-personal-care-skincare",
-      "symbolId": "det-cat-expense-personal-care-skincare"
+      "symbolId": "icon-expense-personal-care-skincare"
     },
     {
       "id": "rent",
@@ -469,7 +469,7 @@
       "color": "#3EBB70",
       "file": "level2/expense-housing-rent.svg",
       "iconfontName": "expense-housing-rent",
-      "symbolId": "det-cat-expense-housing-rent"
+      "symbolId": "icon-expense-housing-rent"
     },
     {
       "id": "water",
@@ -480,7 +480,7 @@
       "color": "#3EBB70",
       "file": "level2/expense-housing-water.svg",
       "iconfontName": "expense-housing-water",
-      "symbolId": "det-cat-expense-housing-water"
+      "symbolId": "icon-expense-housing-water"
     },
     {
       "id": "electricity",
@@ -491,7 +491,7 @@
       "color": "#3EBB70",
       "file": "level2/expense-housing-electricity.svg",
       "iconfontName": "expense-housing-electricity",
-      "symbolId": "det-cat-expense-housing-electricity"
+      "symbolId": "icon-expense-housing-electricity"
     },
     {
       "id": "gas",
@@ -502,7 +502,7 @@
       "color": "#3EBB70",
       "file": "level2/expense-housing-gas.svg",
       "iconfontName": "expense-housing-gas",
-      "symbolId": "det-cat-expense-housing-gas"
+      "symbolId": "icon-expense-housing-gas"
     },
     {
       "id": "mortgage",
@@ -513,7 +513,7 @@
       "color": "#3EBB70",
       "file": "level2/expense-housing-mortgage.svg",
       "iconfontName": "expense-housing-mortgage",
-      "symbolId": "det-cat-expense-housing-mortgage"
+      "symbolId": "icon-expense-housing-mortgage"
     },
     {
       "id": "property-fee",
@@ -524,7 +524,7 @@
       "color": "#3EBB70",
       "file": "level2/expense-housing-property-fee.svg",
       "iconfontName": "expense-housing-property-fee",
-      "symbolId": "det-cat-expense-housing-property-fee"
+      "symbolId": "icon-expense-housing-property-fee"
     },
     {
       "id": "phone",
@@ -535,7 +535,7 @@
       "color": "#4F8BE8",
       "file": "level2/expense-digital-phone.svg",
       "iconfontName": "expense-digital-phone",
-      "symbolId": "det-cat-expense-digital-phone"
+      "symbolId": "icon-expense-digital-phone"
     },
     {
       "id": "computer",
@@ -546,7 +546,7 @@
       "color": "#4F8BE8",
       "file": "level2/expense-digital-computer.svg",
       "iconfontName": "expense-digital-computer",
-      "symbolId": "det-cat-expense-digital-computer"
+      "symbolId": "icon-expense-digital-computer"
     },
     {
       "id": "digital-accessories",
@@ -557,7 +557,7 @@
       "color": "#4F8BE8",
       "file": "level2/expense-digital-digital-accessories.svg",
       "iconfontName": "expense-digital-digital-accessories",
-      "symbolId": "det-cat-expense-digital-digital-accessories"
+      "symbolId": "icon-expense-digital-digital-accessories"
     },
     {
       "id": "digital-repair",
@@ -568,7 +568,7 @@
       "color": "#4F8BE8",
       "file": "level2/expense-digital-digital-repair.svg",
       "iconfontName": "expense-digital-digital-repair",
-      "symbolId": "det-cat-expense-digital-digital-repair"
+      "symbolId": "icon-expense-digital-digital-repair"
     },
     {
       "id": "public-transit",
@@ -579,7 +579,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-public-transit.svg",
       "iconfontName": "expense-transport-public-transit",
-      "symbolId": "det-cat-expense-transport-public-transit"
+      "symbolId": "icon-expense-transport-public-transit"
     },
     {
       "id": "taxi",
@@ -590,7 +590,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-taxi.svg",
       "iconfontName": "expense-transport-taxi",
-      "symbolId": "det-cat-expense-transport-taxi"
+      "symbolId": "icon-expense-transport-taxi"
     },
     {
       "id": "shared-bike",
@@ -601,7 +601,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-shared-bike.svg",
       "iconfontName": "expense-transport-shared-bike",
-      "symbolId": "det-cat-expense-transport-shared-bike"
+      "symbolId": "icon-expense-transport-shared-bike"
     },
     {
       "id": "train",
@@ -612,7 +612,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-train.svg",
       "iconfontName": "expense-transport-train",
-      "symbolId": "det-cat-expense-transport-train"
+      "symbolId": "icon-expense-transport-train"
     },
     {
       "id": "high-speed-rail",
@@ -623,7 +623,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-high-speed-rail.svg",
       "iconfontName": "expense-transport-high-speed-rail",
-      "symbolId": "det-cat-expense-transport-high-speed-rail"
+      "symbolId": "icon-expense-transport-high-speed-rail"
     },
     {
       "id": "flight",
@@ -634,7 +634,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-flight.svg",
       "iconfontName": "expense-transport-flight",
-      "symbolId": "det-cat-expense-transport-flight"
+      "symbolId": "icon-expense-transport-flight"
     },
     {
       "id": "cruise",
@@ -645,7 +645,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-cruise.svg",
       "iconfontName": "expense-transport-cruise",
-      "symbolId": "det-cat-expense-transport-cruise"
+      "symbolId": "icon-expense-transport-cruise"
     },
     {
       "id": "parking",
@@ -656,7 +656,7 @@
       "color": "#3290DF",
       "file": "level2/expense-transport-parking.svg",
       "iconfontName": "expense-transport-parking",
-      "symbolId": "det-cat-expense-transport-parking"
+      "symbolId": "icon-expense-transport-parking"
     },
     {
       "id": "phone-bill",
@@ -667,7 +667,7 @@
       "color": "#6674D9",
       "file": "level2/expense-communication-phone-bill.svg",
       "iconfontName": "expense-communication-phone-bill",
-      "symbolId": "det-cat-expense-communication-phone-bill"
+      "symbolId": "icon-expense-communication-phone-bill"
     },
     {
       "id": "mobile-data",
@@ -678,7 +678,7 @@
       "color": "#6674D9",
       "file": "level2/expense-communication-mobile-data.svg",
       "iconfontName": "expense-communication-mobile-data",
-      "symbolId": "det-cat-expense-communication-mobile-data"
+      "symbolId": "icon-expense-communication-mobile-data"
     },
     {
       "id": "broadband",
@@ -689,7 +689,7 @@
       "color": "#6674D9",
       "file": "level2/expense-communication-broadband.svg",
       "iconfontName": "expense-communication-broadband",
-      "symbolId": "det-cat-expense-communication-broadband"
+      "symbolId": "icon-expense-communication-broadband"
     },
     {
       "id": "medicine",
@@ -700,7 +700,7 @@
       "color": "#EB6076",
       "file": "level2/expense-medical-medicine.svg",
       "iconfontName": "expense-medical-medicine",
-      "symbolId": "det-cat-expense-medical-medicine"
+      "symbolId": "icon-expense-medical-medicine"
     },
     {
       "id": "doctor",
@@ -711,7 +711,7 @@
       "color": "#EB6076",
       "file": "level2/expense-medical-doctor.svg",
       "iconfontName": "expense-medical-doctor",
-      "symbolId": "det-cat-expense-medical-doctor"
+      "symbolId": "icon-expense-medical-doctor"
     },
     {
       "id": "examination",
@@ -722,7 +722,7 @@
       "color": "#EB6076",
       "file": "level2/expense-medical-examination.svg",
       "iconfontName": "expense-medical-examination",
-      "symbolId": "det-cat-expense-medical-examination"
+      "symbolId": "icon-expense-medical-examination"
     },
     {
       "id": "books",
@@ -733,7 +733,7 @@
       "color": "#D59419",
       "file": "level2/expense-education-books.svg",
       "iconfontName": "expense-education-books",
-      "symbolId": "det-cat-expense-education-books"
+      "symbolId": "icon-expense-education-books"
     },
     {
       "id": "exam-certification",
@@ -744,7 +744,7 @@
       "color": "#D59419",
       "file": "level2/expense-education-exam-certification.svg",
       "iconfontName": "expense-education-exam-certification",
-      "symbolId": "det-cat-expense-education-exam-certification"
+      "symbolId": "icon-expense-education-exam-certification"
     },
     {
       "id": "course-training",
@@ -755,7 +755,7 @@
       "color": "#D59419",
       "file": "level2/expense-education-course-training.svg",
       "iconfontName": "expense-education-course-training",
-      "symbolId": "det-cat-expense-education-course-training"
+      "symbolId": "icon-expense-education-course-training"
     },
     {
       "id": "tuition",
@@ -766,7 +766,7 @@
       "color": "#D59419",
       "file": "level2/expense-education-tuition.svg",
       "iconfontName": "expense-education-tuition",
-      "symbolId": "det-cat-expense-education-tuition"
+      "symbolId": "icon-expense-education-tuition"
     },
     {
       "id": "study-supplies",
@@ -777,7 +777,7 @@
       "color": "#D59419",
       "file": "level2/expense-education-study-supplies.svg",
       "iconfontName": "expense-education-study-supplies",
-      "symbolId": "det-cat-expense-education-study-supplies"
+      "symbolId": "icon-expense-education-study-supplies"
     },
     {
       "id": "software-subscription",
@@ -788,7 +788,7 @@
       "color": "#5368D8",
       "file": "level2/expense-digital-services-software-subscription.svg",
       "iconfontName": "expense-digital-services-software-subscription",
-      "symbolId": "det-cat-expense-digital-services-software-subscription"
+      "symbolId": "icon-expense-digital-services-software-subscription"
     },
     {
       "id": "cloud-server",
@@ -799,7 +799,7 @@
       "color": "#5368D8",
       "file": "level2/expense-digital-services-cloud-server.svg",
       "iconfontName": "expense-digital-services-cloud-server",
-      "symbolId": "det-cat-expense-digital-services-cloud-server"
+      "symbolId": "icon-expense-digital-services-cloud-server"
     },
     {
       "id": "cloud-storage",
@@ -810,7 +810,7 @@
       "color": "#5368D8",
       "file": "level2/expense-digital-services-cloud-storage.svg",
       "iconfontName": "expense-digital-services-cloud-storage",
-      "symbolId": "det-cat-expense-digital-services-cloud-storage"
+      "symbolId": "icon-expense-digital-services-cloud-storage"
     },
     {
       "id": "network-service",
@@ -821,7 +821,7 @@
       "color": "#5368D8",
       "file": "level2/expense-digital-services-network-service.svg",
       "iconfontName": "expense-digital-services-network-service",
-      "symbolId": "det-cat-expense-digital-services-network-service"
+      "symbolId": "icon-expense-digital-services-network-service"
     },
     {
       "id": "family-support",
@@ -832,7 +832,7 @@
       "color": "#EF5B7A",
       "file": "level2/expense-social-family-support.svg",
       "iconfontName": "expense-social-family-support",
-      "symbolId": "det-cat-expense-social-family-support"
+      "symbolId": "icon-expense-social-family-support"
     },
     {
       "id": "red-packet",
@@ -843,7 +843,7 @@
       "color": "#EF5B7A",
       "file": "level2/expense-social-red-packet.svg",
       "iconfontName": "expense-social-red-packet",
-      "symbolId": "det-cat-expense-social-red-packet"
+      "symbolId": "icon-expense-social-red-packet"
     },
     {
       "id": "donation",
@@ -854,7 +854,7 @@
       "color": "#EF5B7A",
       "file": "level2/expense-social-donation.svg",
       "iconfontName": "expense-social-donation",
-      "symbolId": "det-cat-expense-social-donation"
+      "symbolId": "icon-expense-social-donation"
     },
     {
       "id": "gifts",
@@ -865,7 +865,7 @@
       "color": "#EF5B7A",
       "file": "level2/expense-social-gifts.svg",
       "iconfontName": "expense-social-gifts",
-      "symbolId": "det-cat-expense-social-gifts"
+      "symbolId": "icon-expense-social-gifts"
     }
   ]
 }

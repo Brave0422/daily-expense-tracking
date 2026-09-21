@@ -20,28 +20,28 @@
 
 1. 在单独的 `DET-category-icon` 项目中批量上传 `level1/` 和 `level2/` 下的 SVG。
 2. 保留多色，不要执行“去除颜色”或改为单色字体图标。
-3. 将新项目的 FontClass/Symbol 前缀设为 `det-cat-`，避免与通用 UI 图标项目默认的 `icon-` 前缀冲突。
+3. 当前线上项目使用默认的 `icon-` 前缀；分类图标名称固定以 `expense-` 或 `income-` 开头，与通用 UI 图标形成独立命名空间。
 4. 使用 Symbol 引用方式；Font class 和 Unicode 模式无法可靠保留“彩色圆底＋白色图案”两种颜色。
 5. 文件名已经是可直接上传的图标名称：一级支出为 `expense-{一级英文名}`，二级支出为 `expense-{一级英文名}-{二级英文名}`，收入为 `income-{收入英文名}`。
 6. 发布 Symbol 在线链接后，将新链接填写到 `src/plugins/iconfont-symbol.ts` 的 `CATEGORY_ICONFONT_SYMBOL_SCRIPT_URL`。项目已支持同时加载通用 UI 图标和分类图标两份在线 JS。
 
 例如：
 
-- `expense-education.svg` → `det-cat-expense-education`
-- `expense-education-tuition.svg` → `det-cat-expense-education-tuition`
-- `income-salary.svg` → `det-cat-income-salary`
+- `expense-education.svg` → `icon-expense-education`
+- `expense-education-tuition.svg` → `icon-expense-education-tuition`
+- `income-salary.svg` → `icon-income-salary`
 
 使用方式与项目当前图标一致：
 
 ```html
 <svg aria-hidden="true">
-  <use href="#det-cat-expense-meals" />
+  <use href="#icon-expense-meals" />
 </svg>
 ```
 
 > `BaseIcon.vue` 上的 `fill: currentcolor` 只作为继承默认值。图标内部已经显式设置背景色和白色，因此 Symbol 模式下不会被外层文字颜色覆盖。
 
-同一个 Web 页面可以加载多个 Iconfont Symbol 在线 JS。每份脚本会向页面注入自己的 `<symbol>` 集合；只要不同项目的 Symbol ID 不重复，就可以同时使用。分类项目采用独立的 `det-cat-` 前缀就是为了解决这个冲突风险。
+同一个 Web 页面可以加载多个 Iconfont Symbol 在线 JS。每份脚本会向页面注入自己的 `<symbol>` 集合；只要完整 Symbol ID 不重复，就可以同时使用。虽然两个项目目前都使用 `icon-` 前缀，但分类图标还带有 `expense-` 或 `income-` 命名空间，当前两份在线 JS 中不存在重复 ID。
 
 ## 重新生成
 
