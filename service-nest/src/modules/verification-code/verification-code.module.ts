@@ -4,6 +4,7 @@ import { VerificationCodeService } from './verification-code.service';
 import { MailModule } from '../mail/mail.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserVerificationCodeEntity } from './entities/user-verification-code.entity';
+import { UserModule } from '../users/users.module';
 
 /**
  * @author Brave
@@ -12,7 +13,11 @@ import { UserVerificationCodeEntity } from './entities/user-verification-code.en
  */
 @Module({
   // 注册验证码实体仓库、邮件模块
-  imports: [TypeOrmModule.forFeature([UserVerificationCodeEntity]), MailModule],
+  imports: [
+    TypeOrmModule.forFeature([UserVerificationCodeEntity]),
+    MailModule,
+    UserModule,
+  ],
   controllers: [VerificationCodeController],
   providers: [VerificationCodeService],
 

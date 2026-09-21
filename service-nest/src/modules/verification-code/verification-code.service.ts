@@ -18,6 +18,13 @@ import { UserVerificationCodeEntity } from './entities/user-verification-code.en
 import { InjectRepository } from '@nestjs/typeorm';
 import { MailService } from '../mail/mail.service';
 import { VerificationPurpose } from './enums/verification-purpose-enum';
+import { UserService } from '../users/users.service';
+
+// 登录态下发送验证码的类型
+const AUTHENTICATED_PURPOSES: readonly VerificationPurpose[] = [
+  VerificationPurpose.CHANGE_PASSWORD,
+  VerificationPurpose.DELETE_ACCOUNT,
+];
 
 @Injectable()
 export class VerificationCodeService {
@@ -27,6 +34,7 @@ export class VerificationCodeService {
     @InjectRepository(UserVerificationCodeEntity)
     private readonly verificationCodeRepo: Repository<UserVerificationCodeEntity>,
     private readonly mailService: MailService,
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -168,41 +176,70 @@ export class VerificationCodeService {
   }
 
   /**
+   * 获取实际接收验证码的邮箱。
+   * 修改密码和删除账户时只信任登录态对应的用户邮箱，不接收客户端传入值。
+   * @param email 公共场景由客户端提交的邮箱
+   * @param purpose 验证码用途
+   * @param userId 登录用户 ID
+   * @returns 规范化后的验证码接收邮箱
+   */
+  private async resolveRecipientEmail(
+    email: string | undefined,
+    purpose: VerificationPurpose,
+    userId?: number,
+  ): Promise<string> {
+    // 登录态账户操作统一使用当前用户的注册邮箱。
+    if (AUTHENTICATED_PURPOSES.includes(purpose)) {
+      if (!userId) {
+        throw new BadRequestException('缺少userId');
+      }
+
+      const user = await this.userService.findeOneById(userId);
+      if (!user) {
+        throw new BadRequestException('用户不存在');
+      }
+      return user.email;
+    }
+
+    if (!email) {
+      throw new BadRequestException('邮箱不能为空');
+    }
+    return email;
+  }
+
+  /**
    * 生成、保存并发送验证码
-   * @param email 邮箱
+   * @param email 公共场景由客户端提交的邮箱
    * @param purpose 验证码用途
    * @param userId 用户id，注册时没有userId
    */
   async sendCode(
-    email: string,
+    email: string | undefined,
     purpose: VerificationPurpose,
     userId?: number,
   ): Promise<void> {
+    const recipientEmail = await this.resolveRecipientEmail(
+      email,
+      purpose,
+      userId,
+    );
+
     // 检查发送频率
-    await this.ensureCanSend(email, purpose);
+    await this.ensureCanSend(recipientEmail, purpose);
 
     // 生成验证码及哈希值
     const code = this.generateVerificationCode();
-    const codeHash = this.hashCode(code, email, purpose);
+    const codeHash = this.hashCode(code, recipientEmail, purpose);
 
     // 获取验证码有效期
     const expiresMinutes = Number(
       this.configService.get<number>('MAIL_CODE_EXPIRES_MINUTES', 5),
     );
 
-    // 除了注册外和重置密码外，其他形式发送验证码必须要传userId
-    const allow = [
-      VerificationPurpose.CHANGE_PASSWORD,
-      VerificationPurpose.DELETE_ACCOUNT,
-    ];
-    if (allow.includes(purpose) && !userId) {
-      throw new BadRequestException('缺少userId');
-    }
-
     // 保存验证码。先保存再发送，避免邮件发送成功但是验证码存储失败的问题
     const saveCode = this.verificationCodeRepo.create({
       userId: userId ?? null,
-      email,
+      email: recipientEmail,
       purpose,
       codeHash,
       expiresTime: new Date(Date.now() + expiresMinutes * 60 * 1000),
@@ -213,7 +250,11 @@ export class VerificationCodeService {
 
     // 发送邮件
     try {
-      await this.mailService.sendVerificationCode(email, code, purpose);
+      await this.mailService.sendVerificationCode(
+        recipientEmail,
+        code,
+        purpose,
+      );
     } catch (error) {
       // 邮件发送失败，废弃刚刚存储的验证码
       await this.verificationCodeRepo.update(saveCode.id, {
@@ -224,7 +265,7 @@ export class VerificationCodeService {
     }
 
     // 邮件发送成功，使之前未使用的验证码失效
-    await this.invalidatePreviousCodes(email, purpose, saveCode.id);
+    await this.invalidatePreviousCodes(recipientEmail, purpose, saveCode.id);
   }
 
   /**
