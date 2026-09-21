@@ -94,7 +94,13 @@ async function handleSubmit(): Promise<void> {
         type="password"
       />
       <p v-if="formMessage" class="auth-form__message" role="alert">{{ formMessage }}</p>
-      <TButton class="auth-form__submit" :loading="isSubmitting" theme="primary" type="submit" block>
+      <TButton
+        class="app-confirm-button auth-form__submit"
+        :loading="isSubmitting"
+        theme="primary"
+        type="submit"
+        block
+      >
         {{ isSubmitting ? '注册中...' : '注册' }}
       </TButton>
       <!-- 返回已有账号登录入口 -->

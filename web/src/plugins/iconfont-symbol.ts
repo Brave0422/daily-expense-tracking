@@ -8,6 +8,19 @@
 export const ICONFONT_SYMBOL_SCRIPT_URL = '//at.alicdn.com/t/c/font_5236708_nm8240jipm.js'
 
 const SCRIPT_ELEMENT_ID = 'expense-iconfont-symbol-script'
+const CURRENT_COLOR_SYMBOL_IDS = ['icon-pie-chart'] as const
+
+/**
+ * 移除图标库内写死的填充色，使指定单色图标跟随按钮的普通态与激活态颜色。
+ */
+function normalizeSymbolColors(): void {
+  CURRENT_COLOR_SYMBOL_IDS.forEach((symbolId) => {
+    document
+      .getElementById(symbolId)
+      ?.querySelectorAll('[fill]')
+      .forEach((element) => element.removeAttribute('fill'))
+  })
+}
 
 /**
  * 加载 Iconfont Symbol 在线脚本。
@@ -15,7 +28,12 @@ const SCRIPT_ELEMENT_ID = 'expense-iconfont-symbol-script'
  */
 export function loadIconfontSymbols(): void {
   const scriptUrl = ICONFONT_SYMBOL_SCRIPT_URL.trim()
-  if (!scriptUrl || document.getElementById(SCRIPT_ELEMENT_ID)) {
+  if (!scriptUrl) {
+    return
+  }
+
+  if (document.getElementById(SCRIPT_ELEMENT_ID)) {
+    normalizeSymbolColors()
     return
   }
 
@@ -23,6 +41,8 @@ export function loadIconfontSymbols(): void {
   script.id = SCRIPT_ELEMENT_ID
   script.src = scriptUrl
   script.async = true
+  // 在线脚本通过零延时任务注入 SVG，延后一轮再处理才能稳定拿到 Symbol 节点。
+  script.addEventListener('load', () => window.setTimeout(normalizeSymbolColors, 0), { once: true })
   script.addEventListener(
     'error',
     () => {

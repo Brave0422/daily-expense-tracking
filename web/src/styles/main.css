@@ -55,3 +55,13 @@ a {
   color: #202124;
   font-weight: 600;
 }
+
+/* 常规确认按钮只在可操作的悬停与键盘聚焦态使用产品高亮色 */
+.t-button.t-button--theme-primary.app-confirm-button:not(.t-is-disabled):is(
+    :hover,
+    :focus-visible
+  ) {
+  color: #202124;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}

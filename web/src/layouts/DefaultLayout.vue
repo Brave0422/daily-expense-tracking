@@ -5,7 +5,7 @@
  * @description 鉴权业务页固定侧栏布局，提供导航、修改密码和安全退出入口。
  */
 
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Dialog as TDialog, MessagePlugin, Tooltip as TTooltip } from 'tdesign-vue-next'
 
@@ -34,7 +34,18 @@ const isProfileOpen = ref(false)
 const isChangePasswordVisible = ref(false)
 const isLogoutDialogVisible = ref(false)
 const isLoggingOut = ref(false)
+const profileElement = ref<HTMLElement | null>(null)
 const currentRouteName = computed(() => route.name)
+
+/** 点击头像菜单外部时关闭菜单，不阻止当前点击继续触发导航或其他操作。 */
+function handleDocumentClick(event: MouseEvent): void {
+  const clickTarget = event.target
+  if (clickTarget instanceof Node && profileElement.value?.contains(clickTarget)) {
+    return
+  }
+
+  isProfileOpen.value = false
+}
 
 /** 关闭头像菜单并打开修改密码弹窗。 */
 function handleOpenChangePassword(): void {
@@ -65,6 +76,9 @@ async function handleLogout(): Promise<void> {
     isLoggingOut.value = false
   }
 }
+
+onMounted(() => document.addEventListener('click', handleDocumentClick))
+onBeforeUnmount(() => document.removeEventListener('click', handleDocumentClick))
 </script>
 
 <template>
@@ -72,7 +86,7 @@ async function handleLogout(): Promise<void> {
     <!-- 固定侧栏：头像菜单和三个一级业务入口 -->
     <aside class="default-layout__sidebar" aria-label="主要导航">
       <!-- 账户操作菜单 -->
-      <div class="default-layout__profile">
+      <div ref="profileElement" class="default-layout__profile">
         <button
           aria-label="打开用户菜单"
           :aria-expanded="isProfileOpen"

@@ -126,7 +126,9 @@ watch(
         >
           取消
         </TButton>
-        <TButton :loading="isSubmitting" theme="primary" type="submit">确认修改</TButton>
+        <TButton class="app-confirm-button" :loading="isSubmitting" theme="primary" type="submit">
+          确认修改
+        </TButton>
       </div>
     </form>
   </TDialog>
