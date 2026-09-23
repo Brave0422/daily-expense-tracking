@@ -22,6 +22,15 @@
       "symbolId": "icon-expense-meals"
     },
     {
+      "id": "meal-food",
+      "label": "正餐食品",
+      "direction": "EXPENSE",
+      "color": "#E96F51",
+      "file": "level1/expense-meal-food.svg",
+      "iconfontName": "expense-meal-food",
+      "symbolId": "icon-expense-meal-food"
+    },
+    {
       "id": "snacks-drinks",
       "label": "零食饮品",
       "direction": "EXPENSE",
@@ -232,24 +241,24 @@
     {
       "id": "staple-food",
       "label": "基础食品",
-      "parentId": "meals",
-      "parentLabel": "三餐",
+      "parentId": "meal-food",
+      "parentLabel": "正餐食品",
       "direction": "EXPENSE",
-      "color": "#FF873D",
-      "file": "level2/expense-meals-staple-food.svg",
-      "iconfontName": "expense-meals-staple-food",
-      "symbolId": "icon-expense-meals-staple-food"
+      "color": "#E96F51",
+      "file": "level2/expense-meal-food-staple-food.svg",
+      "iconfontName": "expense-meal-food-staple-food",
+      "symbolId": "icon-expense-meal-food-staple-food"
     },
     {
       "id": "daily-fruit",
       "label": "日常水果",
-      "parentId": "meals",
-      "parentLabel": "三餐",
+      "parentId": "meal-food",
+      "parentLabel": "正餐食品",
       "direction": "EXPENSE",
-      "color": "#FF873D",
-      "file": "level2/expense-meals-daily-fruit.svg",
-      "iconfontName": "expense-meals-daily-fruit",
-      "symbolId": "icon-expense-meals-daily-fruit"
+      "color": "#E96F51",
+      "file": "level2/expense-meal-food-daily-fruit.svg",
+      "iconfontName": "expense-meal-food-daily-fruit",
+      "symbolId": "icon-expense-meal-food-daily-fruit"
     },
     {
       "id": "leisure-snacks",

@@ -23,14 +23,14 @@
       <text x="504" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
     </g><g>
       <rect x="580" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
-      <image href="../level2/expense-meals-staple-food.svg" x="612" y="80" width="56" height="56"/>
+      <image href="../level2/expense-meal-food-staple-food.svg" x="612" y="80" width="56" height="56"/>
       <text x="640" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">基础食品</text>
-      <text x="640" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+      <text x="640" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">正餐食品</text>
     </g><g>
       <rect x="716" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
-      <image href="../level2/expense-meals-daily-fruit.svg" x="748" y="80" width="56" height="56"/>
+      <image href="../level2/expense-meal-food-daily-fruit.svg" x="748" y="80" width="56" height="56"/>
       <text x="776" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">日常水果</text>
-      <text x="776" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">三餐</text>
+      <text x="776" y="174" fill="#8A94A6" font-size="11" text-anchor="middle">正餐食品</text>
     </g><g>
       <rect x="852" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
       <image href="../level2/expense-snacks-drinks-leisure-snacks.svg" x="884" y="80" width="56" height="56"/>

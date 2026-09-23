@@ -18,6 +18,7 @@ const ICONFONT_SYMBOL_PREFIX = 'icon-'
 
 const PALETTES = {
   meals: '#FF873D',
+  mealFood: '#E96F51',
   snacks: '#F2A82F',
   clothing: '#EC6683',
   entertainment: '#8A63E8',
@@ -39,6 +40,12 @@ const PALETTES = {
 }
 
 const CUSTOM_GLYPHS = {
+  tableware:
+    '<path fill="#fff" d="M4 2h2v6h2V2h2v7a3 3 0 0 1-2 2.8V22H6V11.8A3 3 0 0 1 4 9V2Zm13 0c1.7 0 3 2.7 3 6v5h-2v9h-2v-9h-2V8c0-3.3 1.3-6 3-6Zm0 3c-.4.7-1 1.9-1 3v3h2V8c0-1.1-.6-2.3-1-3Z" fill-rule="evenodd"/>',
+  groceryBag:
+    '<path fill="#fff" d="M9 7V5a3 3 0 1 1 6 0v2h3l2 15H4L6 7h3Zm2 0h2V5a1 1 0 1 0-2 0v2Zm1 3c-2.2 0-4 1.8-4 4 0 3 4 5 4 5s4-2 4-5c0-2.2-1.8-4-4-4Zm0 2a2 2 0 0 1 2 2c0 1.1-1.1 2.1-2 2.7-.9-.6-2-1.6-2-2.7a2 2 0 0 1 2-2Z" fill-rule="evenodd"/>',
+  hanger:
+    '<path fill="#fff" d="M12 2a4 4 0 0 1 4 4c0 2.3-1.3 3.4-2.5 4.3-.4.3-.7.6-.9.9l9.4 6.3V21H2v-3.5l9-6.3V9.8l.9-.6c1.3-.9 2.1-1.5 2.1-3.2a2 2 0 1 0-4 0H8a4 4 0 0 1 4-4Zm0 11-7.4 5.2v.8h14.8v-.8L12 13Z" fill-rule="evenodd"/>',
   shirt:
     '<path fill="#fff" d="M8.1 3.2 11 2h2l2.9 1.2L21 6l-2.2 4.4-2.8-1.1V21H8V9.3l-2.8 1.1L3 6l5.1-2.8Zm2 .7A3 3 0 0 0 12 5a3 3 0 0 0 1.9-1.1l-.9-.4h-2l-.9.4Z" fill-rule="evenodd"/>',
   pants:
@@ -72,20 +79,21 @@ const CUSTOM_GLYPHS = {
 }
 
 const primaryCategories = [
-  ['meals', '三餐', 'EXPENSE', PALETTES.meals, 'rice'],
-  ['snacks-drinks', '零食饮品', 'EXPENSE', PALETTES.snacks, 'cake'],
-  ['entertainment', '休闲娱乐', 'EXPENSE', PALETTES.entertainment, 'gamepad'],
+  ['meals', '三餐', 'EXPENSE', PALETTES.meals, null, 'tableware'],
+  ['meal-food', '正餐食品', 'EXPENSE', PALETTES.mealFood, null, 'groceryBag'],
+  ['snacks-drinks', '零食饮品', 'EXPENSE', PALETTES.snacks, 'hamburger'],
+  ['entertainment', '休闲娱乐', 'EXPENSE', PALETTES.entertainment, 'play-circle'],
   ['household', '日用家居', 'EXPENSE', PALETTES.household, 'home'],
-  ['clothing', '服饰穿搭', 'EXPENSE', PALETTES.clothing, null, 'shirt'],
-  ['personal-care', '个人护理', 'EXPENSE', PALETTES.personalCare, 'face-retouching'],
+  ['clothing', '服饰穿搭', 'EXPENSE', PALETTES.clothing, null, 'hanger'],
+  ['personal-care', '个人护理', 'EXPENSE', PALETTES.personalCare, 'mirror'],
   ['housing', '住房', 'EXPENSE', PALETTES.housing, 'houses'],
-  ['digital', '数码产品', 'EXPENSE', PALETTES.digital, 'mobile'],
-  ['transport', '交通出行', 'EXPENSE', PALETTES.transport, 'vehicle'],
-  ['communication', '通讯网络', 'EXPENSE', PALETTES.communication, 'call'],
-  ['medical', '医疗健康', 'EXPENSE', PALETTES.medical, 'hospital'],
+  ['digital', '数码产品', 'EXPENSE', PALETTES.digital, 'device'],
+  ['transport', '交通出行', 'EXPENSE', PALETTES.transport, 'map-route-planning'],
+  ['communication', '通讯网络', 'EXPENSE', PALETTES.communication, 'chat-double'],
+  ['medical', '医疗健康', 'EXPENSE', PALETTES.medical, 'hospital-1'],
   ['education', '学习教育', 'EXPENSE', PALETTES.education, 'education'],
   ['digital-services', '数字服务', 'EXPENSE', PALETTES.digitalServices, 'cloud'],
-  ['social', '人情往来', 'EXPENSE', PALETTES.social, 'gift'],
+  ['social', '人情往来', 'EXPENSE', PALETTES.social, 'usergroup-circle'],
   ['income-salary', '工资', 'INCOME', PALETTES.salaryIncome, 'work'],
   ['income-bonus', '奖金', 'INCOME', PALETTES.bonusIncome, 'money'],
   ['income-side-business', '兼职副业', 'INCOME', PALETTES.sideIncome, 'usercase'],
@@ -108,7 +116,12 @@ const secondaryCategoryGroups = [
       ['lunch', '午餐', 'rice'],
       ['dinner', '晚餐', 'noodle'],
       ['groceries', '买菜食材', 'cabbage'],
-      ['staple-food', '基础食品', 'bread'],
+    ],
+  ],
+  [
+    'meal-food',
+    [
+      ['staple-food', '基础食品', 'corn'],
       ['daily-fruit', '日常水果', 'apple'],
     ],
   ],
@@ -136,7 +149,7 @@ const secondaryCategoryGroups = [
       ['home-cleaning', '家居清洁', 'brush'],
       ['paper-consumables', '纸品耗材', null, 'paperRoll'],
       ['kitchen', '厨房用品', 'fork'],
-      ['home-furnishing', '家居用品', 'home'],
+      ['home-furnishing', '家居用品', 'lightbulb'],
       ['other-daily', '其他日用', null, 'ellipsis'],
     ],
   ],
@@ -221,7 +234,7 @@ const secondaryCategoryGroups = [
       ['software-subscription', '软件订阅', 'cardmembership'],
       ['cloud-server', '云服务器', 'server'],
       ['cloud-storage', '云存储', 'hard-disk-storage'],
-      ['network-service', '网络服务', 'router-wave'],
+      ['network-service', '网络服务', 'internet'],
     ],
   ],
   [
@@ -229,7 +242,7 @@ const secondaryCategoryGroups = [
     [
       ['family-support', '孝亲支出', 'heart'],
       ['red-packet', '红包礼金', null, 'envelope'],
-      ['donation', '捐赠', 'money'],
+      ['donation', '捐赠', 'undertake'],
       ['gifts', '礼物', 'gift'],
     ],
   ],
@@ -319,8 +332,26 @@ function renderIconSvg(category, glyph) {
 `
 }
 
-async function writeCategoryIcon(category, directory) {
-  const glyph = await resolveGlyph(category)
+function assertUniqueGlyphs(resolvedCategories) {
+  const categoryByGlyph = new Map()
+
+  for (const { category, glyph } of resolvedCategories) {
+    const existingCategory = categoryByGlyph.get(glyph)
+    if (existingCategory) {
+      throw new Error(`Duplicate category glyph: ${existingCategory.label} and ${category.label}`)
+    }
+    categoryByGlyph.set(glyph, category)
+  }
+}
+
+async function resolveCategoryGlyphs(categories) {
+  return Promise.all(
+    categories.map(async (category) => ({ category, glyph: await resolveGlyph(category) })),
+  )
+}
+
+async function writeCategoryIcon(resolvedCategory, directory) {
+  const { category, glyph } = resolvedCategory
   const iconfontName = getIconfontName(category)
   const fileName = `${iconfontName}.svg`
   const relativePath = `${directory}/${fileName}`
@@ -371,13 +402,12 @@ function renderCatalog(title, items, columns = 8) {
       const x = padding + column * cellWidth
       const y = headerHeight + row * cellHeight
       const parent = item.parentLabel
-        ? `<text x="${x + cellWidth / 2}" y="${y + 104}" fill="#8A94A6" font-size="11" text-anchor="middle">${escapeXml(item.parentLabel)}</text>`
+        ? `\n      <text x="${x + cellWidth / 2}" y="${y + 104}" fill="#8A94A6" font-size="11" text-anchor="middle">${escapeXml(item.parentLabel)}</text>`
         : ''
       return `<g>
       <rect x="${x + 8}" y="${y}" width="${cellWidth - 16}" height="${cellHeight - 10}" rx="18" fill="#F7F8FA"/>
       <image href="../${item.file}" x="${x + 40}" y="${y + 10}" width="56" height="56"/>
-      <text x="${x + cellWidth / 2}" y="${y + 86}" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">${escapeXml(item.label)}</text>
-      ${parent}
+      <text x="${x + cellWidth / 2}" y="${y + 86}" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">${escapeXml(item.label)}</text>${parent}
     </g>`
     })
     .join('')
@@ -390,6 +420,12 @@ function renderCatalog(title, items, columns = 8) {
 }
 
 async function main() {
+  const [resolvedPrimary, resolvedSecondary] = await Promise.all([
+    resolveCategoryGlyphs(primaryCategories),
+    resolveCategoryGlyphs(secondaryCategories),
+  ])
+  assertUniqueGlyphs([...resolvedPrimary, ...resolvedSecondary])
+
   const expectedLevel1Files = new Set(
     primaryCategories.map((category) => `${getIconfontName(category)}.svg`),
   )
@@ -410,10 +446,10 @@ async function main() {
   ).flat()
 
   const generatedPrimary = await Promise.all(
-    primaryCategories.map((category) => writeCategoryIcon(category, 'level1')),
+    resolvedPrimary.map((category) => writeCategoryIcon(category, 'level1')),
   )
   const generatedSecondary = await Promise.all(
-    secondaryCategories.map((category) => writeCategoryIcon(category, 'level2')),
+    resolvedSecondary.map((category) => writeCategoryIcon(category, 'level2')),
   )
 
   const manifest = {

@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -32,6 +33,8 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
     // 认证模块（内部引入用户和验证码模块）
     AuthModule,
+    // 分类模块
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [

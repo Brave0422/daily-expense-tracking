@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { AmountType } from '../../amount-records/enums/amount-type-enum';
 
-@Entity('category')
+@Entity('category_template')
 export class CategoryTplEntity {
   @PrimaryGeneratedColumn()
   id!: number;

@@ -5,26 +5,21 @@
       <rect x="36" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
       <image href="../level1/income-salary.svg" x="68" y="80" width="56" height="56"/>
       <text x="96" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">工资</text>
-      
     </g><g>
       <rect x="172" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
       <image href="../level1/income-bonus.svg" x="204" y="80" width="56" height="56"/>
       <text x="232" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">奖金</text>
-      
     </g><g>
       <rect x="308" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
       <image href="../level1/income-side-business.svg" x="340" y="80" width="56" height="56"/>
       <text x="368" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">兼职副业</text>
-      
     </g><g>
       <rect x="444" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
       <image href="../level1/income-investment.svg" x="476" y="80" width="56" height="56"/>
       <text x="504" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">投资收益</text>
-      
     </g><g>
       <rect x="580" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
       <image href="../level1/income-secondhand-sale.svg" x="612" y="80" width="56" height="56"/>
       <text x="640" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">二手出售</text>
-      
     </g></g>
 </svg>
