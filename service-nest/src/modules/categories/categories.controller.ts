@@ -5,8 +5,10 @@
  */
 
 import { Controller, Get, Query } from '@nestjs/common';
-import { UserCategoryEntity } from './entities/user-category.entity';
-import { CategoriesService } from './categories.service';
+import {
+  CategoriesService,
+  type UserCategoryTreeItem,
+} from './categories.service';
 import { FindUserCategory } from './dto/find-user-category.dto';
 import { CurrentUserId } from '../auth/decorators/current-user.decorator';
 
@@ -24,7 +26,7 @@ export class CategoriesController {
   async findAllForUser(
     @Query() query: FindUserCategory,
     @CurrentUserId() userId: number,
-  ): Promise<UserCategoryEntity[]> {
+  ): Promise<UserCategoryTreeItem[]> {
     return await this.categoriesService.findAllForUser(userId, query.type);
   }
 }

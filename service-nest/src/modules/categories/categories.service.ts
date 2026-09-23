@@ -9,8 +9,13 @@ import { AmountType } from '../amount-records/enums/amount-type-enum';
 import { UserService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryTplEntity } from './entities/category-template.entity';
-import { FindOptionsWhere, IsNull, Not, Repository } from 'typeorm';
+import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
 import { UserCategoryEntity } from './entities/user-category.entity';
+
+export interface UserCategoryTreeItem extends UserCategoryEntity {
+  // 当前一级分类下按顺序排列的二级分类
+  children: UserCategoryEntity[];
+}
 
 @Injectable()
 export class CategoriesService {
@@ -32,7 +37,7 @@ export class CategoriesService {
     userId: number,
     type: AmountType,
     includeArchived: boolean = false,
-  ): Promise<UserCategoryEntity[]> {
+  ): Promise<UserCategoryTreeItem[]> {
     // 根据id查询用户
     const user = await this.userService.findeOneById(userId);
 
@@ -80,6 +85,46 @@ export class CategoriesService {
       } catch {}
     }
 
-    return allCategories;
+    // 组装数据，按顺序排列一级分类，并把二级分类按照顺序放到对应的一级分类下面
+
+    // 优先按order排序，order相同按照id排序
+    const compareBySortOrder = (
+      firstCategory: UserCategoryEntity,
+      secondCategory: UserCategoryEntity,
+    ): number =>
+      firstCategory.sortOrder - secondCategory.sortOrder ||
+      firstCategory.id - secondCategory.id;
+
+    // 设置一级分类id为key，对应二级分类为value的map
+    const childrenByParentId = new Map<number, UserCategoryEntity[]>();
+
+    // 获取所有二级分类并排序
+    const sortedChildren = allCategories
+      .filter((category) => category.level === 2 && category.parentId !== null)
+      .sort(compareBySortOrder);
+
+    for (const category of sortedChildren) {
+      const parentId = category.parentId;
+      if (parentId === null) {
+        continue;
+      }
+
+      // 往一级分类下增加对应二级分类
+      const children = childrenByParentId.get(parentId);
+      if (children) {
+        children.push(category);
+        continue;
+      }
+      // 设置一级分类key
+      childrenByParentId.set(parentId, [category]);
+    }
+
+    return allCategories
+      .filter((category) => category.level === 1)
+      .sort(compareBySortOrder)
+      .map((category) => ({
+        ...category,
+        children: childrenByParentId.get(category.id) ?? [],
+      }));
   }
 }
