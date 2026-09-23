@@ -8,18 +8,18 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { AmountType } from '../amount-records/enums/amount-type-enum';
 import { UserService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CategoryEntity } from './entities/category.entity';
+import { CategoryTplEntity } from './entities/category-template.entity';
 import { FindOptionsWhere, IsNull, Not, Repository } from 'typeorm';
-import { UserCategorySortEntity } from './entities/user-category-sort.entity';
+import { UserCategoryEntity } from './entities/user-category.entity';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     private readonly userService: UserService,
-    @InjectRepository(CategoryEntity)
-    private readonly categoryRepo: Repository<CategoryEntity>,
-    @InjectRepository(UserCategorySortEntity)
-    private readonly userCategoryRepo: Repository<UserCategorySortEntity>,
+    @InjectRepository(CategoryTplEntity)
+    private readonly categoryRepo: Repository<CategoryTplEntity>,
+    @InjectRepository(UserCategoryEntity)
+    private readonly userCategoryRepo: Repository<UserCategoryEntity>,
   ) {}
 
   /**
@@ -32,7 +32,7 @@ export class CategoriesService {
     userId: number,
     type: AmountType,
     includeArchived: boolean = false,
-  ) {
+  ): Promise<UserCategoryEntity[]> {
     // 根据id查询用户
     const user = await this.userService.findeOneById(userId);
 
@@ -40,50 +40,46 @@ export class CategoriesService {
       throw new BadRequestException('用户不存在，获取分类列表失败');
     }
 
-    // 是否要包含归档已归档分类
-    const archiveCondition: FindOptionsWhere<CategoryEntity> = includeArchived
-      ? {}
-      : { archivedTime: IsNull() };
+    // 构建查询归档分类的条件
+    const archiveCondition: FindOptionsWhere<UserCategoryEntity> =
+      includeArchived ? {} : { archivedTime: IsNull() };
 
-    // 查询用户下的所有分类，从分类表获取
-    const allCategories = await this.categoryRepo.find({
-      where: [
-        {
-          // 系统默认分类
-          ownerUserId: IsNull(),
-          type,
-          ...archiveCondition,
-        },
-        {
-          // 用户自定义分类
-          ownerUserId: userId,
-          type,
-          ...archiveCondition,
-        },
-      ],
+    // 查询用户所有分类
+    let allCategories = await this.userCategoryRepo.findBy({
+      ownerUserId: userId,
+      type,
+      ...archiveCondition,
     });
 
-    if (allCategories.length === 0) {
-      return [];
-    }
+    // 用户没有分类 ，说明是新用户，初始化分类模板到用户的分类
+    if (!includeArchived && allCategories.length === 0) {
+      try {
+        const defaultCategory = await this.categoryRepo.find();
 
-    // 查询当前用户的自定义排序分类，从用户分类排序表获取
-    const sortedCategories = await this.userCategoryRepo.findBy({
-      userId,
-    });
-
-    // 存在用户修改排序的分类，用它覆盖分类的默认排序
-    if (sortedCategories.length > 0) {
-      sortedCategories.map((item) => {
-        allCategories.map((el) => {
-          if (item.categoryId === el.id) el.defaultSort = item.sortOrder;
+        // 生成用户分类数组
+        const tempCategory: Omit<
+          UserCategoryEntity,
+          'id' | 'archivedTime' | 'createdTime' | 'updatedTime'
+        >[] = defaultCategory.map((item) => {
+          return {
+            ownerUserId: userId,
+            sourceTplId: item.id,
+            type: item.type,
+            parentId: item.parentId,
+            name: item.name,
+            sortOrder: item.defaultSort,
+            level: item.level,
+            iconKey: item.iconKey,
+          };
         });
-      });
+
+        // 创建用户分类实体
+        const saveData = this.userCategoryRepo.create(tempCategory);
+        // 保存实体
+        allCategories = await this.userCategoryRepo.save(saveData);
+      } catch {}
     }
 
-    // 组装数据，返回一个一级分类包含二级分类的数组
-    let parentList = allCategories.filter((item) => {
-      return item.level === 1;
-    });
+    return allCategories;
   }
 }

@@ -9,13 +9,13 @@ import { UserModule } from '../users/users.module';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CategoryEntity } from './entities/category.entity';
-import { UserCategorySortEntity } from './entities/user-category-sort.entity';
+import { CategoryTplEntity } from './entities/category-template.entity';
+import { UserCategoryEntity } from './entities/user-category.entity';
 
 @Module({
   imports: [
     UserModule,
-    TypeOrmModule.forFeature([CategoryEntity, UserCategorySortEntity]),
+    TypeOrmModule.forFeature([CategoryTplEntity, UserCategoryEntity]),
   ],
   controllers: [CategoriesController],
   providers: [CategoriesService],

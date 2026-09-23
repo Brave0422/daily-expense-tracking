@@ -12,6 +12,12 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
+import type { Response } from 'express';
+import type { RequestWithOptionalUser } from '../../modules/auth/types/authenticated-request.type';
+
+type LoggingRequest = RequestWithOptionalUser & {
+  requestId?: string;
+};
 
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
@@ -26,10 +32,10 @@ export class LoggingInterceptor implements NestInterceptor {
     const httpContext = context.switchToHttp();
 
     // 获取请求内容
-    const request = httpContext.getRequest();
+    const request = httpContext.getRequest<LoggingRequest>();
 
     // 获取响应内容
-    const response = httpContext.getResponse();
+    const response = httpContext.getResponse<Response>();
 
     // 获取当前时间
     const startedAt = Date.now();
@@ -39,7 +45,7 @@ export class LoggingInterceptor implements NestInterceptor {
     // 获取请求路径
     const path = request.originalUrl ?? request.url;
     // 获取用户id
-    const userId = request.user?.id;
+    const userId = request.user?.userId;
     // 获取请求id
     const requestId = request.requestId;
 

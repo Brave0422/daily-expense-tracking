@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-09-22 10:41:28
- * @description 金额分类实体
+ * @description 默认分类实体
  */
 
 import {
@@ -14,17 +14,9 @@ import {
 import { AmountType } from '../../amount-records/enums/amount-type-enum';
 
 @Entity('category')
-export class CategoryEntity {
+export class CategoryTplEntity {
   @PrimaryGeneratedColumn()
   id!: number;
-
-  // 所属用户id
-  @Column({
-    name: 'owner_user_id',
-    type: 'int',
-    nullable: true,
-  })
-  ownerUserId!: number | null;
 
   // 分类所属的金额类型
   @Column({
@@ -62,16 +54,16 @@ export class CategoryEntity {
     type: 'int',
     nullable: false,
   })
-  level!: number;
+  level!: 1 | 2;
 
   // 图标资源
   @Column({
     name: 'icon_key',
     type: 'varchar',
-    nullable: true,
+    nullable: false,
     length: 100,
   })
-  iconKey!: string | null;
+  iconKey!: string;
 
   // 归档时间(软删除)，null表示未归档
   @Column({

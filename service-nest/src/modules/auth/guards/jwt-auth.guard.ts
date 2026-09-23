@@ -15,22 +15,11 @@ import { AuthTokenService } from '../services/auth-token.service';
 import { Reflector } from '@nestjs/core';
 import { Public } from '../decorators/public.decorator';
 import { VerificationPurpose } from 'src/modules/verification-code/enums/verification-purpose-enum';
+import type { RequestWithOptionalUser } from '../types/authenticated-request.type';
 
-export interface AuthenticatedUser {
-  // 用户id
-  uid: number;
-  // sessionId
-  sid: string;
+interface VerificationCodeRequestBody {
+  purpose?: unknown;
 }
-
-// 声明权限请求类型
-type AuthenticatedRequest = Request<
-  Record<string, string>,
-  unknown,
-  { purpose?: unknown }
-> & {
-  user?: AuthenticatedUser;
-};
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -50,7 +39,9 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     // 获取请求体
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const request = context
+      .switchToHttp()
+      .getRequest<RequestWithOptionalUser<VerificationCodeRequestBody>>();
 
     // 发送验证码请求,如果是注册和重置密码不用鉴权,其他需要鉴权
     const path = request.path;
@@ -95,8 +86,8 @@ export class JwtAuthGuard implements CanActivate {
 
     // 写入请求中，给后面的 Controller、日志拦截器使用
     request.user = {
-      uid: userId,
-      sid: payload.sid,
+      userId,
+      sessionId: payload.sid,
     };
 
     return true;

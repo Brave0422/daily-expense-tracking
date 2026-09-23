@@ -21,13 +21,13 @@ import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response, Request } from 'express';
 import { changePasswordDto } from './dto/change-password.dto';
 import { PasswordService } from './services/password.service';
-import { AuthenticatedUser } from './guards/jwt-auth.guard';
 import { VerificationPurpose } from '../verification-code/enums/verification-purpose-enum';
 import { ResetPassword } from './dto/reset-password.dto';
-
-type AuthenticatedRequest = Request & {
-  user: AuthenticatedUser;
-};
+import {
+  CurrentUser,
+  CurrentUserId,
+} from './decorators/current-user.decorator';
+import type { AuthenticatedUser } from './interfaces/authenticated-user.interface';
 
 // Cookie 在浏览器中保存时使用的名字。
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
@@ -200,12 +200,9 @@ export class AuthController {
   @ResonpseMsg('修改密码成功')
   async changePassword(
     @Body() body: changePasswordDto,
-    @Req() request: AuthenticatedRequest,
+    @CurrentUserId() userId: number,
   ): Promise<boolean> {
     const { newPassword, code } = body;
-
-    // 获取守卫中添加的用户id
-    const userId = request.user.uid;
 
     // 设置验证码用途
     const purpose = VerificationPurpose.CHANGE_PASSWORD;
@@ -248,14 +245,14 @@ export class AuthController {
   @Post('logout')
   @ResonpseMsg('退出成功')
   async logout(
-    @Req() request: AuthenticatedRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
     // 获取守卫中添加的信息
-    const { uid, sid } = request.user;
+    const { userId, sessionId } = user;
 
     // 执行退出登录
-    await this.authService.logout(uid, sid);
+    await this.authService.logout(userId, sessionId);
 
     // 清除 refresh token Cookie
     this.clearRefreshTokenCookie(response);
