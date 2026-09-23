@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">休闲娱乐</title>
-  <path fill="#8A63E8" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #8A63E8)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M12 1C18.0751 1 23 5.92487 23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12C1 5.92487 5.92487 1 12 1ZM8.75 16.5L16.75 11.9998L8.75 7.5V16.5Z"></path></g>
 </svg>

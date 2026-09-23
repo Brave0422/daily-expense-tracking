@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">高速过路费</title>
+  <path fill="var(--category-icon-background, #5578BC)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M2 3h20v4H2V3Zm2 6h7v13H4V9Zm2 3v3h3v-3H6Zm8-3h6v13h-3v-5h-3V9Zm0 3v2h3v-2h-3ZM1 20h22v2H1v-2Z" fill-rule="evenodd"/></g>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">眼镜</title>
+  <path fill="var(--category-icon-background, #5879C7)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="m4.3 6 2.2 1.1-.8 1.7A6 6 0 0 1 12 11a6 6 0 0 1 6.3-2.2l-.8-1.7L19.7 6 23 13.1V15h-2.1a5 5 0 0 1-9.4 1.2A5 5 0 0 1 2.1 15H0v-1.9L3.3 6h1Zm2.2 5A2.5 2.5 0 1 0 9 13.5 2.5 2.5 0 0 0 6.5 11Zm11 0a2.5 2.5 0 1 0 2.5 2.5 2.5 2.5 0 0 0-2.5-2.5Z" fill-rule="evenodd"/></g>
+</svg>

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">数码产品 - 手机平板</title>
-  <path fill="#4F8BE8" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #4F8BE8)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M20 1H4V23H20V1ZM13.0039 17V19.0039H11V17H13.0039Z"></path></g>
 </svg>

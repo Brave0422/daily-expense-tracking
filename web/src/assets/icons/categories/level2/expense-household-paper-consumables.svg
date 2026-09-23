@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">日用家居 - 纸品耗材</title>
-  <path fill="#35B99D" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #35B99D)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M8 2h8a6 6 0 0 1 6 6v14h-8v-5H8a6 6 0 0 1 0-12h1.1A6 6 0 0 1 8 2Zm0 5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8-3h-4.5A6 6 0 0 1 14 9v11h6V8a4 4 0 0 0-4-4ZM8 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z" fill-rule="evenodd"/></g>
 </svg>

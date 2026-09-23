@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">洗衣</title>
+  <path fill="var(--category-icon-background, #39AD98)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M4 2h16a2 2 0 0 1 2 2v18H2V4a2 2 0 0 1 2-2Zm1 3v3h14V5H5Zm7 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 0 1 2.8 2H9.2a3 3 0 0 1 2.8-2Zm-3 4h6a3 3 0 0 1-6 0ZM6 6h2v1H6V6Zm4 0h2v1h-2V6Z" fill-rule="evenodd"/></g>
+</svg>

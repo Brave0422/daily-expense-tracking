@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">住房 - 电费</title>
-  <path fill="#3EBB70" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #3EBB70)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12ZM17.29 10.5H12.9999V4.42862L6.70973 13.5H10.9999L10.9999 19.5714L17.29 10.5Z"></path></g>
 </svg>

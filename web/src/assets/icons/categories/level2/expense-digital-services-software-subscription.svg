@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">数字服务 - 软件订阅</title>
-  <path fill="#5368D8" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #5368D8)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M23 9V3H1V9L23 9Z"></path><path fill="#fff" d="M23 11V21L1 21V11H13V16.4971L15.5 14.3338L18 16.4971V11H23Z"></path></g>
 </svg>

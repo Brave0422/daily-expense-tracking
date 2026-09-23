@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">家用电器</title>
+  <path fill="var(--category-icon-background, #43A19D)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M6 2h12a2 2 0 0 1 2 2v18H4V4a2 2 0 0 1 2-2Zm1 3v6h10V5H7Zm0 9v5h10v-5H7Zm2-7h2v2H9V7Zm0 9h2v2H9v-2Z" fill-rule="evenodd"/></g>
+</svg>

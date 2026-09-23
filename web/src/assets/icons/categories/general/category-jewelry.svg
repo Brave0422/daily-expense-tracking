@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">珠宝首饰</title>
+  <path fill="var(--category-icon-background, #A56BDB)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="m8 2-4 5 8 7 8-7-4-5H8Zm1 2h6l1.6 2H7.4L9 4Zm3 7L7.7 8h8.6L12 11Zm0 3a5 5 0 1 1-5 5H4a8 8 0 1 0 16 0h-3a5 5 0 0 1-5 5 5 5 0 0 1 0-10Z" fill-rule="evenodd"/></g>
+</svg>

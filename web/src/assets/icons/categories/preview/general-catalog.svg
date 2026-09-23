@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1008 594">
+  <rect width="100%" height="100%" fill="#fff"/>
+  <text x="28" y="42" fill="#111827" font-family="Microsoft YaHei, sans-serif" font-size="24" font-weight="700">通用预选图标</text>
+  <g font-family="Microsoft YaHei, sans-serif"><g>
+      <rect x="36" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-coffee.svg" x="68" y="80" width="56" height="56"/>
+      <text x="96" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">咖啡</text>
+    </g><g>
+      <rect x="172" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-takeout.svg" x="204" y="80" width="56" height="56"/>
+      <text x="232" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">外卖</text>
+    </g><g>
+      <rect x="308" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-alcohol.svg" x="340" y="80" width="56" height="56"/>
+      <text x="368" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">酒水</text>
+    </g><g>
+      <rect x="444" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-tobacco.svg" x="476" y="80" width="56" height="56"/>
+      <text x="504" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">烟草</text>
+    </g><g>
+      <rect x="580" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-shopping.svg" x="612" y="80" width="56" height="56"/>
+      <text x="640" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">购物</text>
+    </g><g>
+      <rect x="716" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-pets.svg" x="748" y="80" width="56" height="56"/>
+      <text x="776" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">宠物</text>
+    </g><g>
+      <rect x="852" y="70" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-pet-food.svg" x="884" y="80" width="56" height="56"/>
+      <text x="912" y="156" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">宠物食品</text>
+    </g><g>
+      <rect x="36" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-veterinary.svg" x="68" y="204" width="56" height="56"/>
+      <text x="96" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">宠物医疗</text>
+    </g><g>
+      <rect x="172" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-baby-care.svg" x="204" y="204" width="56" height="56"/>
+      <text x="232" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">母婴</text>
+    </g><g>
+      <rect x="308" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-toys.svg" x="340" y="204" width="56" height="56"/>
+      <text x="368" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">玩具</text>
+    </g><g>
+      <rect x="444" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-fitness.svg" x="476" y="204" width="56" height="56"/>
+      <text x="504" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">健身</text>
+    </g><g>
+      <rect x="580" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-music.svg" x="612" y="204" width="56" height="56"/>
+      <text x="640" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">音乐娱乐</text>
+    </g><g>
+      <rect x="716" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-dental.svg" x="748" y="204" width="56" height="56"/>
+      <text x="776" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">牙科</text>
+    </g><g>
+      <rect x="852" y="194" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-glasses.svg" x="884" y="204" width="56" height="56"/>
+      <text x="912" y="280" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">眼镜</text>
+    </g><g>
+      <rect x="36" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-cosmetics.svg" x="68" y="328" width="56" height="56"/>
+      <text x="96" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">美妆</text>
+    </g><g>
+      <rect x="172" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-jewelry.svg" x="204" y="328" width="56" height="56"/>
+      <text x="232" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">珠宝首饰</text>
+    </g><g>
+      <rect x="308" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-fuel.svg" x="340" y="328" width="56" height="56"/>
+      <text x="368" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">汽车加油</text>
+    </g><g>
+      <rect x="444" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-car-maintenance.svg" x="476" y="328" width="56" height="56"/>
+      <text x="504" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">汽车保养</text>
+    </g><g>
+      <rect x="580" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-car-wash.svg" x="612" y="328" width="56" height="56"/>
+      <text x="640" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">洗车</text>
+    </g><g>
+      <rect x="716" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-toll.svg" x="748" y="328" width="56" height="56"/>
+      <text x="776" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">高速过路费</text>
+    </g><g>
+      <rect x="852" y="318" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-hotel.svg" x="884" y="328" width="56" height="56"/>
+      <text x="912" y="404" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">酒店住宿</text>
+    </g><g>
+      <rect x="36" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-luggage.svg" x="68" y="452" width="56" height="56"/>
+      <text x="96" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">旅行行李</text>
+    </g><g>
+      <rect x="172" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-camping.svg" x="204" y="452" width="56" height="56"/>
+      <text x="232" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">露营</text>
+    </g><g>
+      <rect x="308" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-laundry.svg" x="340" y="452" width="56" height="56"/>
+      <text x="368" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">洗衣</text>
+    </g><g>
+      <rect x="444" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-home-appliance.svg" x="476" y="452" width="56" height="56"/>
+      <text x="504" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">家用电器</text>
+    </g><g>
+      <rect x="580" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-home-repair.svg" x="612" y="452" width="56" height="56"/>
+      <text x="640" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">装修维修</text>
+    </g><g>
+      <rect x="716" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-express-delivery.svg" x="748" y="452" width="56" height="56"/>
+      <text x="776" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">快递物流</text>
+    </g><g>
+      <rect x="852" y="442" width="120" height="114" rx="18" fill="#F7F8FA"/>
+      <image href="../general/category-insurance.svg" x="884" y="452" width="56" height="56"/>
+      <text x="912" y="528" fill="#1F2937" font-size="14" font-weight="600" text-anchor="middle">保险</text>
+    </g></g>
+</svg>

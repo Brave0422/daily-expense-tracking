@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">洗车</title>
+  <path fill="var(--category-icon-background, #36A5CB)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M6 2s2 2.2 2 3.5a2 2 0 1 1-4 0C4 4.2 6 2 6 2Zm6 0s2 2.2 2 3.5a2 2 0 1 1-4 0C10 4.2 12 2 12 2Zm6 0s2 2.2 2 3.5a2 2 0 1 1-4 0C16 4.2 18 2 18 2ZM5 10h14l3 5v6h-3v-2H5v2H2v-6l3-5Zm1.7 3-1.2 2h13l-1.2-2H6.7ZM6 16.5A1.5 1.5 0 1 0 6 19a1.5 1.5 0 0 0 0-3Zm12 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" fill-rule="evenodd"/></g>
+</svg>

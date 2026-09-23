@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">宠物医疗</title>
+  <path fill="var(--category-icon-background, #E5687C)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M7 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm10 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3.5 7a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm17 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM12 8c4 0 7 3.7 7 7.3 0 3.7-3 6.7-7 6.7s-7-3-7-6.7C5 11.7 8 8 12 8Zm-1.2 3v2.8H8v2.4h2.8V19h2.4v-2.8H16v-2.4h-2.8V11h-2.4Z" fill-rule="evenodd"/></g>
+</svg>

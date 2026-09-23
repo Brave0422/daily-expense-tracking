@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">学习教育 - 课程培训</title>
-  <path fill="#D59419" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #D59419)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M3 23H21V1H3V23ZM14.0021 6.68761L11.504 8.75011V3.00011L16.5001 3.00011L16.5001 8.75011L14.0021 6.68761Z"></path></g>
 </svg>

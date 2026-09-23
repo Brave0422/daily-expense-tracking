@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">个人护理</title>
-  <path fill="#DC65A0" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #DC65A0)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M13.0001 2L13.0001 22H11.0001L11.0001 2L13.0001 2ZM9.00005 4.64087V18.5H1.30054L9.00005 4.64087ZM15.0001 4.64087L22.6996 18.5H15.0001V4.64087Z"></path></g>
 </svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">美妆</title>
+  <path fill="var(--category-icon-background, #D65E9A)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M10 2h6v7l3 3v10H7V12l3-3V2Zm2 2v4h2V4h-2Zm-.6 6L9 12.4V14h8v-1.6L14.6 10h-3.2ZM9 16v4h8v-4H9Z" fill-rule="evenodd"/></g>
+</svg>

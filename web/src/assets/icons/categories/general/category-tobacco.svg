@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">烟草</title>
+  <path fill="var(--category-icon-background, #7C8797)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M3 13h13v6H3v-6Zm2 2v2h7v-2H5Zm13-2h3v6h-3v-6ZM15 3c0 1.5.7 2.2 1.5 3 .8.8 1.5 1.7 1.5 3h-2c0-.6-.4-1.1-1-1.7-1-.9-2-2.1-2-4.3h2Zm4 0c0 .8.3 1.2.9 1.8.8.8 1.6 1.7 1.6 3.2h-2c0-.7-.4-1.2-1-1.8C17.8 5.4 17 4.4 17 3h2Z"/></g>
+</svg>

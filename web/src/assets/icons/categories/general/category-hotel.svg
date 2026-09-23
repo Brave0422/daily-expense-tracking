@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">酒店住宿</title>
+  <path fill="var(--category-icon-background, #3FAE72)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M3 3h3v9h5V7h6a4 4 0 0 1 4 4v11h-3v-3H6v3H3V3Zm11 7v2h4v-1a1 1 0 0 0-1-1h-3ZM6 15v2h12v-2H6Z" fill-rule="evenodd"/></g>
+</svg>

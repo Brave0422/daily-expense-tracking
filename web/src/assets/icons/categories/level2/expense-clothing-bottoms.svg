@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">服饰穿搭 - 下装</title>
-  <path fill="#EC6683" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #EC6683)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M6.8 2h10.4l-.4 5.4L16.2 22h-4.1L12 12.2 11.9 22H7.8L7.2 7.4 6.8 2Zm2.1 2 .1 2h6l.1-2H8.9Z" fill-rule="evenodd"/></g>
 </svg>

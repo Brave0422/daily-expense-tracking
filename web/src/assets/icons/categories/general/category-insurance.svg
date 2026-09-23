@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">保险</title>
+  <path fill="var(--category-icon-background, #5077BE)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M12 2 21 6v6c0 5.2-3.3 8.7-9 10-5.7-1.3-9-4.8-9-10V6l9-4Zm0 3.3L6 8v4c0 3.6 2 5.9 6 7 4-1.1 6-3.4 6-7V8l-6-2.7Zm3.6 4.3 1.8 1.8-6.3 6.3-3.8-3.8 1.8-1.8 2 2 4.5-4.5Z" fill-rule="evenodd"/></g>
+</svg>

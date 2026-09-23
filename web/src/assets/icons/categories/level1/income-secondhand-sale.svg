@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">二手出售</title>
-  <path fill="#45AA6F" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
+  <path fill="var(--category-icon-background, #45AA6F)" d="M32 2a30 30 0 1 1 0 60 30 30 0 1 1 0-60Z"/>
   <g transform="translate(17 17) scale(1.25)"><path fill="#fff" d="M12 1C9.51472 1 7.5 3.01472 7.5 5.5V7H3V23H21V7H16.5V5.5C16.5 3.01472 14.4853 1 12 1ZM14.5 5.5V7H9.5V5.5C9.5 4.11929 10.6193 3 12 3C13.3807 3 14.5 4.11929 14.5 5.5ZM7.5 12V9H9.5V12H7.5ZM14.5 12V9H16.5V12H14.5Z"></path></g>
 </svg>

@@ -1,14 +1,15 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "iconfontMode": "symbol",
   "iconfontProject": {
     "name": "DET-category-icon",
     "symbolPrefix": "icon-",
-    "namingPattern": "expense-{一级英文名}[-{二级英文名}] / income-{收入英文名}"
+    "namingPattern": "expense-{一级英文名}[-{二级英文名}] / income-{收入英文名} / category-{通用图标英文名}"
   },
   "canvas": {
     "viewBox": "0 0 64 64",
     "background": "circle",
+    "backgroundColorVariable": "--category-icon-background",
     "glyphColor": "#FFFFFF"
   },
   "primaryCategories": [
@@ -875,6 +876,288 @@
       "file": "level2/expense-social-gifts.svg",
       "iconfontName": "expense-social-gifts",
       "symbolId": "icon-expense-social-gifts"
+    }
+  ],
+  "generalIcons": [
+    {
+      "id": "coffee",
+      "label": "咖啡",
+      "group": "food",
+      "sortOrder": 0,
+      "color": "#B9794D",
+      "file": "general/category-coffee.svg",
+      "iconfontName": "category-coffee",
+      "symbolId": "icon-category-coffee"
+    },
+    {
+      "id": "takeout",
+      "label": "外卖",
+      "group": "food",
+      "sortOrder": 1,
+      "color": "#F0803C",
+      "file": "general/category-takeout.svg",
+      "iconfontName": "category-takeout",
+      "symbolId": "icon-category-takeout"
+    },
+    {
+      "id": "alcohol",
+      "label": "酒水",
+      "group": "food",
+      "sortOrder": 2,
+      "color": "#A16BC1",
+      "file": "general/category-alcohol.svg",
+      "iconfontName": "category-alcohol",
+      "symbolId": "icon-category-alcohol"
+    },
+    {
+      "id": "tobacco",
+      "label": "烟草",
+      "group": "lifestyle",
+      "sortOrder": 3,
+      "color": "#7C8797",
+      "file": "general/category-tobacco.svg",
+      "iconfontName": "category-tobacco",
+      "symbolId": "icon-category-tobacco"
+    },
+    {
+      "id": "shopping",
+      "label": "购物",
+      "group": "lifestyle",
+      "sortOrder": 4,
+      "color": "#E9608E",
+      "file": "general/category-shopping.svg",
+      "iconfontName": "category-shopping",
+      "symbolId": "icon-category-shopping"
+    },
+    {
+      "id": "pets",
+      "label": "宠物",
+      "group": "family",
+      "sortOrder": 5,
+      "color": "#E99545",
+      "file": "general/category-pets.svg",
+      "iconfontName": "category-pets",
+      "symbolId": "icon-category-pets"
+    },
+    {
+      "id": "pet-food",
+      "label": "宠物食品",
+      "group": "family",
+      "sortOrder": 6,
+      "color": "#BF8654",
+      "file": "general/category-pet-food.svg",
+      "iconfontName": "category-pet-food",
+      "symbolId": "icon-category-pet-food"
+    },
+    {
+      "id": "veterinary",
+      "label": "宠物医疗",
+      "group": "family",
+      "sortOrder": 7,
+      "color": "#E5687C",
+      "file": "general/category-veterinary.svg",
+      "iconfontName": "category-veterinary",
+      "symbolId": "icon-category-veterinary"
+    },
+    {
+      "id": "baby-care",
+      "label": "母婴",
+      "group": "family",
+      "sortOrder": 8,
+      "color": "#EB83AD",
+      "file": "general/category-baby-care.svg",
+      "iconfontName": "category-baby-care",
+      "symbolId": "icon-category-baby-care"
+    },
+    {
+      "id": "toys",
+      "label": "玩具",
+      "group": "family",
+      "sortOrder": 9,
+      "color": "#EDA42F",
+      "file": "general/category-toys.svg",
+      "iconfontName": "category-toys",
+      "symbolId": "icon-category-toys"
+    },
+    {
+      "id": "fitness",
+      "label": "健身",
+      "group": "health",
+      "sortOrder": 10,
+      "color": "#4B96CF",
+      "file": "general/category-fitness.svg",
+      "iconfontName": "category-fitness",
+      "symbolId": "icon-category-fitness"
+    },
+    {
+      "id": "music",
+      "label": "音乐娱乐",
+      "group": "entertainment",
+      "sortOrder": 11,
+      "color": "#8465D7",
+      "file": "general/category-music.svg",
+      "iconfontName": "category-music",
+      "symbolId": "icon-category-music"
+    },
+    {
+      "id": "dental",
+      "label": "牙科",
+      "group": "health",
+      "sortOrder": 12,
+      "color": "#43AEB9",
+      "file": "general/category-dental.svg",
+      "iconfontName": "category-dental",
+      "symbolId": "icon-category-dental"
+    },
+    {
+      "id": "glasses",
+      "label": "眼镜",
+      "group": "health",
+      "sortOrder": 13,
+      "color": "#5879C7",
+      "file": "general/category-glasses.svg",
+      "iconfontName": "category-glasses",
+      "symbolId": "icon-category-glasses"
+    },
+    {
+      "id": "cosmetics",
+      "label": "美妆",
+      "group": "personal",
+      "sortOrder": 14,
+      "color": "#D65E9A",
+      "file": "general/category-cosmetics.svg",
+      "iconfontName": "category-cosmetics",
+      "symbolId": "icon-category-cosmetics"
+    },
+    {
+      "id": "jewelry",
+      "label": "珠宝首饰",
+      "group": "personal",
+      "sortOrder": 15,
+      "color": "#A56BDB",
+      "file": "general/category-jewelry.svg",
+      "iconfontName": "category-jewelry",
+      "symbolId": "icon-category-jewelry"
+    },
+    {
+      "id": "fuel",
+      "label": "汽车加油",
+      "group": "vehicle",
+      "sortOrder": 16,
+      "color": "#4A85D0",
+      "file": "general/category-fuel.svg",
+      "iconfontName": "category-fuel",
+      "symbolId": "icon-category-fuel"
+    },
+    {
+      "id": "car-maintenance",
+      "label": "汽车保养",
+      "group": "vehicle",
+      "sortOrder": 17,
+      "color": "#607F99",
+      "file": "general/category-car-maintenance.svg",
+      "iconfontName": "category-car-maintenance",
+      "symbolId": "icon-category-car-maintenance"
+    },
+    {
+      "id": "car-wash",
+      "label": "洗车",
+      "group": "vehicle",
+      "sortOrder": 18,
+      "color": "#36A5CB",
+      "file": "general/category-car-wash.svg",
+      "iconfontName": "category-car-wash",
+      "symbolId": "icon-category-car-wash"
+    },
+    {
+      "id": "toll",
+      "label": "高速过路费",
+      "group": "vehicle",
+      "sortOrder": 19,
+      "color": "#5578BC",
+      "file": "general/category-toll.svg",
+      "iconfontName": "category-toll",
+      "symbolId": "icon-category-toll"
+    },
+    {
+      "id": "hotel",
+      "label": "酒店住宿",
+      "group": "travel",
+      "sortOrder": 20,
+      "color": "#3FAE72",
+      "file": "general/category-hotel.svg",
+      "iconfontName": "category-hotel",
+      "symbolId": "icon-category-hotel"
+    },
+    {
+      "id": "luggage",
+      "label": "旅行行李",
+      "group": "travel",
+      "sortOrder": 21,
+      "color": "#40977F",
+      "file": "general/category-luggage.svg",
+      "iconfontName": "category-luggage",
+      "symbolId": "icon-category-luggage"
+    },
+    {
+      "id": "camping",
+      "label": "露营",
+      "group": "travel",
+      "sortOrder": 22,
+      "color": "#5A9E57",
+      "file": "general/category-camping.svg",
+      "iconfontName": "category-camping",
+      "symbolId": "icon-category-camping"
+    },
+    {
+      "id": "laundry",
+      "label": "洗衣",
+      "group": "household",
+      "sortOrder": 23,
+      "color": "#39AD98",
+      "file": "general/category-laundry.svg",
+      "iconfontName": "category-laundry",
+      "symbolId": "icon-category-laundry"
+    },
+    {
+      "id": "home-appliance",
+      "label": "家用电器",
+      "group": "household",
+      "sortOrder": 24,
+      "color": "#43A19D",
+      "file": "general/category-home-appliance.svg",
+      "iconfontName": "category-home-appliance",
+      "symbolId": "icon-category-home-appliance"
+    },
+    {
+      "id": "home-repair",
+      "label": "装修维修",
+      "group": "household",
+      "sortOrder": 25,
+      "color": "#D28A37",
+      "file": "general/category-home-repair.svg",
+      "iconfontName": "category-home-repair",
+      "symbolId": "icon-category-home-repair"
+    },
+    {
+      "id": "express-delivery",
+      "label": "快递物流",
+      "group": "service",
+      "sortOrder": 26,
+      "color": "#DE7840",
+      "file": "general/category-express-delivery.svg",
+      "iconfontName": "category-express-delivery",
+      "symbolId": "icon-category-express-delivery"
+    },
+    {
+      "id": "insurance",
+      "label": "保险",
+      "group": "service",
+      "sortOrder": 27,
+      "color": "#5077BE",
+      "file": "general/category-insurance.svg",
+      "iconfontName": "category-insurance",
+      "symbolId": "icon-category-insurance"
     }
   ]
 }
