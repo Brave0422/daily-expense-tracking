@@ -37,14 +37,11 @@
 - `income-salary.svg` → `icon-income-salary`
 - `category-coffee.svg` → `icon-category-coffee`
 
-## 导入 Iconfont
+## 本地 Symbol
 
-1. 在单独的 `DET-category-icon` 项目中批量上传 `level1/`、`level2/` 和 `general/` 下的 SVG。
-2. 保留多色，不要执行“去除颜色”或改为单色字体图标。
-3. 当前线上项目使用默认的 `icon-` 前缀；完整 Symbol ID 必须保持稳定且全局唯一。
-4. 使用 Symbol 引用方式；Font class 和 Unicode 模式无法可靠保留“圆底＋白色图案”两种颜色。
-5. 文件名已经是可直接上传的图标名称，不需要再次增加业务前缀。
-6. 发布 Symbol 在线链接后，将新链接填写到 `src/plugins/iconfont-symbol.ts` 的 `CATEGORY_ICONFONT_SYMBOL_SCRIPT_URL`。项目已支持同时加载通用 UI 图标和分类图标两份在线 JS。
+`src/plugins/iconfont-symbol.ts` 在构建时读取 `level1/`、`level2/` 和 `general/` 下的全部 SVG，运行时将其转换为隐藏的本地 Symbol Sprite。完整 Symbol ID 由文件名加 `icon-` 前缀生成，例如 `expense-education.svg` 对应 `icon-expense-education`。
+
+分类图标不再上传或依赖 Iconfont 在线项目。新增或重新生成 SVG 后正常重新构建 Web 项目即可，无需手动维护 Symbol JS。
 
 ## 使用方式
 
@@ -68,7 +65,7 @@
 
 `BaseIcon.vue` 上的 `fill: currentcolor` 只作为继承默认值。图标内部的圆形背景和白色中心图案均显式设置颜色，因此不会被普通文字颜色覆盖。
 
-同一个 Web 页面可以加载多个 Iconfont Symbol 在线 JS。每份脚本会向页面注入自己的 `<symbol>` 集合；只要完整 Symbol ID 不重复，就可以同时使用。
+同一个 Web 页面会加载 `src/assets/iconfont` 下的通用 UI 图标 Symbol JS，并从当前目录的 SVG 生成分类图标 Symbol。两类资源均来自本地构建产物，只要完整 Symbol ID 不重复即可同时使用。
 
 ## 重新生成
 
