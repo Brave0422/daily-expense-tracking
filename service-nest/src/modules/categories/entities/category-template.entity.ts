@@ -8,10 +8,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ForeignKey,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { AmountType } from '../../amount-records/enums/amount-type-enum';
+import { CategoryIconEntity } from './category-icon.entity';
 
 @Entity('category_template')
 export class CategoryTplEntity {
@@ -62,6 +64,12 @@ export class CategoryTplEntity {
     type: 'varchar',
     nullable: false,
     length: 100,
+  })
+  // 建立外键
+  @ForeignKey(() => CategoryIconEntity, 'iconKey', {
+    name: 'fk_category_template_icon_key',
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
   })
   iconKey!: string;
 

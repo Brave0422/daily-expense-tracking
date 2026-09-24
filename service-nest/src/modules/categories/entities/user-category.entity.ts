@@ -11,9 +11,11 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  ForeignKey,
 } from 'typeorm';
+import { CategoryIconEntity } from './category-icon.entity';
 
-@Entity('user_category_sort')
+@Entity('user_category')
 export class UserCategoryEntity {
   // id
   @PrimaryGeneratedColumn()
@@ -33,7 +35,7 @@ export class UserCategoryEntity {
     type: 'int',
     nullable: true,
   })
-  sourceTplId!: number;
+  sourceTplId!: number | null;
 
   // 分类所属的金额类型
   @Column({
@@ -80,6 +82,12 @@ export class UserCategoryEntity {
     type: 'varchar',
     nullable: false,
     length: 100,
+  })
+  // 建立外键
+  @ForeignKey(() => CategoryIconEntity, 'iconKey', {
+    name: 'fk_user_category_icon_key',
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
   })
   iconKey!: string;
 

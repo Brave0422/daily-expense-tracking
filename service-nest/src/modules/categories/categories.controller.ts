@@ -4,13 +4,15 @@
  * @description 分类模块控制层
  */
 
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body } from '@nestjs/common';
 import {
   CategoriesService,
   type UserCategoryTreeItem,
 } from './categories.service';
 import { FindUserCategory } from './dto/find-user-category.dto';
 import { CurrentUserId } from '../auth/decorators/current-user.decorator';
+import { CategoryIconEntity } from './entities/category-icon.entity';
+import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -28,5 +30,30 @@ export class CategoriesController {
     @CurrentUserId() userId: number,
   ): Promise<UserCategoryTreeItem[]> {
     return await this.categoriesService.findAllForUser(userId, query.type);
+  }
+
+  /**
+   * 获取分类图标库
+   * @returns 预选分类图标
+   */
+  @Get('getAllIcons')
+  async findAllIcons(): Promise<CategoryIconEntity[]> {
+    return await this.categoriesService.findAllIcons();
+  }
+
+  /**
+   * 创建分类
+   * @param userId 用户id
+   * @param body dto
+   */
+  @Post('createCategory')
+  async create(
+    @CurrentUserId() userId: number,
+    @Body() body: CreateCategoryDto,
+  ): Promise<void> {
+    console.log("body", body);
+    
+    const { type, name, iconKey, parentId } = body;
+    await this.categoriesService.create(userId, type, name, iconKey, parentId);
   }
 }
