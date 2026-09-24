@@ -18,7 +18,9 @@ import { IconKey } from '../enums/icon-key-enum';
 import { Transform } from 'class-transformer';
 
 export class CreateCategoryDto {
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @MaxLength(50)
   @IsString()
   @IsNotEmpty({ message: '分类名称不能为空' })

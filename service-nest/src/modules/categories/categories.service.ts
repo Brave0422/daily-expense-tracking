@@ -13,7 +13,7 @@ import { AmountType } from '../amount-records/enums/amount-type-enum';
 import { UserService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryTplEntity } from './entities/category-template.entity';
-import { FindOptionsWhere, IsNull, Repository } from 'typeorm';
+import { FindOptionsWhere, IsNull, Not, Repository } from 'typeorm';
 import { UserCategoryEntity } from './entities/user-category.entity';
 import { CategoryIconEntity } from './entities/category-icon.entity';
 import { IconKey } from './enums/icon-key-enum';
@@ -171,7 +171,7 @@ export class CategoriesService {
     type: AmountType,
     name: string,
     iconKey: IconKey,
-    parentId?: number | null,
+    parentId: number | null = null,
   ): Promise<void> {
     // 解析分类等级
     const level = parentId ? 2 : 1;
@@ -200,14 +200,7 @@ export class CategoriesService {
     const parentIdCondition = parentId ? { parentId } : { parentId: IsNull() };
 
     // 检查同一归属下有没有同名的分类
-    const haveSame = await this.userCategoryRepo.findOneBy({
-      ownerUserId: userId,
-      name,
-      ...parentIdCondition,
-      type,
-      archivedTime: IsNull(),
-    });
-    if (haveSame) throw new BadRequestException('已经存在相同的分类');
+    await this.checkSameName(userId, name, parentId, type);
 
     try {
       // 获取和所添加分类同等级同归属的最后一个分类的顺序
@@ -249,5 +242,75 @@ export class CategoriesService {
     }
   }
 
-  // bulkCreate
+  /**
+   * 检查同一归属有没有同名分类
+   * @param ownerUserId 用户id
+   * @param name 分类名称
+   * @param parentIdCondition 父级分类动态条件
+   * @param type 分类类型
+   * @param id 分类id，编辑时需要传递用来排除当前分类
+   */
+  async checkSameName(
+    ownerUserId: number,
+    name: string,
+    parentId: number | null,
+    type: AmountType,
+    id: number | null = null,
+  ): Promise<void> {
+    // 构建parentId查询条件
+    const parentIdCondition: FindOptionsWhere<UserCategoryEntity> = parentId
+      ? { parentId }
+      : { parentId: IsNull() };
+
+    // 构建id查询条件
+    const idCondition: FindOptionsWhere<UserCategoryEntity> = id
+      ? { id: Not(id) }
+      : {};
+
+    const haveSame = await this.userCategoryRepo.findOneBy({
+      ownerUserId,
+      name,
+      ...parentIdCondition,
+      type,
+      archivedTime: IsNull(),
+      ...idCondition,
+    });
+    if (haveSame) throw new BadRequestException('已经存在相同的分类');
+  }
+
+  /**
+   * 编辑分类
+   * @param userId 用户id
+   * @param id 分类id
+   * @param name 分类新名称
+   * @param iconKey 分类新图标
+   */
+  async update(
+    userId: number,
+    id: number,
+    name: string,
+    iconKey: IconKey,
+  ): Promise<void> {
+    // 查询对应的分类
+    const findRes = await this.userCategoryRepo.findOneBy({
+      ownerUserId: userId,
+      id,
+      archivedTime: IsNull(),
+    });
+
+    if (!findRes) throw new BadRequestException('编辑的分类不存在');
+
+    // 检查同一归属下，新名称的分类是否存在
+    await this.checkSameName(userId, name, findRes.parentId, findRes.type, id);
+
+    // 更新分类
+    const result = await this.userCategoryRepo.update(
+      { id, ownerUserId: userId },
+      { name, iconKey },
+    );
+
+    if (result.affected !== 1) {
+      throw new InternalServerErrorException('编辑失败，请重试');
+    }
+  }
 }

@@ -13,6 +13,8 @@ import { FindUserCategory } from './dto/find-user-category.dto';
 import { CurrentUserId } from '../auth/decorators/current-user.decorator';
 import { CategoryIconEntity } from './entities/category-icon.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { updateCategory } from './dto/update-category.dto';
+import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
 
 @Controller('categories')
 export class CategoriesController {
@@ -47,13 +49,29 @@ export class CategoriesController {
    * @param body dto
    */
   @Post('createCategory')
+  @ResonpseMsg('创建成功')
   async create(
     @CurrentUserId() userId: number,
     @Body() body: CreateCategoryDto,
   ): Promise<void> {
-    console.log("body", body);
-    
+    console.log('body', body);
+
     const { type, name, iconKey, parentId } = body;
     await this.categoriesService.create(userId, type, name, iconKey, parentId);
+  }
+
+  /**
+   * 编辑分类
+   * @param userId 用户id
+   * @param body dto
+   */
+  @Post('updateCategory')
+  @ResonpseMsg('编辑成功')
+  async update(
+    @CurrentUserId() userId: number,
+    @Body() body: updateCategory,
+  ): Promise<void> {
+    const { id, name, iconKey } = body;
+    return await this.categoriesService.update(userId, id, name, iconKey);
   }
 }
