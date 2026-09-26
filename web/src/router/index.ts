@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-09-18T17:49:29+08:00
- * @description 应用路由配置，声明访客页、鉴权布局与业务占位页。
+ * @description 应用路由配置，声明访客页、鉴权布局与业务页面。
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
@@ -46,9 +46,9 @@ const router = createRouter({
           component: () => import('@/views/statistics/StatisticsView.vue'),
         },
         {
-          path: 'management',
-          name: 'management',
-          component: () => import('@/views/management/ManagementView.vue'),
+          path: 'configuration',
+          name: 'configuration',
+          component: () => import('@/views/configuration/ConfigurationView.vue'),
         },
       ],
     },

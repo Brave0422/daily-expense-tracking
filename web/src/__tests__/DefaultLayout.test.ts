@@ -21,7 +21,7 @@ describe('DefaultLayout', () => {
       routes: [
         { path: '/records', name: 'records', component: EmptyStub },
         { path: '/statistics', name: 'statistics', component: EmptyStub },
-        { path: '/management', name: 'management', component: EmptyStub },
+        { path: '/configuration', name: 'configuration', component: EmptyStub },
       ],
     })
     await router.push('/records')

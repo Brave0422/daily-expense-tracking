@@ -8,12 +8,26 @@
 import { computed } from 'vue'
 
 export type IconName =
-  'records' | 'statistics' | 'management' | 'changePassword' | 'logout' | 'hide' | 'show'
+  | 'records'
+  | 'statistics'
+  | 'configuration'
+  | 'add'
+  | 'delete'
+  | 'edit'
+  | 'reorder'
+  | 'changePassword'
+  | 'logout'
+  | 'hide'
+  | 'show'
 
 const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   records: 'icon-home',
   statistics: 'icon-pie-chart',
-  management: 'icon-wrench',
+  configuration: 'icon-wrench',
+  add: 'icon-jia',
+  delete: 'icon-shanchu',
+  edit: 'icon-bianji',
+  reorder: 'icon-jiaohuanshunxu',
   changePassword: 'icon-change-pwd',
   logout: 'icon-exit',
   hide: 'icon-hide',

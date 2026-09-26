@@ -53,9 +53,7 @@ function rejectUnauthorized(
   message = '登录状态已失效',
 ): Promise<never> {
   const response = createResponse(config, { message, statusCode: 401 }, 401)
-  return Promise.reject(
-    new AxiosError(message, 'ERR_BAD_REQUEST', config, undefined, response),
-  )
+  return Promise.reject(new AxiosError(message, 'ERR_BAD_REQUEST', config, undefined, response))
 }
 
 describe('authenticated HTTP client', () => {

@@ -28,7 +28,12 @@ function createTestRouter(): Router {
   return createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/login', name: 'login', component: { template: '<div>login</div>' }, meta: { guestOnly: true } },
+      {
+        path: '/login',
+        name: 'login',
+        component: { template: '<div>login</div>' },
+        meta: { guestOnly: true },
+      },
       {
         path: '/records',
         name: 'records',

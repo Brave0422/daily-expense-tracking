@@ -41,7 +41,13 @@ const ICONFONT_SYMBOL_SOURCES: readonly IconfontSymbolSource[] = [
     normalizeColors: true,
   },
 ]
-const CURRENT_COLOR_SYMBOL_IDS = ['icon-pie-chart'] as const
+const CURRENT_COLOR_SYMBOL_IDS = [
+  'icon-pie-chart',
+  'icon-jia',
+  'icon-shanchu',
+  'icon-bianji',
+  'icon-jiaohuanshunxu',
+] as const
 
 /**
  * 移除图标库内写死的填充色，使指定单色图标跟随按钮的普通态与激活态颜色。

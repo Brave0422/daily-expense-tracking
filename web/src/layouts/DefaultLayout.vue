@@ -17,7 +17,7 @@ import { useAuthStore } from '@/stores/auth.store'
 interface NavigationItem {
   icon: IconName
   label: string
-  routeName: 'records' | 'statistics' | 'management'
+  routeName: 'records' | 'statistics' | 'configuration'
 }
 
 const route = useRoute()
@@ -27,7 +27,7 @@ const authStore = useAuthStore()
 const navigationItems: readonly NavigationItem[] = [
   { icon: 'records', label: '账单列表', routeName: 'records' },
   { icon: 'statistics', label: '账单统计', routeName: 'statistics' },
-  { icon: 'management', label: '分类管理', routeName: 'management' },
+  { icon: 'configuration', label: '配置管理', routeName: 'configuration' },
 ]
 
 const isProfileOpen = ref(false)
