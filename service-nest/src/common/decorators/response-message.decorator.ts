@@ -7,4 +7,4 @@
 import { Reflector } from '@nestjs/core';
 
 // 返回元数据装饰器
-export const ResonpseMsg = Reflector.createDecorator<string>();
+export const ResponseMsg = Reflector.createDecorator<string>();

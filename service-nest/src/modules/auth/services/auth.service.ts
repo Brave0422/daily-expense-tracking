@@ -20,6 +20,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AuthSessionsEntity } from '../entities/auth-sessions.entity';
 import { IsNull, MoreThan, Repository } from 'typeorm';
 import { PasswordService } from './password.service';
+import { CategoriesService } from 'src/modules/categories/categories.service';
 
 export interface dualToken {
   accessToken: string;
@@ -37,6 +38,7 @@ export class AuthService {
     @InjectRepository(AuthSessionsEntity)
     private readonly authSessionRepo: Repository<AuthSessionsEntity>,
     private readonly passwordService: PasswordService,
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   /**
@@ -69,10 +71,13 @@ export class AuthService {
 
     try {
       // 创建用户实体
-      const user = this.userService.create(email, passwordHash);
+      const saveData = this.userService.create(email, passwordHash);
 
       // 保存用户
-      await this.userService.save(user);
+      const user = await this.userService.save(saveData);
+
+      // 初始化用户分类
+      await this.categoriesService.initUserCategory(user.id);
 
       return true;
     } catch {

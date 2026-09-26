@@ -6,7 +6,7 @@
 
 import { Body, Controller, Post } from '@nestjs/common';
 import { VerificationCodeService } from './verification-code.service';
-import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
+import { ResponseMsg } from 'src/common/decorators/response-message.decorator';
 import { SendVerificationCodeDto } from './dto/send-verification-code.dto';
 import { OptionalCurrentUserId } from '../auth/decorators/current-user.decorator';
 
@@ -20,7 +20,7 @@ export class VerificationCodeController {
    * @param request 已认证修改的请求
    */
   @Post('sendCode')
-  @ResonpseMsg('验证码已发送')
+  @ResponseMsg('验证码已发送')
   async sendCode(
     @Body() body: SendVerificationCodeDto,
     @OptionalCurrentUserId() userId?: number,

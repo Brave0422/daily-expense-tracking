@@ -20,5 +20,6 @@ import { CategoryIconEntity } from './entities/category-icon.entity';
   ],
   controllers: [CategoriesController],
   providers: [CategoriesService],
+  exports:[CategoriesService]
 })
 export class CategoriesModule {}

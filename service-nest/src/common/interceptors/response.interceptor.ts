@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, map } from 'rxjs';
-import { ResonpseMsg } from '../decorators/response-message.decorator';
+import { ResponseMsg } from '../decorators/response-message.decorator';
 import { ApiResponseDto } from '../dto/api-response.dto';
 import type { Response } from 'express';
 
@@ -35,8 +35,8 @@ export class ResponseInterceptor<T> implements NestInterceptor<
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<ApiResponseDto<T>> {
-    // 获取ResonpseMsg装饰器的元数据
-    const message = this.reflector.getAllAndOverride<string>(ResonpseMsg, [
+    // 获取ResponseMsg装饰器的元数据
+    const message = this.reflector.getAllAndOverride<string>(ResponseMsg, [
       context.getHandler(),
       context.getClass(),
     ]);

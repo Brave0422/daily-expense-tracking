@@ -45,7 +45,7 @@ export class CategoriesService {
     userId: number,
     type: AmountType,
     includeArchived: boolean = false,
-  ): Promise<UserCategoryTreeItem[]> {
+  ): Promise<UserCategoryTreeItem[] | []> {
     // 根据id查询用户
     const user = await this.userService.findeOneById(userId);
 
@@ -63,39 +63,6 @@ export class CategoriesService {
       type,
       ...archiveCondition,
     });
-
-    // 用户没有分类 ，说明是新用户，初始化分类模板到用户的分类
-    if (!includeArchived && allCategories.length === 0) {
-      try {
-        const defaultCategory = await this.categoryRepo.find();
-
-        // 生成用户分类数组
-        const tempCategory: Omit<
-          UserCategoryEntity,
-          'id' | 'archivedTime' | 'createdTime' | 'updatedTime'
-        >[] = defaultCategory.map((item) => {
-          return {
-            ownerUserId: userId,
-            sourceTplId: item.id,
-            type: item.type,
-            parentId: item.parentId,
-            name: item.name,
-            sortOrder: item.defaultSort,
-            level: item.level,
-            iconKey: item.iconKey,
-          };
-        });
-
-        // 创建用户分类实体
-        const saveData = this.userCategoryRepo.create(tempCategory);
-        // 保存实体
-        allCategories = await this.userCategoryRepo.save(saveData);
-      } catch {
-        throw new InternalServerErrorException(
-          '初始化用户分类错误，请稍后再试',
-        );
-      }
-    }
 
     // 组装数据，按顺序排列一级分类，并把二级分类按照顺序放到对应的一级分类下面
 
@@ -138,6 +105,85 @@ export class CategoriesService {
         ...category,
         children: childrenByParentId.get(category.id) ?? [],
       }));
+  }
+
+  /**
+   * 初始化用户分类表
+   * @param userId 用户id
+   */
+  async initUserCategory(userId: number) {
+    try {
+      // 按照顺序获取默认分类
+      const templates = await this.categoryRepo.find({
+        order: {
+          level: 'ASC',
+          defaultSort: 'ASC',
+          id: 'ASC',
+        },
+      });
+
+      // 所有一级分类
+      const parentTemplates = templates.filter(
+        (category) => category.level === 1,
+      );
+
+      // 所有二级分类
+      const childTemplates = templates.filter(
+        (category) => category.level === 2,
+      );
+
+      // 创建一级分类
+      const parents = parentTemplates.map((tpl) =>
+        this.userCategoryRepo.create({
+          ownerUserId: userId,
+          sourceTplId: tpl.id,
+          type: tpl.type,
+          parentId: null,
+          name: tpl.name,
+          sortOrder: tpl.defaultSort,
+          level: 1,
+          iconKey: tpl.iconKey,
+        }),
+      );
+
+      // 保存一级分类
+      const saveParents = await this.userCategoryRepo.save(parents);
+
+      // 建立 模板ID -> 用户分类ID 映射。这一步的目的：
+      // 用户初始化后，分类 在 user_category 中生成的新 ID 不一定是原本在category_template 中的ID，所以在 user_category 中，子类的
+      // parentId 可能指向的并不是真正的父类id，这里建立映射，让user_category中的parentId正确指向其父类在user_category中的id，避免错乱问题
+      const userCategoryIdByTplId = new Map<number, number>(
+        saveParents.map((category) => [category.sourceTplId!, category.id]),
+      );
+
+      // 创建二级分类
+      const children = childTemplates.map((category) => {
+        // 通过映射获取二级分类的父类id
+        const parentId = userCategoryIdByTplId.get(category.parentId!);
+
+        if (!parentId) {
+          throw new InternalServerErrorException(
+            `分类模板 ${category.id} 的父模板不存在`,
+          );
+        }
+
+        return this.userCategoryRepo.create({
+          ownerUserId: userId,
+          sourceTplId: category.id,
+          type: category.type,
+          parentId,
+          name: category.name,
+          sortOrder: category.defaultSort,
+          level: 2,
+          iconKey: category.iconKey,
+        });
+      });
+
+      // 保存二级分类
+      await this.userCategoryRepo.save(children);
+    } catch {
+      throw new InternalServerErrorException('初始化用户失败，请稍后再试');
+    }
   }
 
   /**
@@ -291,14 +337,7 @@ export class CategoriesService {
     name: string,
     iconKey: IconKey,
   ): Promise<void> {
-    // 查询对应的分类
-    const findRes = await this.userCategoryRepo.findOneBy({
-      ownerUserId: userId,
-      id,
-      archivedTime: IsNull(),
-    });
-
-    if (!findRes) throw new BadRequestException('编辑的分类不存在');
+    const findRes = await this.findCategoryById(userId, id, '编辑的分类不存在');
 
     // 检查同一归属下，新名称的分类是否存在
     await this.checkSameName(userId, name, findRes.parentId, findRes.type, id);
@@ -311,6 +350,72 @@ export class CategoriesService {
 
     if (result.affected !== 1) {
       throw new InternalServerErrorException('编辑失败，请重试');
+    }
+  }
+
+  /**
+   * 通过分类id查询分类
+   * @param ownerUserId 用户id
+   * @param id 分类id
+   * @param msg 异常信息
+   */
+  private async findCategoryById(
+    ownerUserId: number,
+    id: number,
+    msg: string,
+  ): Promise<UserCategoryEntity> {
+    // 查询对应的分类
+    const result = await this.userCategoryRepo.findOneBy({
+      ownerUserId,
+      id,
+      archivedTime: IsNull(),
+    });
+
+    if (!result) throw new BadRequestException(msg);
+
+    return result;
+  }
+
+  /**
+   * 归档分类
+   * @param userId 用户id
+   * @param id 分类id
+   */
+  async archive(userId: number, id: number): Promise<void> {
+    // 查询对应分类
+    const findRes = await this.findCategoryById(userId, id, '分类不存在');
+
+    // 如果归档的是一级分类且它存在未归档的二级分类，拒绝归档
+    if (findRes.level === 1) {
+      // 查询它的二级分类
+      const children = await this.userCategoryRepo.findBy({
+        parentId: findRes.id,
+        ownerUserId: findRes.ownerUserId,
+        archivedTime: IsNull(),
+      });
+
+      // 存在二级分类拒绝归档
+      if (children.length > 0) {
+        throw new BadRequestException(
+          '被删除分类存在二级分类，请先删除其二级分类',
+        );
+      }
+    }
+
+    // 归档
+    const result = await this.userCategoryRepo.update(
+      {
+        id,
+        ownerUserId: userId,
+        archivedTime: IsNull(),
+      },
+      {
+        archivedTime: new Date(),
+      },
+    );
+
+    if (result.affected !== 1) {
+      throw new InternalServerErrorException('删除失败，请重试');
     }
   }
 }

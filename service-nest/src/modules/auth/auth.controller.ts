@@ -12,7 +12,7 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
+import { ResponseMsg } from 'src/common/decorators/response-message.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { AuthService } from './services/auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -117,7 +117,7 @@ export class AuthController {
    */
   @Public()
   @Post('register')
-  @ResonpseMsg('注册成功')
+  @ResponseMsg('注册成功')
   async register(
     // 从请求体中提取并验证注册DTO
     @Body() body: RegisterDto,
@@ -135,7 +135,7 @@ export class AuthController {
    */
   @Public()
   @Post('login')
-  @ResonpseMsg('登录成功')
+  @ResponseMsg('登录成功')
   async login(
     @Body() body: LoginDto,
 
@@ -165,7 +165,7 @@ export class AuthController {
    */
   @Public()
   @Post('refresh')
-  @ResonpseMsg('Token 刷新成功')
+  @ResponseMsg('Token 刷新成功')
   async refresh(
     @Req() request: Request,
     // Response 用于覆盖浏览器中的旧 refresh token Cookie。
@@ -197,7 +197,7 @@ export class AuthController {
    * @returns 是否修改成功
    */
   @Post('changePassword')
-  @ResonpseMsg('修改密码成功')
+  @ResponseMsg('修改密码成功')
   async changePassword(
     @Body() body: changePasswordDto,
     @CurrentUserId() userId: number,
@@ -222,7 +222,7 @@ export class AuthController {
    */
   @Public()
   @Post('resetPassword')
-  @ResonpseMsg('修改密码成功')
+  @ResponseMsg('修改密码成功')
   async resetPassword(@Body() body: ResetPassword) {
     const { email, newPassword, code } = body;
 
@@ -243,7 +243,7 @@ export class AuthController {
    * @param response
    */
   @Post('logout')
-  @ResonpseMsg('退出成功')
+  @ResponseMsg('退出成功')
   async logout(
     @CurrentUser() user: AuthenticatedUser,
     @Res({ passthrough: true }) response: Response,

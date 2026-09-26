@@ -16,6 +16,7 @@ import { AuthTokenService } from './services/auth-token.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthSessionsEntity } from './entities/auth-sessions.entity';
 import { PasswordService } from './services/password.service';
+import { CategoriesModule } from '../categories/categories.module';
 
 @Module({
   //在当前模块里注册相关模块
@@ -26,6 +27,7 @@ import { PasswordService } from './services/password.service';
     VerificationCodeModule,
     // 注册authService实体
     TypeOrmModule.forFeature([AuthSessionsEntity]),
+    CategoriesModule,
     // JWT模块
     JwtModule.registerAsync({
       inject: [ConfigService],

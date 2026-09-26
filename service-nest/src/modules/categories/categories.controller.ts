@@ -4,7 +4,16 @@
  * @description 分类模块控制层
  */
 
-import { Controller, Get, Post, Query, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Body,
+  Param,
+  ParseIntPipe,
+  Delete,
+} from '@nestjs/common';
 import {
   CategoriesService,
   type UserCategoryTreeItem,
@@ -14,7 +23,7 @@ import { CurrentUserId } from '../auth/decorators/current-user.decorator';
 import { CategoryIconEntity } from './entities/category-icon.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { updateCategory } from './dto/update-category.dto';
-import { ResonpseMsg } from 'src/common/decorators/response-message.decorator';
+import { ResponseMsg } from 'src/common/decorators/response-message.decorator';
 
 @Controller('categories')
 export class CategoriesController {
@@ -48,8 +57,8 @@ export class CategoriesController {
    * @param userId 用户id
    * @param body dto
    */
-  @Post('createCategory')
-  @ResonpseMsg('创建成功')
+  @Post('create')
+  @ResponseMsg('创建成功')
   async create(
     @CurrentUserId() userId: number,
     @Body() body: CreateCategoryDto,
@@ -65,13 +74,28 @@ export class CategoriesController {
    * @param userId 用户id
    * @param body dto
    */
-  @Post('updateCategory')
-  @ResonpseMsg('编辑成功')
+  @Post('update')
+  @ResponseMsg('编辑成功')
   async update(
     @CurrentUserId() userId: number,
     @Body() body: updateCategory,
   ): Promise<void> {
     const { id, name, iconKey } = body;
     return await this.categoriesService.update(userId, id, name, iconKey);
+  }
+
+  /**
+   * 归档分类
+   * @param userId 用户id
+   * @param id 分类id
+   * @returns
+   */
+  @Delete(':id/archive')
+  @ResponseMsg('删除成功')
+  async archive(
+    @CurrentUserId() userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    return await this.categoriesService.archive(userId, id);
   }
 }
