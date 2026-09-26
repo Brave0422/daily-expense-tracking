@@ -10,6 +10,7 @@ import {
   HttpStatus,
   BadRequestException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
@@ -28,6 +29,8 @@ const AUTHENTICATED_PURPOSES: readonly VerificationPurpose[] = [
 
 @Injectable()
 export class VerificationCodeService {
+  private readonly logger = new Logger(VerificationCodeService.name);
+
   constructor(
     private readonly configService: ConfigService,
     // 注入验证码实体的仓库
@@ -43,6 +46,39 @@ export class VerificationCodeService {
    */
   private generateVerificationCode(): string {
     return randomInt(0, 1_000_000).toString().padStart(6, '0');
+  }
+
+  /**
+   * 获取开发环境固定验证码。
+   * 只有明确处于 development 且配置了 DEV_VERIFICATION_CODE 时才会启用，
+   * 生产环境即使误配该变量也会继续使用随机验证码和真实邮件。
+   * @returns 六位开发验证码；未启用时返回 null
+   */
+  private getDevelopmentVerificationCode(): string | null {
+    // 第一步：严格判断当前环境，避免测试验证码在非开发环境生效。
+    const isDevelopment =
+      this.configService.get<string>('NODE_ENV') === 'development';
+    if (!isDevelopment) {
+      return null;
+    }
+
+    // 第二步：读取显式配置；未配置时保持原有的真实邮件流程。
+    const developmentCode = this.configService
+      .get<string>('DEV_VERIFICATION_CODE')
+      ?.trim();
+    if (!developmentCode) {
+      return null;
+    }
+
+    // 第三步：校验固定验证码格式，防止错误配置导致生成无法提交的验证码。
+    if (!/^\d{6}$/.test(developmentCode)) {
+      throw new InternalServerErrorException(
+        'DEV_VERIFICATION_CODE 必须是六位数字',
+      );
+    }
+
+    // 第四步：返回仅供本地开发使用的固定验证码。
+    return developmentCode;
   }
 
   /**
@@ -218,25 +254,29 @@ export class VerificationCodeService {
     purpose: VerificationPurpose,
     userId?: number,
   ): Promise<void> {
+    // 第一步：根据验证码用途确定实际接收邮箱。
     const recipientEmail = await this.resolveRecipientEmail(
       email,
       purpose,
       userId,
     );
 
-    // 检查发送频率
+    // 第二步：检查发送冷却时间和小时发送上限。
     await this.ensureCanSend(recipientEmail, purpose);
 
-    // 生成验证码及哈希值
-    const code = this.generateVerificationCode();
+    // 第三步：开发环境优先使用显式配置的固定验证码，否则生成随机验证码。
+    const developmentCode = this.getDevelopmentVerificationCode();
+    const code = developmentCode ?? this.generateVerificationCode();
+
+    // 第四步：只保存验证码哈希，不向数据库写入明文。
     const codeHash = this.hashCode(code, recipientEmail, purpose);
 
-    // 获取验证码有效期
+    // 第五步：读取验证码有效期。
     const expiresMinutes = Number(
       this.configService.get<number>('MAIL_CODE_EXPIRES_MINUTES', 5),
     );
 
-    // 保存验证码。先保存再发送，避免邮件发送成功但是验证码存储失败的问题
+    // 第六步：先保存验证码，避免真实邮件已发出但数据库保存失败。
     const saveCode = this.verificationCodeRepo.create({
       userId: userId ?? null,
       email: recipientEmail,
@@ -248,23 +288,30 @@ export class VerificationCodeService {
     });
     await this.verificationCodeRepo.save(saveCode);
 
-    // 发送邮件
-    try {
-      await this.mailService.sendVerificationCode(
-        recipientEmail,
-        code,
-        purpose,
+    // 第七步：固定验证码模式跳过 SMTP，并在服务端控制台提示当前测试信息。
+    if (developmentCode) {
+      this.logger.warn(
+        `[开发验证码] 邮箱: ${recipientEmail}, 用途: ${purpose}, 验证码: ${developmentCode}`,
       );
-    } catch (error) {
-      // 邮件发送失败，废弃刚刚存储的验证码
-      await this.verificationCodeRepo.update(saveCode.id, {
-        invalidatedTime: new Date(),
-      });
+    } else {
+      // 第八步：非固定验证码模式通过 SMTP 发送真实邮件。
+      try {
+        await this.mailService.sendVerificationCode(
+          recipientEmail,
+          code,
+          purpose,
+        );
+      } catch {
+        // 第九步：邮件发送失败时废弃刚保存的验证码，避免其仍可被使用。
+        await this.verificationCodeRepo.update(saveCode.id, {
+          invalidatedTime: new Date(),
+        });
 
-      throw new InternalServerErrorException('邮件发送失败，请重新尝试');
+        throw new InternalServerErrorException('邮件发送失败，请重新尝试');
+      }
     }
 
-    // 邮件发送成功，使之前未使用的验证码失效
+    // 第十步：当前验证码已可用后，使同邮箱、同用途的旧验证码全部失效。
     await this.invalidatePreviousCodes(recipientEmail, purpose, saveCode.id);
   }
 
