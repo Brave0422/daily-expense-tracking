@@ -58,3 +58,4 @@ project.private.config.json
 /cypress/screenshots/
 __screenshots__/
 .playwright-cli
+/web/output/playwright/

@@ -29,7 +29,10 @@ async function handleExpiredSession(): Promise<void> {
   if (currentRoute.meta.requiresAuth) {
     await router.replace({
       name: 'login',
-      query: { redirect: currentRoute.fullPath },
+      query: {
+        redirect: currentRoute.fullPath,
+        reason: 'session-expired',
+      },
     })
   }
 }

@@ -5,7 +5,7 @@
  * @description 登录页面，校验账号密码并支持鉴权拦截后的安全回跳。
  */
 
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button as TButton, MessagePlugin } from 'tdesign-vue-next'
 
@@ -29,6 +29,12 @@ const password = ref('')
 const errors = ref<FieldErrors>({})
 const formMessage = ref('')
 const isSubmitting = ref(false)
+
+onMounted(async () => {
+  if (route.query.reason === 'session-expired') {
+    await MessagePlugin.warning('登录已失效，请重新登录')
+  }
+})
 
 /**
  * 读取并校验登录前保存的站内目标地址，阻止协议相对 URL 跳转。

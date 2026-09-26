@@ -2,18 +2,18 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:28:28+08:00
- * @description 注册页面，发送注册验证码并创建新账号。
+ * @description 注册页面，发送注册验证码、创建新账号并自动建立登录会话。
  */
 
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button as TButton, MessagePlugin } from 'tdesign-vue-next'
 
-import { register } from '@/api/auth.api'
 import { normalizeApiError } from '@/api/http'
 import BaseFormField from '@/components/base/BaseFormField.vue'
 import AuthCodeField from '@/components/business/AuthCodeField.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
+import { useAuthStore } from '@/stores/auth.store'
 import {
   type FieldErrors,
   normalizeEmail,
@@ -22,6 +22,7 @@ import {
 } from '@/utils/auth-validation'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const email = ref('')
 const code = ref('')
 const password = ref('')
@@ -31,7 +32,7 @@ const isSubmitting = ref(false)
 
 /**
  * 校验邮箱、验证码和密码并创建账号。
- * @returns 注册完成后结束；成功时跳转登录页
+ * @returns 注册和自动登录完成后结束；成功时进入账单列表页
  */
 async function handleSubmit(): Promise<void> {
   formMessage.value = ''
@@ -48,9 +49,9 @@ async function handleSubmit(): Promise<void> {
 
   isSubmitting.value = true
   try {
-    await register(validation.data)
-    await MessagePlugin.success('注册成功，请登录')
-    await router.replace({ name: 'login' })
+    await authStore.register(validation.data)
+    await router.replace({ name: 'records' })
+    await MessagePlugin.success('注册成功')
   } catch (error) {
     formMessage.value = normalizeApiError(error, '注册失败，请稍后重试').message
   } finally {

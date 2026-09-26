@@ -7,13 +7,24 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { login as loginRequest, logout as logoutRequest, refreshSession } from '@/api/auth.api'
-import type { LoginBody } from '@/api/auth.types'
+import {
+  login as loginRequest,
+  logout as logoutRequest,
+  refreshSession,
+  register as registerRequest,
+} from '@/api/auth.api'
+import type { LoginBody, RegisterBody } from '@/api/auth.types'
+import { normalizeApiError } from '@/api/http'
+
+type SessionRestoreStatus = 'pending' | 'authenticated' | 'anonymous' | 'expired'
 
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref<string | null>(null)
   const isInitialized = ref(false)
+  const sessionRestoreStatus = ref<SessionRestoreStatus>('pending')
   const isAuthenticated = computed(() => accessToken.value !== null)
+  const hasExpiredSession = computed(() => sessionRestoreStatus.value === 'expired')
+  let initializePromise: Promise<void> | null = null
 
   /**
    * 更新内存中的 Access Token。
@@ -21,11 +32,13 @@ export const useAuthStore = defineStore('auth', () => {
    */
   function setAccessToken(token: string): void {
     accessToken.value = token
+    sessionRestoreStatus.value = 'authenticated'
   }
 
   /** 清除前端内存会话，不主动撤销服务端 Session。 */
   function clearSession(): void {
     accessToken.value = null
+    sessionRestoreStatus.value = 'anonymous'
   }
 
   /**
@@ -37,14 +50,26 @@ export const useAuthStore = defineStore('auth', () => {
       return
     }
 
-    try {
-      const data = await refreshSession()
-      setAccessToken(data.accessToken)
-    } catch {
-      clearSession()
-    } finally {
-      isInitialized.value = true
+    if (!initializePromise) {
+      initializePromise = (async () => {
+        try {
+          const data = await refreshSession()
+          setAccessToken(data.accessToken)
+        } catch (error) {
+          clearSession()
+          const requestError = normalizeApiError(error)
+          if (requestError.statusCode === 401 && requestError.message === '登录状态已失效') {
+            sessionRestoreStatus.value = 'expired'
+          }
+        } finally {
+          isInitialized.value = true
+        }
+      })().finally(() => {
+        initializePromise = null
+      })
     }
+
+    await initializePromise
   }
 
   /**
@@ -54,6 +79,16 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(body: LoginBody): Promise<void> {
     const data = await loginRequest(body)
     setAccessToken(data.accessToken)
+    isInitialized.value = true
+  }
+
+  /**
+   * 注册账号并立即建立登录会话。
+   * @param body - 清洗并校验后的注册参数
+   */
+  async function register(body: RegisterBody): Promise<void> {
+    await registerRequest(body)
+    await login({ email: body.email, password: body.password })
   }
 
   /**
@@ -67,12 +102,14 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     accessToken,
+    hasExpiredSession,
     isAuthenticated,
     isInitialized,
     clearSession,
     initialize,
     login,
     logout,
+    register,
     setAccessToken,
   }
 })

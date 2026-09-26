@@ -31,7 +31,10 @@ export function setupRouterGuards(router: Router, authStore: AuthStore): void {
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
       return {
         name: 'login',
-        query: { redirect: to.fullPath },
+        query: {
+          redirect: to.fullPath,
+          ...(authStore.hasExpiredSession ? { reason: 'session-expired' } : {}),
+        },
       }
     }
 

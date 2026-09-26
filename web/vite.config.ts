@@ -12,11 +12,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig({
   // Tailwind 负责工具类编译，Vue DevTools 仅在开发环境提供调试能力。
-  plugins: [
-    vue(),
-    tailwindcss(),
-    vueDevTools(),
-  ],
+  plugins: [vue(), tailwindcss(), vueDevTools()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -28,8 +24,9 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
+        // 对象键按 Cookie 的原始 Path 精确匹配，不支持正则表达式。
         cookiePathRewrite: {
-          '^/auth': '/api/auth',
+          '/auth': '/api/auth',
         },
       },
     },
