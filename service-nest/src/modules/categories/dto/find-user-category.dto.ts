@@ -11,5 +11,5 @@ export class FindUserCategory {
   @IsEnum(AmountType, {
     message: '分类类型不正确',
   })
-  type?: AmountType;
+  type!: AmountType;
 }
