@@ -13,14 +13,21 @@ import { AmountType } from '../amount-records/enums/amount-type-enum';
 import { UserService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryTplEntity } from './entities/category-template.entity';
-import { FindOptionsWhere, IsNull, Not, Repository } from 'typeorm';
+import { FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { UserCategoryEntity } from './entities/user-category.entity';
 import { CategoryIconEntity } from './entities/category-icon.entity';
 import { IconKey } from './enums/icon-key-enum';
 
-export interface UserCategoryTreeItem extends UserCategoryEntity {
+export interface UserCategoryListItem extends UserCategoryEntity {
+  // 是否来源于默认分类模板
+  isDefault: boolean;
+  // 最终用于渲染的背景色
+  backgroundColor: string;
+}
+
+export interface UserCategoryTreeItem extends UserCategoryListItem {
   // 当前一级分类下按顺序排列的二级分类
-  children: UserCategoryEntity[];
+  children: UserCategoryListItem[];
 }
 
 @Injectable()
@@ -39,13 +46,11 @@ export class CategoriesService {
    * 获取用户所有分类
    * @param userId 用户id
    * @param type 金额类型
-   * @param includeArchived 是否包含已归档分类
    */
   async findAllForUser(
     userId: number,
     type: AmountType,
-    includeArchived: boolean = false,
-  ): Promise<UserCategoryTreeItem[] | []> {
+  ): Promise<UserCategoryTreeItem[]> {
     // 根据id查询用户
     const user = await this.userService.findeOneById(userId);
 
@@ -53,15 +58,11 @@ export class CategoriesService {
       throw new BadRequestException('用户不存在，获取分类列表失败');
     }
 
-    // 构建查询归档分类的条件
-    const archiveCondition: FindOptionsWhere<UserCategoryEntity> =
-      includeArchived ? {} : { archivedTime: IsNull() };
-
-    // 查询用户所有分类
-    let allCategories = await this.userCategoryRepo.findBy({
+    // 分类列表只返回未归档分类，已归档分类仅供历史金额记录关联和内部业务读取
+    const allCategories = await this.userCategoryRepo.findBy({
       ownerUserId: userId,
       type,
-      ...archiveCondition,
+      archivedTime: IsNull(),
     });
 
     // 组装数据，按顺序排列一级分类，并把二级分类按照顺序放到对应的一级分类下面
@@ -98,13 +99,64 @@ export class CategoriesService {
       childrenByParentId.set(parentId, [category]);
     }
 
-    return allCategories
+    // 筛选一级分类并按照展示顺序排序
+    const parentCategories = allCategories
       .filter((category) => category.level === 1)
-      .sort(compareBySortOrder)
-      .map((category) => ({
+      .sort(compareBySortOrder);
+
+    // 收集一级分类使用的图标键，并通过Set去重
+    const parentIconKeys = [
+      ...new Set(parentCategories.map((category) => category.iconKey)),
+    ];
+
+    // 根据图标键批量查询一级分类的图标背景色；没有一级分类时不查询数据库
+    const parentIcons =
+      parentIconKeys.length === 0
+        ? []
+        : await this.categoryIconEntity.find({
+            select: {
+              iconKey: true,
+              backgroundColor: true,
+            },
+            where: {
+              iconKey: In(parentIconKeys),
+            },
+          });
+
+    // 建立“图标键 -> 背景色”映射，方便组装分类响应时快速读取
+    const backgroundColorByIconKey = new Map(
+      parentIcons.map((icon) => [icon.iconKey, icon.backgroundColor]),
+    );
+
+    // 逐个组装一级分类及其二级分类的最终响应数据
+    return parentCategories.map((category) => {
+      // 一级分类使用自身图标在图标库中配置的背景色
+      const backgroundColor = backgroundColorByIconKey.get(category.iconKey);
+
+      // 分类关联的图标不存在时说明数据不完整，终止本次查询
+      if (!backgroundColor) {
+        throw new InternalServerErrorException(
+          `分类 ${category.id} 关联的图标不存在`,
+        );
+      }
+
+      // 二级分类继承当前一级分类的背景色，并派生默认来源标识
+      const children = (childrenByParentId.get(category.id) ?? []).map(
+        (child) => ({
+          ...child,
+          isDefault: child.sourceTplId !== null,
+          backgroundColor,
+        }),
+      );
+
+      // 返回一级分类、派生字段以及已经组装好的二级分类列表
+      return {
         ...category,
-        children: childrenByParentId.get(category.id) ?? [],
-      }));
+        isDefault: category.sourceTplId !== null,
+        backgroundColor,
+        children,
+      };
+    });
   }
 
   /**
@@ -197,6 +249,10 @@ export class CategoriesService {
         select: {
           iconKey: true,
           backgroundColor: true,
+        },
+        order: {
+          defaultSort: 'ASC',
+          iconKey: 'ASC',
         },
       });
     } catch {
