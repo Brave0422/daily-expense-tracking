@@ -15,7 +15,7 @@ const apiClientMock = vi.hoisted(() => ({
 
 vi.mock('@/api/http', () => ({ apiClient: apiClientMock }))
 
-import { createTag, deleteTag, getUserTags, updateTag } from '@/api/tag.api'
+import { createTag, deleteTag, getUserTags, searchUserTags, updateTag } from '@/api/tag.api'
 
 describe('tag api', () => {
   beforeEach(() => {
@@ -45,5 +45,15 @@ describe('tag api', () => {
     expect(apiClientMock.post).toHaveBeenCalledWith('/tags', { name: '请客' })
     expect(apiClientMock.patch).toHaveBeenCalledWith('/tags/7', { name: '聚餐' })
     expect(apiClientMock.delete).toHaveBeenCalledWith('/tags/7/archive')
+  })
+
+  it('只通过key查询参数搜索标签并解包列表', async () => {
+    const tags = [{ id: 1, name: '深圳聚餐' }]
+    apiClientMock.get.mockResolvedValue({ data: { data: tags } })
+
+    await expect(searchUserTags('聚餐')).resolves.toEqual(tags)
+    expect(apiClientMock.get).toHaveBeenCalledWith('/tags/search', {
+      params: { key: '聚餐' },
+    })
   })
 })

@@ -11,8 +11,12 @@ import {
 } from '@nestjs/common';
 import { TagEntity } from './entities/tag.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not, Repository } from 'typeorm';
+import { IsNull, Not, Repository, Raw } from 'typeorm';
 import type { TagListItem } from './types/tag.types';
+import {
+  LIKE_ESCAPE_CHARACTER,
+  escapeLikePattern,
+} from '../../common/util/escapeLikePattern';
 
 @Injectable()
 export class TagsService {
@@ -165,6 +169,43 @@ export class TagsService {
         throw error;
       }
       throw new InternalServerErrorException('删除标签失败，请重新尝试', {
+        cause: error,
+      });
+    }
+  }
+
+  /**
+   * 根据内容查询标签
+   * @param userId 用户id
+   * @param key 搜索关键字
+   * @returns 标签列表
+   */
+  async searchByName(userId: number, key: string): Promise<TagListItem[]> {
+    const escapedKey = escapeLikePattern(key);
+    try {
+      return await this.tagRepo.find({
+        select: {
+          id: true,
+          name: true,
+        },
+        where: {
+          ownerUserId: userId,
+          name: Raw(
+            (columnAlias) =>
+              `${columnAlias} LIKE :tagNamePattern ESCAPE '${LIKE_ESCAPE_CHARACTER}'`,
+            {
+              tagNamePattern: `%${escapedKey}%`,
+            },
+          ),
+          archivedTime: IsNull(),
+        },
+        order: {
+          updatedTime: 'DESC',
+          id: 'DESC',
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('查询标签失败，请重新尝试', {
         cause: error,
       });
     }

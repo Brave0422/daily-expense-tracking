@@ -12,6 +12,7 @@ const apiMocks = vi.hoisted(() => ({
   deleteTag: vi.fn(),
   getUserCategories: vi.fn(),
   getUserTags: vi.fn(),
+  searchUserTags: vi.fn(),
 }))
 
 vi.mock('@/api/category.api', () => ({
@@ -21,6 +22,7 @@ vi.mock('@/api/category.api', () => ({
 vi.mock('@/api/tag.api', () => ({
   deleteTag: apiMocks.deleteTag,
   getUserTags: apiMocks.getUserTags,
+  searchUserTags: apiMocks.searchUserTags,
 }))
 
 import CategoryManagementCard from '@/views/configuration/components/CategoryManagementCard.vue'

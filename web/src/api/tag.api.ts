@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-09-27T18:34:34+08:00
- * @description 标签业务接口，负责当前用户标签列表及增删改请求的发送与响应解包。
+ * @description 标签业务接口，负责当前用户标签列表、搜索及增删改请求的发送与响应解包。
  */
 
 import type { ApiResponse } from './common.types'
@@ -11,6 +11,14 @@ import type { TagNameBody, UserTag } from './tag.types'
 /** 获取当前用户的全部未归档标签。 */
 export async function getUserTags(): Promise<UserTag[]> {
   const response = await apiClient.get<ApiResponse<UserTag[]>>('/tags')
+  return response.data.data
+}
+
+/** 根据名称关键词搜索当前用户的未归档标签。 */
+export async function searchUserTags(key: string): Promise<UserTag[]> {
+  const response = await apiClient.get<ApiResponse<UserTag[]>>('/tags/search', {
+    params: { key },
+  })
   return response.data.data
 }
 

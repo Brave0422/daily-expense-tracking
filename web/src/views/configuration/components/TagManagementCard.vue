@@ -2,13 +2,13 @@
 /**
  * @author Brave
  * @date 2026-09-27T18:34:34+08:00
- * @description 标签管理卡片，负责标签列表加载、增改弹窗编排及逻辑删除反馈。
+ * @description 标签管理卡片，负责标签列表搜索、增改弹窗编排及逻辑删除反馈。
  */
 
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { Button as TButton, Dialog as TDialog, MessagePlugin } from 'tdesign-vue-next'
 
-import { deleteTag, getUserTags } from '@/api/tag.api'
+import { deleteTag, getUserTags, searchUserTags } from '@/api/tag.api'
 import type { UserTag } from '@/api/tag.types'
 import { normalizeApiError } from '@/api/http'
 import BaseIcon from '@/components/base/BaseIcon.vue'
@@ -16,9 +16,13 @@ import BaseIcon from '@/components/base/BaseIcon.vue'
 import TagFormDialog from './TagFormDialog.vue'
 import TagListItem from './TagListItem.vue'
 
+const SEARCH_DEBOUNCE_MS = 300
+
 const tags = ref<UserTag[]>([])
 const isLoading = ref(false)
 const loadError = ref('')
+const searchKeyword = ref('')
+const activeSearchKey = ref('')
 const isFormVisible = ref(false)
 const formMode = ref<'create' | 'edit'>('create')
 const editingTag = ref<UserTag | null>(null)
@@ -27,6 +31,7 @@ const deletingTag = ref<UserTag | null>(null)
 const isDeleting = ref(false)
 const deleteError = ref('')
 let requestSequence = 0
+let searchTimerId: number | null = null
 
 const deleteDialogVisible = computed({
   get: () => isDeleteDialogVisible.value,
@@ -38,27 +43,64 @@ const deleteDialogVisible = computed({
     handleCloseDelete()
   },
 })
+const isSearchActive = computed(() => activeSearchKey.value.length > 0)
 
-/** 加载当前用户标签，并阻止较旧请求覆盖最新列表。 */
-async function loadTags(): Promise<void> {
+function clearSearchTimer(): void {
+  if (searchTimerId !== null) {
+    window.clearTimeout(searchTimerId)
+    searchTimerId = null
+  }
+}
+
+/** 按关键词加载标签，并阻止较旧请求覆盖最新列表。 */
+async function loadTags(key = ''): Promise<void> {
+  const normalizedKey = key.trim()
   const currentSequence = ++requestSequence
+  activeSearchKey.value = normalizedKey
   isLoading.value = true
   loadError.value = ''
 
   try {
-    const result = await getUserTags()
+    const result = normalizedKey ? await searchUserTags(normalizedKey) : await getUserTags()
     if (currentSequence === requestSequence) {
       tags.value = result
     }
   } catch (error) {
     if (currentSequence === requestSequence) {
-      loadError.value = normalizeApiError(error, '标签加载失败，请稍后重试').message
+      loadError.value = normalizeApiError(
+        error,
+        normalizedKey ? '标签搜索失败，请稍后重试' : '标签加载失败，请稍后重试',
+      ).message
     }
   } finally {
     if (currentSequence === requestSequence) {
       isLoading.value = false
     }
   }
+}
+
+function handleSearchInput(event: Event): void {
+  const value = (event.target as HTMLInputElement).value
+  searchKeyword.value = value
+  clearSearchTimer()
+
+  // 输入一旦变化，立即让在途旧请求失效，等待防抖结束后加载最新关键词。
+  requestSequence += 1
+  loadError.value = ''
+  searchTimerId = window.setTimeout(async () => {
+    searchTimerId = null
+    await loadTags(value)
+  }, SEARCH_DEBOUNCE_MS)
+}
+
+async function handleSearchSubmit(): Promise<void> {
+  clearSearchTimer()
+  await loadTags(searchKeyword.value)
+}
+
+async function handleRetry(): Promise<void> {
+  clearSearchTimer()
+  await loadTags(searchKeyword.value)
 }
 
 function handleOpenCreate(): void {
@@ -74,7 +116,8 @@ function handleOpenEdit(tag: UserTag): void {
 }
 
 async function handleFormSuccess(): Promise<void> {
-  await loadTags()
+  clearSearchTimer()
+  await loadTags(searchKeyword.value)
 }
 
 function handleOpenDelete(tag: UserTag): void {
@@ -114,11 +157,19 @@ async function handleDelete(): Promise<void> {
 
   if (isDeleted) {
     handleCloseDelete()
-    await loadTags()
+    clearSearchTimer()
+    await loadTags(searchKeyword.value)
   }
 }
 
-onMounted(loadTags)
+onMounted(async () => {
+  await loadTags()
+})
+
+onBeforeUnmount(() => {
+  clearSearchTimer()
+  requestSequence += 1
+})
 </script>
 
 <template>
@@ -132,10 +183,18 @@ onMounted(loadTags)
         <span class="tag-card__count">{{ tags.length }} 个标签</span>
       </div>
 
-      <div class="tag-card__toolbar">
-        <label class="tag-card__search" title="标签搜索功能开发中">
+      <form class="tag-card__toolbar" role="search" @submit.prevent="handleSearchSubmit">
+        <label class="tag-card__search" for="tag-search-keyword">
           <BaseIcon name="search" :size="17" />
-          <input aria-label="搜索标签功能暂不可用" disabled placeholder="搜索标签" type="search" />
+          <input
+            id="tag-search-keyword"
+            autocomplete="off"
+            maxlength="50"
+            placeholder="搜索标签"
+            type="search"
+            :value="searchKeyword"
+            @input="handleSearchInput"
+          />
         </label>
 
         <div class="tag-card__add-area">
@@ -144,25 +203,27 @@ onMounted(loadTags)
             <span>添加标签</span>
           </button>
         </div>
-      </div>
+      </form>
     </header>
 
     <!-- 标签展示区固定占用剩余高度，仅该区域承接列表滚动。 -->
     <div class="tag-card__content">
       <div v-if="isLoading" class="tag-card__state" role="status">
         <span class="tag-card__spinner" aria-hidden="true" />
-        正在加载标签...
+        {{ isSearchActive ? '正在搜索标签...' : '正在加载标签...' }}
       </div>
 
       <div v-else-if="loadError" class="tag-card__state tag-card__state--error" role="alert">
         <p>{{ loadError }}</p>
-        <TButton theme="default" type="button" @click="loadTags">重新加载</TButton>
+        <TButton theme="default" type="button" @click="handleRetry">重新加载</TButton>
       </div>
 
       <div v-else-if="tags.length === 0" class="tag-card__state">
         <BaseIcon class="tag-card__empty-icon" name="emptyData" :size="64" />
-        <p>暂无标签</p>
-        <button type="button" @click="handleOpenCreate">添加第一个标签</button>
+        <p>{{ isSearchActive ? '未找到匹配标签' : '暂无标签' }}</p>
+        <button v-if="!isSearchActive" type="button" @click="handleOpenCreate">
+          添加第一个标签
+        </button>
       </div>
 
       <ul v-else class="tag-list">
@@ -272,10 +333,20 @@ onMounted(loadTags)
   gap: 8px;
   padding: 0 12px;
   color: var(--color-icon);
-  background: #f3f4f5;
+  background: #f8f9fa;
   border: 1px solid var(--color-border);
   border-radius: 11px;
-  cursor: not-allowed;
+  cursor: text;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.tag-card__search:focus-within {
+  background: var(--color-surface);
+  border-color: var(--color-primary-active);
+  box-shadow: 0 0 0 3px rgb(255 230 57 / 20%);
 }
 
 .tag-card__search input {
@@ -286,12 +357,16 @@ onMounted(loadTags)
   background: transparent;
   border: 0;
   outline: 0;
-  cursor: not-allowed;
+  cursor: text;
 }
 
 .tag-card__search input::placeholder {
   color: #a9acb2;
   opacity: 1;
+}
+
+.tag-card__search input::-webkit-search-cancel-button {
+  cursor: pointer;
 }
 
 .tag-card__add-area {

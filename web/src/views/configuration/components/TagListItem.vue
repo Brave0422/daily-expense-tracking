@@ -88,10 +88,10 @@ watch(
 .tag-list-item {
   display: flex;
   width: fit-content;
-  max-width: 150px;
+  max-width: 300px;
   min-width: 0;
   min-height: 38px;
-  align-items: flex-start;
+  align-items: center;
   background: #f8f9fa;
   border: 1px solid var(--color-border);
   border-radius: 11px;
@@ -139,7 +139,7 @@ watch(
   height: 27px;
   flex: none;
   padding: 0;
-  margin: 1px 1px 0 0;
+  margin-right: 1px;
   color: var(--color-danger);
   background: transparent;
   border: 0;

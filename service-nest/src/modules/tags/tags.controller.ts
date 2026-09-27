@@ -13,12 +13,14 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ResponseMsg } from '../../common/decorators/response-message.decorator';
 import { CurrentUserId } from '../auth/decorators/current-user.decorator';
 import { TagNameDto } from './dto/tag-name.dto';
 import { TagsService } from './tags.service';
 import type { TagListItem } from './types/tag.types';
+import { SearchTagQueryDto } from './dto/search-tag.dto';
 
 @Controller('tags')
 export class TagsController {
@@ -79,5 +81,19 @@ export class TagsController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<void> {
     return this.tagsService.archive(id, userId);
+  }
+
+  /**
+   * 搜索标签
+   * @param userId 用户id
+   * @param query 关键字
+   * @returns 标签列表
+   */
+  @Get('search')
+  searchByName(
+    @CurrentUserId() userId: number,
+    @Query() query: SearchTagQueryDto,
+  ): Promise<TagListItem[]> {
+    return this.tagsService.searchByName(userId, query.key);
   }
 }
