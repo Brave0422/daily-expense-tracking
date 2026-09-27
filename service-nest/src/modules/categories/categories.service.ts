@@ -33,11 +33,11 @@ export interface UserCategoryTreeItem extends UserCategoryListItem {
 export class CategoriesService {
   constructor(
     @InjectRepository(CategoryTplEntity)
-    private readonly categoryRepo: Repository<CategoryTplEntity>,
+    private readonly categoryTplRepo: Repository<CategoryTplEntity>,
     @InjectRepository(UserCategoryEntity)
     private readonly userCategoryRepo: Repository<UserCategoryEntity>,
     @InjectRepository(CategoryIconEntity)
-    private readonly categoryIconEntity: Repository<CategoryIconEntity>,
+    private readonly categoryIconRepo: Repository<CategoryIconEntity>,
   ) {}
 
   /**
@@ -104,7 +104,7 @@ export class CategoriesService {
     const parentIcons =
       parentIconKeys.length === 0
         ? []
-        : await this.categoryIconEntity.find({
+        : await this.categoryIconRepo.find({
             select: {
               iconKey: true,
               backgroundColor: true,
@@ -157,7 +157,7 @@ export class CategoriesService {
   async initUserCategory(userId: number) {
     try {
       // 按照顺序获取默认分类
-      const templates = await this.categoryRepo.find({
+      const templates = await this.categoryTplRepo.find({
         order: {
           level: 'ASC',
           defaultSort: 'ASC',
@@ -236,7 +236,7 @@ export class CategoriesService {
   async findAllIcons(): Promise<CategoryIconEntity[]> {
     try {
       // 只需要iconKey和背景色
-      return await this.categoryIconEntity.find({
+      return await this.categoryIconRepo.find({
         select: {
           iconKey: true,
           backgroundColor: true,

@@ -25,6 +25,13 @@ export class TagEntity {
   })
   ownerUserId!: number;
 
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: false,
+  })
+  name!: string;
+
   // 归档时间(软删除)，null表示未归档
   @Column({
     name: 'archived_time',

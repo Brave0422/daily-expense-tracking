@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
   imports: [
@@ -34,6 +35,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
     AuthModule,
     // 分类模块
     CategoriesModule,
+    // 标签模块
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [
