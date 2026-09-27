@@ -6,21 +6,16 @@
  */
 
 import CategoryManagementCard from './components/CategoryManagementCard.vue'
+import TagManagementCard from './components/TagManagementCard.vue'
 </script>
 
 <template>
   <section aria-label="配置管理" class="configuration-view">
-    <!-- 三个配置模块为相互独立的页面区域，本期只实现最左侧分类管理 -->
+    <!-- 三个配置模块为相互独立的页面区域，分类与标签管理分别维护自身滚动状态 -->
     <div class="configuration-view__modules">
       <CategoryManagementCard />
 
-      <section class="configuration-module" aria-labelledby="tag-title">
-        <span class="configuration-module__eyebrow">TAG</span>
-        <h2 id="tag-title">标签管理</h2>
-        <div class="configuration-module__placeholder" aria-hidden="true">
-          <span>即将上线</span>
-        </div>
-      </section>
+      <TagManagementCard />
 
       <section class="configuration-module" aria-labelledby="template-title">
         <span class="configuration-module__eyebrow">TEMPLATE</span>

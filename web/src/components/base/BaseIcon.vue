@@ -15,6 +15,9 @@ export type IconName =
   | 'delete'
   | 'edit'
   | 'reorder'
+  | 'search'
+  | 'emptyData'
+  | 'tagClose'
   | 'changePassword'
   | 'logout'
   | 'hide'
@@ -28,6 +31,9 @@ const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   delete: 'icon-shanchu',
   edit: 'icon-bianji',
   reorder: 'icon-jiaohuanshunxu',
+  search: 'icon-sousuo1',
+  emptyData: 'icon-queshengye_zanwushuju',
+  tagClose: 'icon-dituweizhixinxi_chahao',
   changePassword: 'icon-change-pwd',
   logout: 'icon-exit',
   hide: 'icon-hide',

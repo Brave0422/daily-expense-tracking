@@ -258,7 +258,7 @@ onMounted(() => loadCategories('expense'))
       </div>
 
       <div v-else-if="visibleCategories.length === 0" class="category-card__state">
-        <span class="category-card__empty-mark">+</span>
+        <BaseIcon class="category-card__empty-icon" name="emptyData" :size="64" />
         <p>暂无{{ activeType === 'expense' ? '支出' : '收入' }}分类</p>
         <button type="button" @click="handleOpenCreate">创建第一个分类</button>
       </div>
@@ -553,15 +553,8 @@ onMounted(() => loadCategories('expense'))
   animation: category-spin 0.8s linear infinite;
 }
 
-.category-card__empty-mark {
-  display: grid;
-  width: 58px;
-  height: 58px;
-  color: #776900;
-  font-size: 30px;
-  background: var(--color-primary-soft);
-  border-radius: 18px;
-  place-items: center;
+.category-card__empty-icon {
+  margin-bottom: 2px;
 }
 
 .category-card__state > button {

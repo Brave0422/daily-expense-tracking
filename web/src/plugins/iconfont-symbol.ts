@@ -47,6 +47,7 @@ const CURRENT_COLOR_SYMBOL_IDS = [
   'icon-shanchu',
   'icon-bianji',
   'icon-jiaohuanshunxu',
+  'icon-sousuo1',
 ] as const
 
 /**
