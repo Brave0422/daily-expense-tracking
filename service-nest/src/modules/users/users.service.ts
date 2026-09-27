@@ -4,7 +4,11 @@
  * @description 用户模块服务层
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserEntity } from './entities/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,12 +29,27 @@ export class UserService {
   }
 
   /**
-   * 根据id查找用户
+   * 根据id查找用户，不存在时终止当前业务流程。
    * @param id 用户id
    * @returns 用户实体
    */
-  findeOneById(id: number): Promise<UserEntity | null> {
-    return this.userRepo.findOneBy({ id });
+  async findOneByIdOrThrow(id: number): Promise<UserEntity> {
+    const user = await this.userRepo.findOneBy({ id });
+
+    if (!user) {
+      throw new BadRequestException('用户不存在');
+    }
+
+    return user;
+  }
+
+  /**
+   * 判断用户是否存在，只查询存在性而不加载用户字段。
+   * @param id 用户id
+   * @returns 用户存在时返回true
+   */
+  existsById(id: number): Promise<boolean> {
+    return this.userRepo.existsBy({ id });
   }
 
   /**

@@ -10,7 +10,6 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { AmountType } from '../amount-records/enums/amount-type-enum';
-import { UserService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryTplEntity } from './entities/category-template.entity';
 import { FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
@@ -33,7 +32,6 @@ export interface UserCategoryTreeItem extends UserCategoryListItem {
 @Injectable()
 export class CategoriesService {
   constructor(
-    private readonly userService: UserService,
     @InjectRepository(CategoryTplEntity)
     private readonly categoryRepo: Repository<CategoryTplEntity>,
     @InjectRepository(UserCategoryEntity)
@@ -51,13 +49,6 @@ export class CategoriesService {
     userId: number,
     type: AmountType,
   ): Promise<UserCategoryTreeItem[]> {
-    // 根据id查询用户
-    const user = await this.userService.findeOneById(userId);
-
-    if (!user) {
-      throw new BadRequestException('用户不存在，获取分类列表失败');
-    }
-
     // 分类列表只返回未归档分类，已归档分类仅供历史金额记录关联和内部业务读取
     const allCategories = await this.userCategoryRepo.findBy({
       ownerUserId: userId,

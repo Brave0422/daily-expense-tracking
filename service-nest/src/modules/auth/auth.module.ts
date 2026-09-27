@@ -11,12 +11,14 @@ import { VerificationCodeModule } from '../verification-code/verification-code.m
 import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { AuthTokenService } from './services/auth-token.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthSessionsEntity } from './entities/auth-sessions.entity';
 import { PasswordService } from './services/password.service';
 import { CategoriesModule } from '../categories/categories.module';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   //在当前模块里注册相关模块
@@ -54,7 +56,16 @@ import { CategoriesModule } from '../categories/categories.module';
   controllers: [AuthController],
 
   // 注册本模块的服务提供者
-  providers: [AuthService, AuthTokenService, PasswordService],
+  providers: [
+    AuthService,
+    AuthTokenService,
+    PasswordService,
+   // 全局注册jwt鉴权守卫
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
   exports: [AuthService, AuthTokenService],
 })
 export class AuthModule {}

@@ -230,10 +230,7 @@ export class VerificationCodeService {
         throw new BadRequestException('缺少userId');
       }
 
-      const user = await this.userService.findeOneById(userId);
-      if (!user) {
-        throw new BadRequestException('用户不存在');
-      }
+      const user = await this.userService.findOneByIdOrThrow(userId);
       return user.email;
     }
 

@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-09-26T16:08:48+08:00
- * @description 配置管理页面，独立承载分类、标签事件和录入模板三个配置模块。
+ * @description 配置管理页面，独立承载分类、标签和录入模板三个配置模块。
  */
 
 import CategoryManagementCard from './components/CategoryManagementCard.vue'
@@ -14,9 +14,9 @@ import CategoryManagementCard from './components/CategoryManagementCard.vue'
     <div class="configuration-view__modules">
       <CategoryManagementCard />
 
-      <section class="configuration-module" aria-labelledby="tag-event-title">
-        <span class="configuration-module__eyebrow">TAG &amp; EVENT</span>
-        <h2 id="tag-event-title">标签/事件管理</h2>
+      <section class="configuration-module" aria-labelledby="tag-title">
+        <span class="configuration-module__eyebrow">TAG</span>
+        <h2 id="tag-title">标签管理</h2>
         <div class="configuration-module__placeholder" aria-hidden="true">
           <span>即将上线</span>
         </div>

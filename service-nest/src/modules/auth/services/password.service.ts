@@ -79,12 +79,8 @@ export class PasswordService {
     code: string,
     purpose: VerificationPurpose,
   ): Promise<boolean> {
-    // 根据id查询用户
-    const user = await this.userService.findeOneById(userId);
-
-    if (!user) {
-      throw new BadRequestException('用户不存在');
-    }
+    // 当前接口需要用户邮箱，复用用户模块的统一必查方法。
+    const user = await this.userService.findOneByIdOrThrow(userId);
 
     await this.updatePassword(user, purpose, code, newPassword);
     return true;

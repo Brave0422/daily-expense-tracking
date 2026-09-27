@@ -27,7 +27,7 @@ describe('VerificationCodeService', () => {
     >
   >;
   let mailService: jest.Mocked<Pick<MailService, 'sendVerificationCode'>>;
-  let userService: jest.Mocked<Pick<UserService, 'findeOneById'>>;
+  let userService: jest.Mocked<Pick<UserService, 'findOneByIdOrThrow'>>;
   let service: VerificationCodeService;
 
   beforeEach(() => {
@@ -75,7 +75,7 @@ describe('VerificationCodeService', () => {
 
     // 第五步：模拟登录用户查询，供修改密码等登录态验证码场景使用。
     userService = {
-      findeOneById: jest.fn().mockResolvedValue({
+      findOneByIdOrThrow: jest.fn().mockResolvedValue({
         id: 7,
         email,
         passwordHash: 'password-hash',
@@ -143,7 +143,7 @@ describe('VerificationCodeService', () => {
     await service.sendCode(undefined, VerificationPurpose.CHANGE_PASSWORD, 7);
 
     // 第二步：确认服务端根据登录用户 ID 查询其可信注册邮箱。
-    expect(userService.findeOneById).toHaveBeenCalledWith(7);
+    expect(userService.findOneByIdOrThrow).toHaveBeenCalledWith(7);
 
     // 第三步：计算修改密码固定验证码应保存的哈希值。
     const expectedHash = createHmac('sha256', secret)

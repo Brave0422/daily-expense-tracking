@@ -14,7 +14,8 @@ import type { Request } from 'express';
 import { AuthTokenService } from '../services/auth-token.service';
 import { Reflector } from '@nestjs/core';
 import { Public } from '../decorators/public.decorator';
-import { VerificationPurpose } from 'src/modules/verification-code/enums/verification-purpose-enum';
+import { VerificationPurpose } from '../../verification-code/enums/verification-purpose-enum';
+import { UserService } from '../../users/users.service';
 import type { RequestWithOptionalUser } from '../types/authenticated-request.type';
 
 interface VerificationCodeRequestBody {
@@ -26,6 +27,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly authTokenService: AuthTokenService,
     private readonly reflector: Reflector,
+    private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -81,6 +83,13 @@ export class JwtAuthGuard implements CanActivate {
     );
 
     if (!session) {
+      throw new UnauthorizedException('登录状态已失效');
+    }
+
+    // 所有受保护接口统一在认证边界确认用户仍然存在，业务服务无需重复查询。
+    const userExists = await this.userService.existsById(userId);
+
+    if (!userExists) {
       throw new UnauthorizedException('登录状态已失效');
     }
 

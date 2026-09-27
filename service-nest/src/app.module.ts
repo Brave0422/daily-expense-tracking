@@ -8,9 +8,8 @@ import { getDatabaseConfig } from './config/database.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 // 导入认证模块
 import { AuthModule } from './modules/auth/auth.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
@@ -44,12 +43,6 @@ import { CategoriesModule } from './modules/categories/categories.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
-    },
-
-    // 全局注册jwt鉴权守卫
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
     },
   ],
 })

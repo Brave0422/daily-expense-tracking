@@ -5,7 +5,6 @@
  */
 
 import { Module } from '@nestjs/common';
-import { UserModule } from '../users/users.module';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -15,11 +14,14 @@ import { CategoryIconEntity } from './entities/category-icon.entity';
 
 @Module({
   imports: [
-    UserModule,
-    TypeOrmModule.forFeature([CategoryTplEntity, UserCategoryEntity,CategoryIconEntity]),
+    TypeOrmModule.forFeature([
+      CategoryTplEntity,
+      UserCategoryEntity,
+      CategoryIconEntity,
+    ]),
   ],
   controllers: [CategoriesController],
   providers: [CategoriesService],
-  exports:[CategoriesService]
+  exports: [CategoriesService],
 })
 export class CategoriesModule {}
