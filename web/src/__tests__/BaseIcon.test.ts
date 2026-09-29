@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest'
 import BaseIcon, { type IconName } from '@/components/base/BaseIcon.vue'
 
 const SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
-  records: 'icon-home',
+  transactions: 'icon-home',
   statistics: 'icon-pie-chart',
   configuration: 'icon-wrench',
   add: 'icon-jia',

@@ -19,12 +19,12 @@ describe('DefaultLayout', () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [
-        { path: '/records', name: 'records', component: EmptyStub },
+        { path: '/transactions', name: 'transactions', component: EmptyStub },
         { path: '/statistics', name: 'statistics', component: EmptyStub },
         { path: '/configuration', name: 'configuration', component: EmptyStub },
       ],
     })
-    await router.push('/records')
+    await router.push('/transactions')
     await router.isReady()
 
     const wrapper = mount(DefaultLayout, {

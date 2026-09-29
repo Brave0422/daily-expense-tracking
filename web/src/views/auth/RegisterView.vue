@@ -50,7 +50,7 @@ async function handleSubmit(): Promise<void> {
   isSubmitting.value = true
   try {
     await authStore.register(validation.data)
-    await router.replace({ name: 'records' })
+    await router.replace({ name: 'transactions' })
     await MessagePlugin.success('注册成功')
   } catch (error) {
     formMessage.value = normalizeApiError(error, '注册失败，请稍后重试').message

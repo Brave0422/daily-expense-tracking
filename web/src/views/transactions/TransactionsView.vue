@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:28:28+08:00
- * @description 账单列表占位页，保留后续搜索与数据列表区域。
+ * @description 流水列表占位页，保留后续搜索与数据列表区域。
  */
 
 import WorkspacePlaceholder from '@/components/business/WorkspacePlaceholder.vue'

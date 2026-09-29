@@ -5,11 +5,11 @@
  */
 
 import { IsEnum } from 'class-validator';
-import { AmountType } from 'src/modules/amount-records/enums/amount-type-enum';
+import { TransactionType } from 'src/modules/transactions/enums/transaction-type-enum';
 
 export class FindUserCategory {
-  @IsEnum(AmountType, {
+  @IsEnum(TransactionType, {
     message: '分类类型不正确',
   })
-  type!: AmountType;
+  type!: TransactionType;
 }

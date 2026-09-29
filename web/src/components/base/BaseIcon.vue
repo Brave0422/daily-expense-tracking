@@ -8,7 +8,7 @@
 import { computed } from 'vue'
 
 export type IconName =
-  | 'records'
+  | 'transactions'
   | 'statistics'
   | 'configuration'
   | 'add'
@@ -24,7 +24,7 @@ export type IconName =
   | 'show'
 
 const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
-  records: 'icon-home',
+  transactions: 'icon-home',
   statistics: 'icon-pie-chart',
   configuration: 'icon-wrench',
   add: 'icon-jia',

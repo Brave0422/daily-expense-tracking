@@ -23,7 +23,7 @@ const props = defineProps<Props>()
     <section class="auth-layout__content" aria-labelledby="auth-page-title">
       <!-- 所有访客页共享的产品品牌区 -->
       <div class="auth-layout__brand" aria-label="每日记账">
-        <span class="auth-layout__brand-icon"><BaseIcon name="records" :size="30" /></span>
+        <span class="auth-layout__brand-icon"><BaseIcon name="transactions" :size="30" /></span>
         <span>每日记账</span>
       </div>
       <!-- 标题由布局提供，具体鉴权表单通过默认插槽注入 -->

@@ -39,7 +39,7 @@ export function setupRouterGuards(router: Router, authStore: AuthStore): void {
     }
 
     if (to.meta.guestOnly && authStore.isAuthenticated) {
-      return { name: 'records' }
+      return { name: 'transactions' }
     }
 
     return true

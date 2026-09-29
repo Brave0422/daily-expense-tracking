@@ -38,9 +38,9 @@
 
 - 路由固定为：
   - 访客页：`/login`、`/register`、`/forgot-password`。
-  - 鉴权页：`/records`、`/statistics`、`/management`。
-  - `/` 重定向 `/records`，未知地址也进入 `/records`，再由守卫处理登录跳转。
-- 路由使用 `requiresAuth`、`guestOnly` 元信息；未登录访问业务页跳转 `/login?redirect=原地址`，已登录访问鉴权页跳回 `/records`。
+  - 鉴权页：`/transactions`、`/statistics`、`/management`。
+  - `/` 重定向 `/transactions`，未知地址也进入 `/transactions`，再由守卫处理登录跳转。
+- 路由使用 `requiresAuth`、`guestOnly` 元信息；未登录访问业务页跳转 `/login?redirect=原地址`，已登录访问鉴权页跳回 `/transactions`。
 - 三个鉴权页共享 `DefaultLayout`：
   - 左侧 72px 固定侧栏，顶部为通用默认头像，中部依次为列表、统计、管理入口。
   - 当前路由使用黄色浅底高亮，图标按钮提供 Tooltip、键盘焦点和 `aria-label`。

@@ -45,7 +45,7 @@ function getSafeRedirect(): string {
   const redirect = Array.isArray(redirectQuery) ? redirectQuery[0] : redirectQuery
   return typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
     ? redirect
-    : '/records'
+    : '/transactions'
 }
 
 /**

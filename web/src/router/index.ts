@@ -34,11 +34,11 @@ const router = createRouter({
       component: () => import('@/layouts/DefaultLayout.vue'),
       meta: { requiresAuth: true },
       children: [
-        { path: '', redirect: { name: 'records' } },
+        { path: '', redirect: { name: 'transactions' } },
         {
-          path: 'records',
-          name: 'records',
-          component: () => import('@/views/records/RecordsView.vue'),
+          path: 'transactions',
+          name: 'transactions',
+          component: () => import('@/views/transactions/TransactionsView.vue'),
         },
         {
           path: 'statistics',
@@ -55,7 +55,7 @@ const router = createRouter({
     // 未知地址回到默认业务页，再由鉴权守卫决定是否进入登录页。
     {
       path: '/:pathMatch(.*)*',
-      redirect: { name: 'records' },
+      redirect: { name: 'transactions' },
     },
   ],
 })

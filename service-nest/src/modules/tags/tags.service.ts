@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-09-27 11:07:42
- * @description 金额标签服务层
+ * @description 流水标签服务层
  */
 
 import {

@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-09-27 11:09:52
- * @description 金额标签模块
+ * @description 流水标签模块
  */
 
 import { Module } from '@nestjs/common';

@@ -38,9 +38,9 @@ function createTestRouter(): Router {
         meta: { guestOnly: true },
       },
       {
-        path: '/records',
-        name: 'records',
-        component: { template: '<div>records</div>' },
+        path: '/transactions',
+        name: 'transactions',
+        component: { template: '<div>transactions</div>' },
         meta: { requiresAuth: true },
       },
     ],
@@ -60,10 +60,10 @@ describe('router guards', () => {
     const router = createTestRouter()
     setupRouterGuards(router, useAuthStore())
 
-    await router.push('/records')
+    await router.push('/transactions')
 
     expect(router.currentRoute.value.name).toBe('login')
-    expect(router.currentRoute.value.query.redirect).toBe('/records')
+    expect(router.currentRoute.value.query.redirect).toBe('/transactions')
   })
 
   it('allows authenticated users to open protected pages', async () => {
@@ -73,9 +73,9 @@ describe('router guards', () => {
     authStore.setAccessToken('access-token')
     setupRouterGuards(router, authStore)
 
-    await router.push('/records')
+    await router.push('/transactions')
 
-    expect(router.currentRoute.value.name).toBe('records')
+    expect(router.currentRoute.value.name).toBe('transactions')
   })
 
   it('restores the session before opening a protected page', async () => {
@@ -84,11 +84,11 @@ describe('router guards', () => {
     const authStore = useAuthStore()
     setupRouterGuards(router, authStore)
 
-    await router.push('/records')
+    await router.push('/transactions')
 
     expect(refreshSession).toHaveBeenCalledTimes(1)
     expect(authStore.accessToken).toBe('restored-access-token')
-    expect(router.currentRoute.value.name).toBe('records')
+    expect(router.currentRoute.value.name).toBe('transactions')
   })
 
   it('marks an expired refresh session when redirecting to login', async () => {
@@ -96,12 +96,12 @@ describe('router guards', () => {
     const router = createTestRouter()
     setupRouterGuards(router, useAuthStore())
 
-    await router.push('/records')
+    await router.push('/transactions')
 
     expect(router.currentRoute.value.name).toBe('login')
     expect(router.currentRoute.value.query).toEqual({
       reason: 'session-expired',
-      redirect: '/records',
+      redirect: '/transactions',
     })
   })
 
@@ -154,6 +154,6 @@ describe('router guards', () => {
 
     await router.push('/login')
 
-    expect(router.currentRoute.value.name).toBe('records')
+    expect(router.currentRoute.value.name).toBe('transactions')
   })
 })

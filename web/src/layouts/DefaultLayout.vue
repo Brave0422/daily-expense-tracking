@@ -17,7 +17,7 @@ import { useAuthStore } from '@/stores/auth.store'
 interface NavigationItem {
   icon: IconName
   label: string
-  routeName: 'records' | 'statistics' | 'configuration'
+  routeName: 'transactions' | 'statistics' | 'configuration'
 }
 
 const route = useRoute()
@@ -25,7 +25,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const navigationItems: readonly NavigationItem[] = [
-  { icon: 'records', label: '账单列表', routeName: 'records' },
+  { icon: 'transactions', label: '账单列表', routeName: 'transactions' },
   { icon: 'statistics', label: '账单统计', routeName: 'statistics' },
   { icon: 'configuration', label: '配置管理', routeName: 'configuration' },
 ]

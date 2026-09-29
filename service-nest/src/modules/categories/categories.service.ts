@@ -9,7 +9,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { AmountType } from '../amount-records/enums/amount-type-enum';
+import { TransactionType } from '../transactions/enums/transaction-type-enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryTplEntity } from './entities/category-template.entity';
 import { FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
@@ -43,13 +43,13 @@ export class CategoriesService {
   /**
    * 获取用户所有分类
    * @param userId 用户id
-   * @param type 金额类型
+   * @param type 流水类型
    */
   async findAllForUser(
     userId: number,
-    type: AmountType,
+    type: TransactionType,
   ): Promise<UserCategoryTreeItem[]> {
-    // 分类列表只返回未归档分类，已归档分类仅供历史金额记录关联和内部业务读取
+    // 分类列表只返回未归档分类，已归档分类仅供历史流水记录关联和内部业务读取
     const allCategories = await this.userCategoryRepo.findBy({
       ownerUserId: userId,
       type,
@@ -261,7 +261,7 @@ export class CategoriesService {
    */
   async create(
     userId: number,
-    type: AmountType,
+    type: TransactionType,
     name: string,
     iconKey: IconKey,
     parentId: number | null = null,
@@ -270,7 +270,7 @@ export class CategoriesService {
     const level = parentId ? 2 : 1;
 
     // 收入分类只允许创建一级分类
-    if (type === AmountType.INCOME && parentId)
+    if (type === TransactionType.INCOME && parentId)
       throw new BadRequestException('收入只允许创建一级分类');
 
     // 创建二级分类时，父分类必须存在、未归档、属于一级分类、父子分类type必须相同
@@ -347,7 +347,7 @@ export class CategoriesService {
     ownerUserId: number,
     name: string,
     parentId: number | null,
-    type: AmountType,
+    type: TransactionType,
     id: number | null = null,
   ): Promise<void> {
     // 构建parentId查询条件

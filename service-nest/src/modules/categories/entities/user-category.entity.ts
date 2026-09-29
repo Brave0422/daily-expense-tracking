@@ -4,7 +4,7 @@
  * @description 用户分类表
  */
 
-import { AmountType } from 'src/modules/amount-records/enums/amount-type-enum';
+import { TransactionType } from 'src/modules/transactions/enums/transaction-type-enum';
 import {
   Column,
   Entity,
@@ -37,13 +37,13 @@ export class UserCategoryEntity {
   })
   sourceTplId!: number | null;
 
-  // 分类所属的金额类型
+  // 分类所属的流水类型
   @Column({
     type: 'varchar',
     length: 20,
     nullable: false,
   })
-  type!: AmountType;
+  type!: TransactionType;
 
   // 父级分类id，一级分类为null，二级分类必须要有
   @Column({

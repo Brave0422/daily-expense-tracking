@@ -12,7 +12,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { AmountType } from '../../amount-records/enums/amount-type-enum';
+import { TransactionType } from '../../transactions/enums/transaction-type-enum';
 import { CategoryIconEntity } from './category-icon.entity';
 
 @Entity('category_template')
@@ -20,12 +20,12 @@ export class CategoryTplEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  // 分类所属的金额类型
+  // 分类所属的流水类型
   @Column({
     type: 'varchar',
     nullable: false,
   })
-  type!: AmountType;
+  type!: TransactionType;
 
   // 父级分类id，一级分类为null，二级分类必须要有
   @Column({

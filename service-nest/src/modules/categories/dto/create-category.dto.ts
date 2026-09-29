@@ -13,7 +13,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { AmountType } from 'src/modules/amount-records/enums/amount-type-enum';
+import { TransactionType } from 'src/modules/transactions/enums/transaction-type-enum';
 import { IconKey } from '../enums/icon-key-enum';
 import { Transform } from 'class-transformer';
 
@@ -32,8 +32,8 @@ export class CreateCategoryDto {
   @Min(1)
   parentId?: number | null;
 
-  @IsEnum(AmountType, { message: '分类类型不正确' })
-  type!: AmountType;
+  @IsEnum(TransactionType, { message: '分类类型不正确' })
+  type!: TransactionType;
 
   @IsEnum(IconKey, { message: '分类图标必须来自图标库' })
   @IsNotEmpty()
