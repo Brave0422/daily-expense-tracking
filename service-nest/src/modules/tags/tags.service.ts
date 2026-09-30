@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { TagEntity } from './entities/tag.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Not, Repository, Raw } from 'typeorm';
-import type { TagListItem } from './types/tag.types';
+import { FindOptionsWhere, IsNull, Not, Repository, Raw } from 'typeorm';
+import type { TagFilterListItem, TagListItem } from './types/tag.types';
 import {
   LIKE_ESCAPE_CHARACTER,
   escapeLikePattern,
@@ -67,24 +67,52 @@ export class TagsService {
   /**
    * 获取用户所有标签
    * @param userId 用户id
+   * @param includeArchived 是否包含已归档标签
    * @returns 用户标签列表
    */
-  async findAllByUser(userId: number): Promise<TagListItem[]> {
+  async findAllByUser(
+    userId: number,
+    includeArchived = false,
+  ): Promise<TagFilterListItem[]> {
     try {
-      return await this.tagRepo.find({
+      const where: FindOptionsWhere<TagEntity> = {
+        ownerUserId: userId,
+      };
+
+      // 默认只返回未归档标签；账单筛选可显式查询历史归档标签
+      if (!includeArchived) {
+        where.archivedTime = IsNull();
+      }
+
+      const tags = await this.tagRepo.find({
         select: {
           id: true,
           name: true,
+          archivedTime: true,
+          updatedTime: true,
         },
-        where: {
-          ownerUserId: userId,
-          archivedTime: IsNull(),
-        },
+        where,
         order: {
           updatedTime: 'DESC',
           id: 'DESC',
         },
       });
+
+      if (includeArchived) {
+        tags.sort(
+          (firstTag, secondTag) =>
+            Number(firstTag.archivedTime !== null) -
+              Number(secondTag.archivedTime !== null) ||
+            secondTag.updatedTime.getTime() - firstTag.updatedTime.getTime() ||
+            secondTag.id - firstTag.id,
+        );
+      }
+
+      return tags.map((tag) => ({
+        id: tag.id,
+        name: tag.name,
+        archived: tag.archivedTime !== null,
+      }));
     } catch (error) {
       throw new InternalServerErrorException('获取用户标签失败，请重新获取', {
         cause: error,

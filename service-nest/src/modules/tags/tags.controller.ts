@@ -21,19 +21,25 @@ import { TagNameDto } from './dto/tag-name.dto';
 import { TagsService } from './tags.service';
 import type { TagListItem } from './types/tag.types';
 import { SearchTagQueryDto } from './dto/search-tag.dto';
+import { FindTagsDto } from './dto/find-tags.dto';
+import type { TagFilterListItem } from './types/tag.types';
 
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   /**
-   * 获取当前用户的全部未归档标签
+   * 获取当前用户的标签列表
    * @param userId 当前用户id
+   * @param query 标签列表查询参数
    * @returns 按更新时间倒序排列的标签列表
    */
   @Get()
-  findAll(@CurrentUserId() userId: number): Promise<TagListItem[]> {
-    return this.tagsService.findAllByUser(userId);
+  findAll(
+    @CurrentUserId() userId: number,
+    @Query() query: FindTagsDto,
+  ): Promise<TagFilterListItem[]> {
+    return this.tagsService.findAllByUser(userId, query.includeArchived);
   }
 
   /**

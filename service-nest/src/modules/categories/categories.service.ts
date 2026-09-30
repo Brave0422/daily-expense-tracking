@@ -20,6 +20,8 @@ import { IconKey } from './enums/icon-key-enum';
 export interface UserCategoryListItem extends UserCategoryEntity {
   // 是否来源于默认分类模板
   isDefault: boolean;
+  // 是否已经归档
+  archived: boolean;
   // 最终用于渲染的背景色
   backgroundColor: string;
 }
@@ -44,25 +46,36 @@ export class CategoriesService {
    * 获取用户所有分类
    * @param userId 用户id
    * @param type 流水类型
+   * @param includeArchived 是否包含已归档分类
    */
   async findAllForUser(
     userId: number,
     type: TransactionType,
+    includeArchived = false,
   ): Promise<UserCategoryTreeItem[]> {
-    // 分类列表只返回未归档分类，已归档分类仅供历史流水记录关联和内部业务读取
-    const allCategories = await this.userCategoryRepo.findBy({
+    const where: FindOptionsWhere<UserCategoryEntity> = {
       ownerUserId: userId,
       type,
-      archivedTime: IsNull(),
-    });
+    };
+
+    // 默认只返回未归档分类；账单筛选可显式查询历史归档分类
+    if (!includeArchived) {
+      where.archivedTime = IsNull();
+    }
+
+    const allCategories = await this.userCategoryRepo.findBy(where);
 
     // 组装数据，按顺序排列一级分类，并把二级分类按照顺序放到对应的一级分类下面
 
-    // 优先按sortOrder排序，sortOrder相同按照id排序
+    // 查询历史分类时未归档项优先；组内仍按sortOrder、id稳定排序
     const compareBySortOrder = (
       firstCategory: UserCategoryEntity,
       secondCategory: UserCategoryEntity,
     ): number =>
+      (includeArchived
+        ? Number(firstCategory.archivedTime !== null) -
+          Number(secondCategory.archivedTime !== null)
+        : 0) ||
       firstCategory.sortOrder - secondCategory.sortOrder ||
       firstCategory.id - secondCategory.id;
 
@@ -136,6 +149,7 @@ export class CategoriesService {
         (child) => ({
           ...child,
           isDefault: child.sourceTplId !== null,
+          archived: child.archivedTime !== null,
           backgroundColor,
         }),
       );
@@ -144,6 +158,7 @@ export class CategoriesService {
       return {
         ...category,
         isDefault: category.sourceTplId !== null,
+        archived: category.archivedTime !== null,
         backgroundColor,
         children,
       };

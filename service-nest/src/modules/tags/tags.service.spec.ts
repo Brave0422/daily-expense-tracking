@@ -47,14 +47,45 @@ describe('TagsService', () => {
   it('只返回当前用户的未归档标签公开字段', async () => {
     tagRepo.find.mockResolvedValue([tag]);
 
-    await expect(service.findAllByUser(7)).resolves.toEqual([tag]);
+    await expect(service.findAllByUser(7)).resolves.toEqual([
+      { id: 1, name: '出差', archived: false },
+    ]);
     const findOptions = tagRepo.find.mock.calls[0][0];
-    expect(findOptions?.select).toEqual({ id: true, name: true });
+    expect(findOptions?.select).toEqual({
+      id: true,
+      name: true,
+      archivedTime: true,
+      updatedTime: true,
+    });
     expect(findOptions?.where).toEqual(
       expect.objectContaining({ ownerUserId: 7 }),
     );
     expect(findOptions?.where).toHaveProperty('archivedTime');
     expect(findOptions?.order).toEqual({ updatedTime: 'DESC', id: 'DESC' });
+  });
+
+  it('账单筛选请求已归档标签时返回全部标签且未归档优先', async () => {
+    const archivedTag: TagEntity = {
+      ...tag,
+      id: 2,
+      name: '旧项目',
+      archivedTime: new Date('2026-09-30T12:00:00+08:00'),
+      updatedTime: new Date('2026-09-30T12:00:00+08:00'),
+    };
+    const activeTag: TagEntity = {
+      ...tag,
+      updatedTime: new Date('2026-09-29T12:00:00+08:00'),
+    };
+    tagRepo.find.mockResolvedValue([archivedTag, activeTag]);
+
+    await expect(service.findAllByUser(7, true)).resolves.toEqual([
+      { id: 1, name: '出差', archived: false },
+      { id: 2, name: '旧项目', archived: true },
+    ]);
+
+    const findOptions = tagRepo.find.mock.calls[0][0];
+    expect(findOptions?.where).toEqual({ ownerUserId: 7 });
+    expect(findOptions?.where).not.toHaveProperty('archivedTime');
   });
 
   it('创建标签时写入当前用户归属', async () => {

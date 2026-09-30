@@ -40,7 +40,11 @@ export class CategoriesController {
     @Query() query: FindUserCategory,
     @CurrentUserId() userId: number,
   ): Promise<UserCategoryTreeItem[]> {
-    return await this.categoriesService.findAllForUser(userId, query.type);
+    return await this.categoriesService.findAllForUser(
+      userId,
+      query.type,
+      query.includeArchived,
+    );
   }
 
   /**
@@ -63,8 +67,6 @@ export class CategoriesController {
     @CurrentUserId() userId: number,
     @Body() body: CreateCategoryDto,
   ): Promise<void> {
-    console.log('body', body);
-
     const { type, name, iconKey, parentId } = body;
     await this.categoriesService.create(userId, type, name, iconKey, parentId);
   }

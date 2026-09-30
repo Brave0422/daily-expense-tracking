@@ -9,3 +9,8 @@ export interface TagListItem {
   id: number;
   name: string;
 }
+
+/** 用于账单筛选的标签项，包含归档状态。 */
+export interface TagFilterListItem extends TagListItem {
+  archived: boolean;
+}
