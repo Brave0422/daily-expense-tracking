@@ -8,9 +8,14 @@ import { Module } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionEntity } from './entities/transaction.entity';
+import { TransactionTagEntity } from './entities/transaction-tag.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TransactionEntity])],
+  imports: [
+    TypeOrmModule.forFeature([TransactionEntity, TransactionTagEntity]),
+    UsersModule,
+  ],
   controllers: [TransactionsService],
   providers: [TransactionsService],
 })

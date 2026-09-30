@@ -22,7 +22,7 @@ export class TransactionEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  // 与用户表建立外键owner_user_id
+  // 与用户表建立外键owner_user_id，关联的是users表的主键
   @ManyToMany(() => UserEntity)
   @JoinColumn({
     name: 'owner_user_id',
@@ -50,7 +50,7 @@ export class TransactionEntity {
   })
   amount!: number;
 
-  // 与用户分类表建立外键category_id
+  // 与用户分类表建立外键category_id，关联的是user_categories表主键
   @ManyToMany(() => UserCategoryEntity)
   @JoinColumn({
     name: 'category_id',
