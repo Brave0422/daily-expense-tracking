@@ -15,8 +15,8 @@ import {
 import { TransactionType } from '../../transactions/enums/transaction-type-enum';
 import { CategoryIconEntity } from './category-icon.entity';
 
-@Entity('category_template')
-export class CategoryTplEntity {
+@Entity('category_templates')
+export class CategoryTemplateEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
@@ -67,7 +67,7 @@ export class CategoryTplEntity {
   })
   // 建立外键
   @ForeignKey(() => CategoryIconEntity, 'iconKey', {
-    name: 'fk_category_template_icon_key',
+    name: 'fk_category_templates_icon_key',
     onDelete: 'RESTRICT',
     onUpdate: 'RESTRICT',
   })

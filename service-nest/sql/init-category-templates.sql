@@ -6,7 +6,7 @@ SET NAMES utf8mb4;
 START TRANSACTION;
 
 -- 一级分类：支出 15 个，收入 5 个。
-INSERT INTO `category_template` (`id`, `type`, `parent_id`, `name`, `default_sort`, `level`, `icon_key`)
+INSERT INTO `category_templates` (`id`, `type`, `parent_id`, `name`, `default_sort`, `level`, `icon_key`)
 VALUES
   (1, 'expense', NULL, '三餐', 0, 1, 'icon-expense-meals'),
   (2, 'expense', NULL, '正餐食品', 1, 1, 'icon-expense-meal-food'),
@@ -37,7 +37,7 @@ ON DUPLICATE KEY UPDATE
   `icon_key` = VALUES(`icon_key`);
 
 -- 二级分类：仅支出分类拥有二级分类，共 62 个。
-INSERT INTO `category_template` (`id`, `type`, `parent_id`, `name`, `default_sort`, `level`, `icon_key`)
+INSERT INTO `category_templates` (`id`, `type`, `parent_id`, `name`, `default_sort`, `level`, `icon_key`)
 VALUES
   (21, 'expense', 1, '早餐', 0, 2, 'icon-expense-meals-breakfast'),
   (22, 'expense', 1, '午餐', 1, 2, 'icon-expense-meals-lunch'),

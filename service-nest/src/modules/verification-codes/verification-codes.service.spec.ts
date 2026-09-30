@@ -3,10 +3,10 @@ import type { ConfigService } from '@nestjs/config';
 import { createHmac } from 'node:crypto';
 import { Repository } from 'typeorm';
 import { MailService } from '../mail/mail.service';
-import { UserService } from '../users/users.service';
+import { UsersService } from '../users/users.service';
 import { UserVerificationCodeEntity } from './entities/user-verification-code.entity';
 import { VerificationPurpose } from './enums/verification-purpose-enum';
-import { VerificationCodeService } from './verification-code.service';
+import { VerificationCodesService } from './verification-codes.service';
 
 // Jest 当前以 CommonJS 运行，使用轻量替身避免加载 ESM 版 @nestjs/config。
 jest.mock('@nestjs/config', () => ({ ConfigService: class ConfigService {} }));
@@ -16,7 +16,7 @@ jest.mock('@nestjs/typeorm', () => ({
   InjectRepository: () => () => undefined,
 }));
 
-describe('VerificationCodeService', () => {
+describe('VerificationCodesService', () => {
   const email = 'test@example.com';
   const secret = 'test-secret';
   let configValues: Record<string, string>;
@@ -27,8 +27,8 @@ describe('VerificationCodeService', () => {
     >
   >;
   let mailService: jest.Mocked<Pick<MailService, 'sendVerificationCode'>>;
-  let userService: jest.Mocked<Pick<UserService, 'findOneByIdOrThrow'>>;
-  let service: VerificationCodeService;
+  let usersService: jest.Mocked<Pick<UsersService, 'findOneByIdOrThrow'>>;
+  let service: VerificationCodesService;
 
   beforeEach(() => {
     // 第一步：为每个用例准备可独立修改的环境配置。
@@ -74,7 +74,7 @@ describe('VerificationCodeService', () => {
     };
 
     // 第五步：模拟登录用户查询，供修改密码等登录态验证码场景使用。
-    userService = {
+    usersService = {
       findOneByIdOrThrow: jest.fn().mockResolvedValue({
         id: 7,
         email,
@@ -85,11 +85,11 @@ describe('VerificationCodeService', () => {
     };
 
     // 第六步：使用以上依赖创建待测试服务。
-    service = new VerificationCodeService(
+    service = new VerificationCodesService(
       configService,
       verificationCodeRepo as unknown as Repository<UserVerificationCodeEntity>,
       mailService as unknown as MailService,
-      userService as unknown as UserService,
+      usersService as unknown as UsersService,
     );
 
     // 第七步：屏蔽开发验证码日志，保持测试输出干净。
@@ -143,7 +143,7 @@ describe('VerificationCodeService', () => {
     await service.sendCode(undefined, VerificationPurpose.CHANGE_PASSWORD, 7);
 
     // 第二步：确认服务端根据登录用户 ID 查询其可信注册邮箱。
-    expect(userService.findOneByIdOrThrow).toHaveBeenCalledWith(7);
+    expect(usersService.findOneByIdOrThrow).toHaveBeenCalledWith(7);
 
     // 第三步：计算修改密码固定验证码应保存的哈希值。
     const expectedHash = createHmac('sha256', secret)

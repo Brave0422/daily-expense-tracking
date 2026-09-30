@@ -10,11 +10,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { UserEntity } from './entities/users.entity';
+import { UserEntity } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(
     // 注入用户实体的仓库
     @InjectRepository(UserEntity)

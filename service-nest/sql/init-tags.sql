@@ -11,7 +11,7 @@ START TRANSACTION;
 
 -- 通过三个0至9的数字集合生成1至500，标签名称依次为“初始化标签001”至“初始化标签500”。
 -- 再次执行时跳过该用户已有的同名未归档标签；同名标签已归档时允许重新创建。
-INSERT INTO `tag` (
+INSERT INTO `tags` (
   `owner_user_id`,
   `name`,
   `archived_time`,
@@ -47,7 +47,7 @@ WHERE
   `tag_number`.`value` BETWEEN 1 AND 500
   AND NOT EXISTS (
     SELECT 1
-    FROM `tag` AS `existing_tag`
+    FROM `tags` AS `existing_tag`
     WHERE
       `existing_tag`.`owner_user_id` = @tag_owner_user_id
       AND `existing_tag`.`name` = CONCAT('初始化标签', LPAD(`tag_number`.`value`, 3, '0'))

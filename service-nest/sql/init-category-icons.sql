@@ -7,7 +7,7 @@ SET NAMES utf8mb4;
 START TRANSACTION;
 
 -- 默认一级分类图标：支出 15 个，收入 5 个。
-INSERT INTO `category_icon` (`icon_key`, `name`, `background_color`, `default_sort`)
+INSERT INTO `category_icons` (`icon_key`, `name`, `background_color`, `default_sort`)
 VALUES
   ('icon-expense-meals', '三餐', '#FF873D', 0),
   ('icon-expense-meal-food', '正餐食品', '#E96F51', 1),
@@ -35,7 +35,7 @@ ON DUPLICATE KEY UPDATE
   `default_sort` = VALUES(`default_sort`);
 
 -- 默认二级分类图标：仅支出分类拥有二级分类，共 62 个。
-INSERT INTO `category_icon` (`icon_key`, `name`, `background_color`, `default_sort`)
+INSERT INTO `category_icons` (`icon_key`, `name`, `background_color`, `default_sort`)
 VALUES
   ('icon-expense-meals-breakfast', '早餐', '#FF873D', 20),
   ('icon-expense-meals-lunch', '午餐', '#FF873D', 21),
@@ -105,7 +105,7 @@ ON DUPLICATE KEY UPDATE
   `default_sort` = VALUES(`default_sort`);
 
 -- 通用预选图标：28 个。
-INSERT INTO `category_icon` (`icon_key`, `name`, `background_color`, `default_sort`)
+INSERT INTO `category_icons` (`icon_key`, `name`, `background_color`, `default_sort`)
 VALUES
   ('icon-category-coffee', '咖啡', '#B9794D', 82),
   ('icon-category-takeout', '外卖', '#F0803C', 83),

@@ -21,7 +21,7 @@ import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response, Request } from 'express';
 import { changePasswordDto } from './dto/change-password.dto';
 import { PasswordService } from './services/password.service';
-import { VerificationPurpose } from '../verification-code/enums/verification-purpose-enum';
+import { VerificationPurpose } from '../verification-codes/enums/verification-purpose-enum';
 import { ResetPassword } from './dto/reset-password.dto';
 import {
   CurrentUser,

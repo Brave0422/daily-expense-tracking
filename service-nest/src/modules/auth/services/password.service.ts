@@ -9,17 +9,17 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { UserService } from 'src/modules/users/users.service';
-import { VerificationPurpose } from 'src/modules/verification-code/enums/verification-purpose-enum';
-import { VerificationCodeService } from 'src/modules/verification-code/verification-code.service';
+import { UsersService } from 'src/modules/users/users.service';
+import { VerificationPurpose } from 'src/modules/verification-codes/enums/verification-purpose-enum';
+import { VerificationCodesService } from 'src/modules/verification-codes/verification-codes.service';
 import { hash, compare } from 'bcrypt';
-import { UserEntity } from 'src/modules/users/entities/users.entity';
+import { UserEntity } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class PasswordService {
   constructor(
-    private readonly userService: UserService,
-    private readonly verificationService: VerificationCodeService,
+    private readonly usersService: UsersService,
+    private readonly verificationCodesService: VerificationCodesService,
   ) {}
 
   /**
@@ -60,7 +60,7 @@ export class PasswordService {
     newPassword: string,
   ): Promise<string> {
     // 校验验证码
-    await this.verificationService.verifyAndConsume(email, purpose, code);
+    await this.verificationCodesService.verifyAndConsume(email, purpose, code);
 
     // 对密码进行哈希处理
     return await this.hashPassword(newPassword);
@@ -80,7 +80,7 @@ export class PasswordService {
     purpose: VerificationPurpose,
   ): Promise<boolean> {
     // 当前接口需要用户邮箱，复用用户模块的统一必查方法。
-    const user = await this.userService.findOneByIdOrThrow(userId);
+    const user = await this.usersService.findOneByIdOrThrow(userId);
 
     await this.updatePassword(user, purpose, code, newPassword);
     return true;
@@ -101,7 +101,7 @@ export class PasswordService {
     purpose: VerificationPurpose,
   ): Promise<boolean> {
     // 根据邮箱查询用户
-    const user = await this.userService.findOneByEmail(email);
+    const user = await this.usersService.findOneByEmail(email);
 
     if (!user) {
       throw new BadRequestException('用户不存在');
@@ -131,7 +131,7 @@ export class PasswordService {
     );
 
     try {
-      await this.userService.updatePassword(user.id, passwordHash);
+      await this.usersService.updatePassword(user.id, passwordHash);
     } catch {
       throw new InternalServerErrorException('重置密码失败');
     }

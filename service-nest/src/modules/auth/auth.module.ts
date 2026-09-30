@@ -6,8 +6,8 @@
 
 import { Module } from '@nestjs/common';
 // 导入用户模块
-import { UserModule } from '../users/users.module';
-import { VerificationCodeModule } from '../verification-code/verification-code.module';
+import { UsersModule } from '../users/users.module';
+import { VerificationCodesModule } from '../verification-codes/verification-codes.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -15,7 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthTokenService } from './services/auth-token.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthSessionsEntity } from './entities/auth-sessions.entity';
+import { AuthSessionEntity } from './entities/auth-session.entity';
 import { PasswordService } from './services/password.service';
 import { CategoriesModule } from '../categories/categories.module';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -24,11 +24,11 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   //在当前模块里注册相关模块
   imports: [
     // User模块
-    UserModule,
+    UsersModule,
     // 验证码模块
-    VerificationCodeModule,
+    VerificationCodesModule,
     // 注册authService实体
-    TypeOrmModule.forFeature([AuthSessionsEntity]),
+    TypeOrmModule.forFeature([AuthSessionEntity]),
     CategoriesModule,
     // JWT模块
     JwtModule.registerAsync({
@@ -60,7 +60,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     AuthService,
     AuthTokenService,
     PasswordService,
-   // 全局注册jwt鉴权守卫
+    // 全局注册jwt鉴权守卫
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

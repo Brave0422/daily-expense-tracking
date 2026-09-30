@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { VerificationCodeController } from './verification-code.controller';
-import { VerificationCodeService } from './verification-code.service';
+import { VerificationCodesController } from './verification-codes.controller';
+import { VerificationCodesService } from './verification-codes.service';
 import { MailModule } from '../mail/mail.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserVerificationCodeEntity } from './entities/user-verification-code.entity';
-import { UserModule } from '../users/users.module';
+import { UsersModule } from '../users/users.module';
 
 /**
  * @author Brave
@@ -16,12 +16,12 @@ import { UserModule } from '../users/users.module';
   imports: [
     TypeOrmModule.forFeature([UserVerificationCodeEntity]),
     MailModule,
-    UserModule,
+    UsersModule,
   ],
-  controllers: [VerificationCodeController],
-  providers: [VerificationCodeService],
+  controllers: [VerificationCodesController],
+  providers: [VerificationCodesService],
 
   // 导出验证码服务
-  exports: [VerificationCodeService],
+  exports: [VerificationCodesService],
 })
-export class VerificationCodeModule {}
+export class VerificationCodesModule {}

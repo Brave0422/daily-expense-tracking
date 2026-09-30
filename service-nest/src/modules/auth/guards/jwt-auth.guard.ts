@@ -14,8 +14,8 @@ import type { Request } from 'express';
 import { AuthTokenService } from '../services/auth-token.service';
 import { Reflector } from '@nestjs/core';
 import { Public } from '../decorators/public.decorator';
-import { VerificationPurpose } from '../../verification-code/enums/verification-purpose-enum';
-import { UserService } from '../../users/users.service';
+import { VerificationPurpose } from '../../verification-codes/enums/verification-purpose-enum';
+import { UsersService } from '../../users/users.service';
 import type { RequestWithOptionalUser } from '../types/authenticated-request.type';
 
 interface VerificationCodeRequestBody {
@@ -27,7 +27,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly authTokenService: AuthTokenService,
     private readonly reflector: Reflector,
-    private readonly userService: UserService,
+    private readonly usersService: UsersService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -53,7 +53,7 @@ export class JwtAuthGuard implements CanActivate {
       VerificationPurpose.RESET_PASSWORD,
     ];
     if (
-      path === '/verificationCode/sendCode' &&
+      path === '/verification-codes/send' &&
       typeof codePurpose === 'string' &&
       publicPurposes.includes(codePurpose)
     ) {
@@ -87,7 +87,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     // 所有受保护接口统一在认证边界确认用户仍然存在，业务服务无需重复查询。
-    const userExists = await this.userService.existsById(userId);
+    const userExists = await this.usersService.existsById(userId);
 
     if (!userExists) {
       throw new UnauthorizedException('登录状态已失效');

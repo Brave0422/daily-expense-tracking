@@ -66,7 +66,7 @@
   - `POST /auth/changePassword`
   - `POST /auth/resetPassword`
   - `POST /auth/logout`
-  - `POST /verificationCode/sendCode`
+  - `POST /verification-codes/send`
 - 验证码用途固定为 `register`、`reset_password`、`change_password`；修改密码发送验证码时携带 Access Token。
 - 统一解析 NestJS 的成功包装 `{ code, msg, data, success, timestamp }`，以及 `message` 为字符串或数组、429 附带 `retryAfterSeconds` 的失败响应。
 - Auth Store 暴露 `isInitialized`、`isAuthenticated`、内存 Token 状态，以及 `initialize`、`login`、`logout`、`clearSession` 动作；请求刷新协调逻辑集中在 HTTP 层，不散落到页面。

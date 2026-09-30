@@ -12,7 +12,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthSessionsEntity } from '../entities/auth-sessions.entity';
+import { AuthSessionEntity } from '../entities/auth-session.entity';
 import { IsNull, MoreThan, Repository } from 'typeorm';
 import { hash } from 'bcrypt';
 
@@ -40,8 +40,8 @@ export class AuthTokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
 
-    @InjectRepository(AuthSessionsEntity)
-    private readonly authSessionRepo: Repository<AuthSessionsEntity>,
+    @InjectRepository(AuthSessionEntity)
+    private readonly authSessionRepo: Repository<AuthSessionEntity>,
   ) {}
 
   /**
@@ -112,7 +112,7 @@ export class AuthTokenService {
    */
   private async buildTokenState(
     token: string,
-  ): Promise<Pick<AuthSessionsEntity, 'refreshTokenHash' | 'expiresTime'>> {
+  ): Promise<Pick<AuthSessionEntity, 'refreshTokenHash' | 'expiresTime'>> {
     // 获取过期时间
     const payload = this.jwtService.decode<RefreshTokenPayload>(token);
 
@@ -226,7 +226,7 @@ export class AuthTokenService {
   async findSessionBySid(
     payload: AccessTokenPayload,
     userId: number,
-  ): Promise<AuthSessionsEntity | null> {
+  ): Promise<AuthSessionEntity | null> {
     // 查找对应的sessionId
     const session = await this.authSessionRepo.findOneBy({
       sid: payload.sid,

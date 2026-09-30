@@ -7,7 +7,7 @@
 import { UnauthorizedException, type ExecutionContext } from '@nestjs/common';
 import type { Reflector } from '@nestjs/core';
 import type { AuthTokenService } from '../services/auth-token.service';
-import type { UserService } from '../../users/users.service';
+import type { UsersService } from '../../users/users.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 jest.mock('@nestjs/config', () => ({ ConfigService: class ConfigService {} }));
@@ -33,7 +33,7 @@ describe('JwtAuthGuard', () => {
   let authTokenService: jest.Mocked<
     Pick<AuthTokenService, 'verifyAccessToken' | 'findSessionBySid'>
   >;
-  let userService: jest.Mocked<Pick<UserService, 'existsById'>>;
+  let usersService: jest.Mocked<Pick<UsersService, 'existsById'>>;
   let guard: JwtAuthGuard;
 
   beforeEach(() => {
@@ -49,13 +49,13 @@ describe('JwtAuthGuard', () => {
       verifyAccessToken: jest.fn().mockResolvedValue(payload),
       findSessionBySid: jest.fn().mockResolvedValue({ id: 1 }),
     };
-    userService = {
+    usersService = {
       existsById: jest.fn().mockResolvedValue(true),
     };
     guard = new JwtAuthGuard(
       authTokenService as unknown as AuthTokenService,
       reflector as unknown as Reflector,
-      userService as unknown as UserService,
+      usersService as unknown as UsersService,
     );
   });
 
@@ -72,12 +72,12 @@ describe('JwtAuthGuard', () => {
   it('会话和用户都有效时写入认证信息', async () => {
     await expect(guard.canActivate(createContext())).resolves.toBe(true);
 
-    expect(userService.existsById).toHaveBeenCalledWith(7);
+    expect(usersService.existsById).toHaveBeenCalledWith(7);
     expect(request.user).toEqual({ userId: 7, sessionId: 'session-id' });
   });
 
   it('会话对应用户不存在时拒绝访问', async () => {
-    userService.existsById.mockResolvedValue(false);
+    usersService.existsById.mockResolvedValue(false);
 
     await expect(guard.canActivate(createContext())).rejects.toThrow(
       UnauthorizedException,

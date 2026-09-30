@@ -19,7 +19,7 @@ import { UserVerificationCodeEntity } from './entities/user-verification-code.en
 import { InjectRepository } from '@nestjs/typeorm';
 import { MailService } from '../mail/mail.service';
 import { VerificationPurpose } from './enums/verification-purpose-enum';
-import { UserService } from '../users/users.service';
+import { UsersService } from '../users/users.service';
 
 // 登录态下发送验证码的类型
 const AUTHENTICATED_PURPOSES: readonly VerificationPurpose[] = [
@@ -28,8 +28,8 @@ const AUTHENTICATED_PURPOSES: readonly VerificationPurpose[] = [
 ];
 
 @Injectable()
-export class VerificationCodeService {
-  private readonly logger = new Logger(VerificationCodeService.name);
+export class VerificationCodesService {
+  private readonly logger = new Logger(VerificationCodesService.name);
 
   constructor(
     private readonly configService: ConfigService,
@@ -37,7 +37,7 @@ export class VerificationCodeService {
     @InjectRepository(UserVerificationCodeEntity)
     private readonly verificationCodeRepo: Repository<UserVerificationCodeEntity>,
     private readonly mailService: MailService,
-    private readonly userService: UserService,
+    private readonly usersService: UsersService,
   ) {}
 
   /**
@@ -230,7 +230,7 @@ export class VerificationCodeService {
         throw new BadRequestException('缺少userId');
       }
 
-      const user = await this.userService.findOneByIdOrThrow(userId);
+      const user = await this.usersService.findOneByIdOrThrow(userId);
       return user.email;
     }
 

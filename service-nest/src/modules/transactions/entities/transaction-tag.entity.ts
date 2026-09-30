@@ -6,15 +6,17 @@
 
 import { Entity, PrimaryColumn } from 'typeorm';
 
-@Entity('transaction_tag')
+@Entity('transaction_tags')
 export class TransactionTagEntity {
   @PrimaryColumn({
+    name: 'transaction_id',
     type: 'int',
     nullable: false,
   })
   transactionId!: number;
 
   @PrimaryColumn({
+    name: 'tag_id',
     type: 'int',
     nullable: false,
   })

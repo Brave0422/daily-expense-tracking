@@ -73,12 +73,12 @@ export async function changePassword(body: ChangePasswordBody): Promise<boolean>
 }
 
 /**
- * 调用 POST /verificationCode/sendCode 发送六位邮箱验证码。
+ * 调用 POST /verification-codes/send 发送六位邮箱验证码。
  * @param body - 验证码用途；公共场景同时携带接收邮箱
  * @returns 后端接受发送任务后结束
  */
 export async function sendVerificationCode(body: SendVerificationCodeBody): Promise<void> {
-  await apiClient.post<ApiResponse<void>>('/verificationCode/sendCode', body, {
+  await apiClient.post<ApiResponse<void>>('/verification-codes/send', body, {
     // 修改密码验证码需要登录态续期；注册与重置密码是访客接口，不应触发刷新。
     skipAuthRefresh: body.purpose !== 'change_password',
   })

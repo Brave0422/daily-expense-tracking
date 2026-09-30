@@ -12,8 +12,8 @@ import {
 } from 'typeorm';
 import { VerificationPurpose } from '../enums/verification-purpose-enum';
 
-// 定义实体类，映射到数据库表 user_verification_code
-@Entity('user_verification_code')
+// 定义实体类，映射到数据库表 user_verification_codes
+@Entity('user_verification_codes')
 export class UserVerificationCodeEntity {
   // 主键列，自增ID
   @PrimaryGeneratedColumn()

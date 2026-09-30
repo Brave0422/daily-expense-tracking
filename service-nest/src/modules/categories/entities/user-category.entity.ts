@@ -15,7 +15,7 @@ import {
 } from 'typeorm';
 import { CategoryIconEntity } from './category-icon.entity';
 
-@Entity('user_category')
+@Entity('user_categories')
 export class UserCategoryEntity {
   // id
   @PrimaryGeneratedColumn()
@@ -85,7 +85,7 @@ export class UserCategoryEntity {
   })
   // 建立外键
   @ForeignKey(() => CategoryIconEntity, 'iconKey', {
-    name: 'fk_user_category_icon_key',
+    name: 'fk_user_categories_icon_key',
     onDelete: 'RESTRICT',
     onUpdate: 'RESTRICT',
   })

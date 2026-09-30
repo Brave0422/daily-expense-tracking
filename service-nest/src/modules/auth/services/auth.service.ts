@@ -11,13 +11,13 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { compare } from 'bcrypt';
-import { UserService } from '../../users/users.service';
-import { VerificationCodeService } from '../../verification-code/verification-code.service';
-import { VerificationPurpose } from '../../verification-code/enums/verification-purpose-enum';
+import { UsersService } from '../../users/users.service';
+import { VerificationCodesService } from '../../verification-codes/verification-codes.service';
+import { VerificationPurpose } from '../../verification-codes/enums/verification-purpose-enum';
 import { AuthTokenService } from './auth-token.service';
 import { randomUUID } from 'node:crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthSessionsEntity } from '../entities/auth-sessions.entity';
+import { AuthSessionEntity } from '../entities/auth-session.entity';
 import { IsNull, MoreThan, Repository } from 'typeorm';
 import { PasswordService } from './password.service';
 import { CategoriesService } from 'src/modules/categories/categories.service';
@@ -31,12 +31,12 @@ export interface dualToken {
 export class AuthService {
   constructor(
     // 注入用户服务
-    private readonly userService: UserService,
+    private readonly usersService: UsersService,
     // 注入验证码服务
-    private readonly verificationService: VerificationCodeService,
+    private readonly verificationCodesService: VerificationCodesService,
     private readonly authTokenService: AuthTokenService,
-    @InjectRepository(AuthSessionsEntity)
-    private readonly authSessionRepo: Repository<AuthSessionsEntity>,
+    @InjectRepository(AuthSessionEntity)
+    private readonly authSessionRepo: Repository<AuthSessionEntity>,
     private readonly passwordService: PasswordService,
     private readonly categoriesService: CategoriesService,
   ) {}
@@ -54,13 +54,13 @@ export class AuthService {
     code: string,
   ): Promise<boolean> {
     // 检查邮箱是否已注册
-    const existingUser = await this.userService.findOneByEmail(email);
+    const existingUser = await this.usersService.findOneByEmail(email);
 
     // 如果邮箱已存在则抛出冲突异常
     if (existingUser) throw new ConflictException('该邮箱已被注册');
 
     // 校验验证码
-    await this.verificationService.verifyAndConsume(
+    await this.verificationCodesService.verifyAndConsume(
       email,
       VerificationPurpose.REGISTER,
       code,
@@ -71,10 +71,10 @@ export class AuthService {
 
     try {
       // 创建用户实体
-      const saveData = this.userService.create(email, passwordHash);
+      const saveData = this.usersService.create(email, passwordHash);
 
       // 保存用户
-      const user = await this.userService.save(saveData);
+      const user = await this.usersService.save(saveData);
 
       // 初始化用户分类
       await this.categoriesService.initUserCategory(user.id);
@@ -93,7 +93,7 @@ export class AuthService {
    */
   async login(email: string, password: string): Promise<dualToken> {
     // 根据邮箱查找对应用户
-    const user = await this.userService.findOneByEmail(email);
+    const user = await this.usersService.findOneByEmail(email);
     if (!user) throw new UnauthorizedException('用户名或密码错误');
 
     // 匹配密码

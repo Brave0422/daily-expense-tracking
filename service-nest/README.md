@@ -25,6 +25,14 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Naming conventions
+
+- Database tables, resource module directories, resource Module/Controller/Service classes, and REST resource paths use plural names, such as `transactions`, `TagsService`, and `/verification-codes`.
+- Entity classes and entity filenames represent one record and use singular names, such as `TransactionEntity` and `transaction.entity.ts`.
+- Single-value properties and foreign-key columns use singular names, such as `transactionId` and `transaction_id`; arrays and collection relations use plural names, such as `tagIds` and `tags`.
+- Capability modules that do not represent resource collections keep singular names, such as `auth` and `mail`.
+- Existing databases that still use the earlier singular table names must run `sql/rename-tables-to-plural.sql` once before starting this version in production.
+
 ## Project setup
 
 ```bash

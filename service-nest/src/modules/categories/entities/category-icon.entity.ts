@@ -6,7 +6,7 @@
 
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity('category_icon')
+@Entity('category_icons')
 export class CategoryIconEntity {
   // 完整 Iconfont Symbol ID
   @PrimaryColumn({

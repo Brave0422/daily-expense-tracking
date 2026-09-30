@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { TransactionType } from '../transactions/enums/transaction-type-enum';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CategoryTplEntity } from './entities/category-template.entity';
+import { CategoryTemplateEntity } from './entities/category-template.entity';
 import { FindOptionsWhere, In, IsNull, Not, Repository } from 'typeorm';
 import { UserCategoryEntity } from './entities/user-category.entity';
 import { CategoryIconEntity } from './entities/category-icon.entity';
@@ -32,8 +32,8 @@ export interface UserCategoryTreeItem extends UserCategoryListItem {
 @Injectable()
 export class CategoriesService {
   constructor(
-    @InjectRepository(CategoryTplEntity)
-    private readonly categoryTplRepo: Repository<CategoryTplEntity>,
+    @InjectRepository(CategoryTemplateEntity)
+    private readonly categoryTemplateRepo: Repository<CategoryTemplateEntity>,
     @InjectRepository(UserCategoryEntity)
     private readonly userCategoryRepo: Repository<UserCategoryEntity>,
     @InjectRepository(CategoryIconEntity)
@@ -157,7 +157,7 @@ export class CategoriesService {
   async initUserCategory(userId: number) {
     try {
       // 按照顺序获取默认分类
-      const templates = await this.categoryTplRepo.find({
+      const templates = await this.categoryTemplateRepo.find({
         order: {
           level: 'ASC',
           defaultSort: 'ASC',
@@ -193,8 +193,8 @@ export class CategoriesService {
       const saveParents = await this.userCategoryRepo.save(parents);
 
       // 建立 模板ID -> 用户分类ID 映射。这一步的目的：
-      // 用户初始化后，分类 在 user_category 中生成的新 ID 不一定是原本在category_template 中的ID，所以在 user_category 中，子类的
-      // parentId 可能指向的并不是真正的父类id，这里建立映射，让user_category中的parentId正确指向其父类在user_category中的id，避免错乱问题
+      // 用户初始化后，分类在 user_categories 中生成的新 ID 不一定是原本在 category_templates 中的 ID，所以在 user_categories 中，子类的
+      // parentId 可能指向的并不是真正的父类id，这里建立映射，让 user_categories 中的 parentId 正确指向其父类在 user_categories 中的id，避免错乱问题
       const userCategoryIdByTplId = new Map<number, number>(
         saveParents.map((category) => [category.sourceTplId!, category.id]),
       );

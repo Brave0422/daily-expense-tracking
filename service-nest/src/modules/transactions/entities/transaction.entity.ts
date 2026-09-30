@@ -4,7 +4,7 @@
  * @description 流水记录实体
  */
 
-import { UserEntity } from 'src/modules/users/entities/users.entity';
+import { UserEntity } from 'src/modules/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -17,7 +17,7 @@ import {
 import { TransactionType } from '../enums/transaction-type-enum';
 import { UserCategoryEntity } from 'src/modules/categories/entities/user-category.entity';
 
-@Entity('transaction')
+@Entity('transactions')
 export class TransactionEntity {
   @PrimaryGeneratedColumn()
   id!: number;

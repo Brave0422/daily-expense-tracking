@@ -11,7 +11,7 @@ import {
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
 import { Transporter } from 'nodemailer';
-import { VerificationPurpose } from '../verification-code/enums/verification-purpose-enum';
+import { VerificationPurpose } from '../verification-codes/enums/verification-purpose-enum';
 
 @Injectable()
 export class MailService {

@@ -6,14 +6,14 @@
 
 import { BadRequestException } from '@nestjs/common';
 import type { Repository } from 'typeorm';
-import type { UserEntity } from './entities/users.entity';
-import { UserService } from './users.service';
+import type { UserEntity } from './entities/user.entity';
+import { UsersService } from './users.service';
 
 jest.mock('@nestjs/typeorm', () => ({
   InjectRepository: () => () => undefined,
 }));
 
-describe('UserService', () => {
+describe('UsersService', () => {
   const user: UserEntity = {
     id: 7,
     email: 'test@example.com',
@@ -24,14 +24,14 @@ describe('UserService', () => {
   let userRepo: jest.Mocked<
     Pick<Repository<UserEntity>, 'findOneBy' | 'existsBy'>
   >;
-  let service: UserService;
+  let service: UsersService;
 
   beforeEach(() => {
     userRepo = {
       findOneBy: jest.fn(),
       existsBy: jest.fn(),
     };
-    service = new UserService(userRepo as unknown as Repository<UserEntity>);
+    service = new UsersService(userRepo as unknown as Repository<UserEntity>);
   });
 
   it('返回存在的用户', async () => {

@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 
 @Entity('auth_sessions')
-export class AuthSessionsEntity {
+export class AuthSessionEntity {
   // 主键
   @PrimaryGeneratedColumn()
   id!: number;
