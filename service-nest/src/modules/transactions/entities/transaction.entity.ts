@@ -15,7 +15,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { TransactionType } from '../enums/transaction-type-enum';
-import { CategoryTplEntity } from 'src/modules/categories/entities/category-template.entity';
 import { UserCategoryEntity } from 'src/modules/categories/entities/user-category.entity';
 
 @Entity('transaction')
