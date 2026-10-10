@@ -6,7 +6,7 @@
 
 import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { TransactionEntity } from './transaction.entity';
-import { TagEntity } from 'src/modules/tags/entities/tag.entity';
+import { TagEntity } from '../../tags/entities/tag.entity';
 
 @Entity('transaction_tags')
 export class TransactionTagEntity {
@@ -26,15 +26,18 @@ export class TransactionTagEntity {
   })
   tagId!: number;
 
-  @ManyToOne(() => TransactionEntity)
+  @ManyToOne(
+    () => TransactionEntity,
+    (transaction) => transaction.transactionTag,
+  )
   @JoinColumn({
     name: 'transaction_id',
   })
-  transactions!: TransactionEntity[];
+  transaction!: TransactionEntity;
 
-  @ManyToOne(() => TagEntity)
+  @ManyToOne(() => TagEntity, (tag) => tag.transactionTag)
   @JoinColumn({
     name: 'tag_id',
   })
-  tags!: TagEntity[];
+  tag!: TagEntity;
 }

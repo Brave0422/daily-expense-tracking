@@ -7,7 +7,7 @@
 export const LIKE_ESCAPE_CHARACTER = '!';
 
 /**
- * 将用户输入转换为 SQL LIKE 中的普通文本。
+ * 将用户输入转换为 SQL LIKE 中的普通文本，避免扩大搜索范围。
  */
 export function escapeLikePattern(value: string): string {
   return value.replace(/[!%_]/g, (character) => {

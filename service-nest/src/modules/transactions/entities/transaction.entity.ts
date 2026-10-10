@@ -4,26 +4,35 @@
  * @description 流水记录实体
  */
 
-import { UserEntity } from 'src/modules/users/entities/user.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToMany,
+  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { TransactionType } from '../enums/transaction-type-enum';
-import { UserCategoryEntity } from 'src/modules/categories/entities/user-category.entity';
+import { UserCategoryEntity } from '../../categories/entities/user-category.entity';
+import { TransactionTagEntity } from './transaction-tag.entity';
 
 @Entity('transactions')
 export class TransactionEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  // 一条流水可以关联多个标签；关联表实体中保存流水id和标签id
+  @OneToMany(
+    () => TransactionTagEntity,
+    (transactionTag) => transactionTag.transaction,
+  )
+  transactionTag!: TransactionTagEntity[];
+
   // 与用户表建立外键owner_user_id，关联的是users表的主键
-  @ManyToMany(() => UserEntity)
+  @ManyToOne(() => UserEntity)
   @JoinColumn({
     name: 'owner_user_id',
   })
@@ -51,7 +60,7 @@ export class TransactionEntity {
   amount!: number;
 
   // 与用户分类表建立外键category_id，关联的是user_categories表主键
-  @ManyToMany(() => UserCategoryEntity)
+  @ManyToOne(() => UserCategoryEntity)
   @JoinColumn({
     name: 'category_id',
   })

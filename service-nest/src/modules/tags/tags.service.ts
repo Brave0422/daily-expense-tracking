@@ -220,6 +220,7 @@ export class TagsService {
           ownerUserId: userId,
           name: Raw(
             (columnAlias) =>
+              // 转义特殊字符，避免扩大搜索范围
               `${columnAlias} LIKE :tagNamePattern ESCAPE '${LIKE_ESCAPE_CHARACTER}'`,
             {
               tagNamePattern: `%${escapedKey}%`,
