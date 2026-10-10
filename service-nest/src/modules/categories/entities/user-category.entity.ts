@@ -12,8 +12,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   ForeignKey,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { CategoryIconEntity } from './category-icon.entity';
+import { JoinAttribute } from 'typeorm/query-builder/JoinAttribute.js';
 
 @Entity('user_categories')
 export class UserCategoryEntity {
@@ -53,6 +57,31 @@ export class UserCategoryEntity {
   })
   parentId!: number | null;
 
+  /**
+   * 当前分类的父分类。
+   *
+   * 支出二级分类存在父分类；
+   * 支出一级分类和收入一级分类的 parent 为 null。
+   */
+  @ManyToOne(() => UserCategoryEntity, (category) => category.children, {
+    nullable: true,
+    onDelete: 'RESTRICT',
+    onUpdate: 'RESTRICT',
+  })
+  @JoinColumn({
+    name: 'parent_id',
+  })
+  parent!: UserCategoryEntity | null;
+
+  /**
+   * 当前一级分类下的二级分类。
+   *
+   * 查询流水时一般不会直接加载 children，
+   * 但定义这个属性可以构成完整的双向关系。
+   */
+  @OneToMany(() => UserCategoryEntity, (category) => category.parent)
+  children!: UserCategoryEntity[];
+
   // 分类名称
   @Column({
     type: 'varchar',
@@ -83,13 +112,18 @@ export class UserCategoryEntity {
     nullable: false,
     length: 100,
   })
-  // 建立外键
-  @ForeignKey(() => CategoryIconEntity, 'iconKey', {
-    name: 'fk_user_categories_icon_key',
+  iconKey!: string;
+
+  @ManyToOne(() => CategoryIconEntity, {
+    nullable: false,
     onDelete: 'RESTRICT',
     onUpdate: 'RESTRICT',
   })
-  iconKey!: string;
+  @JoinColumn({
+    name: 'icon_key',
+    referencedColumnName: 'iconKey',
+  })
+  icon!: CategoryIconEntity;
 
   // 归档时间(软删除)，null表示未归档
   @Column({

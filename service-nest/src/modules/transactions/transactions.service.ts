@@ -225,10 +225,6 @@ export class TransactionsService {
       where.type = type;
     }
 
-    if (categoryIds && categoryIds.length > 0) {
-      where.categoryId = In(categoryIds);
-    }
-
     if (title) {
       const escapedTitle = escapeLikePattern(title);
       // 转义特殊字符，避免扩大搜索范围
@@ -283,6 +279,7 @@ export class TransactionsService {
           expenseType: TransactionType.EXPENSE,
         });
 
+      // 3. 筛选月周期内的流水
       if (month) {
         const { startDate, endDate } = this.getMonthDateRange(month);
 
@@ -298,6 +295,7 @@ export class TransactionsService {
         );
       }
 
+      // 4. 筛选年周期内的流水
       if (year) {
         const { startDate, endDate } = this.getYearDateRange(year);
 
@@ -313,7 +311,7 @@ export class TransactionsService {
         );
       }
 
-      // 3. 筛选包含任意一个指定标签的流水
+      // 5. 筛选包含任意一个指定标签的流水
       if (tagIds?.length) {
         filteredQuery.andWhere(
           (queryBuilder) => {
@@ -338,6 +336,25 @@ export class TransactionsService {
         );
       }
 
+      // 6. 关联流水实际绑定的分类
+      if (categoryIds?.length) {
+        /**
+         * 这是一对一方向的关联，不会像标签关联一样
+         * 将一条流水复制成多行，因此不会造成金额重复统计。
+         */
+        filteredQuery.innerJoin(
+          'filteredTransaction.category',
+          'filteredCategory',
+        );
+
+        filteredQuery.andWhere(
+          `(filteredCategory.id IN (:...categoryIds)OR filteredCategory.parentId IN (:...categoryIds))`,
+          {
+            categoryIds,
+          },
+        );
+      }
+
       /*
        * 外层查询：
        * 根据内层查询得到的流水 ID 查询完整实体，
@@ -352,9 +369,41 @@ export class TransactionsService {
           'filtered',
           'filtered.id = transaction.id',
         )
+        /**
+         * 加载流水实际绑定的分类：
+         *
+         * 支出流水绑定的是二级分类；
+         * 收入流水绑定的是一级分类。
+         */
+        .leftJoinAndSelect('transaction.category', 'category')
+        /**
+         * 加载实际分类对应的图标。
+         *
+         * 支出时主要使用二级分类的 iconKey；
+         * 收入时使用一级分类的 iconKey 和背景色。
+         */
+        .leftJoinAndSelect('category.icon', 'categoryIcon')
+        /**
+         * 加载实际分类的父分类：
+         *
+         * 支出二级分类可以得到对应一级分类；
+         * 收入一级分类没有父分类，这里得到 null。
+         */
+        .leftJoinAndSelect('category.parent', 'primaryCategory')
+        /**
+         * 加载父分类图标。
+         *
+         * 支出二级分类最终展示的背景色继承一级分类，
+         * 所以还需要父分类的图标信息。
+         */
+        .leftJoinAndSelect('primaryCategory.icon', 'primaryCategoryIcon')
+        // 加载流水与标签的关联记录
         .leftJoinAndSelect('transaction.transactionTag', 'transactionTag')
+        // 加载标签实体
         .leftJoinAndSelect('transactionTag.tag', 'tag')
+        // 将内层查询的筛选收入合计返回给外层
         .addSelect('filtered.total_income', 'total_income')
+        // 将内层查询的筛选支出合计返回给外层
         .addSelect('filtered.total_expense', 'total_expense')
         // 手动嵌入子查询时，参数不会自动传递，需要显式设置
         .setParameters(filteredQuery.getParameters())
@@ -456,11 +505,11 @@ export class TransactionsService {
       }>();
 
     // 指定月份的总收入
-    const totalIncome = Number(raw[0]?.total_income ?? 0);
-    // 指定月份的总支出
-    const totalExpense = Number(raw[0]?.total_expense ?? 0);
-    // 指定月份的总结余
-    const balance = totalIncome - totalExpense;
+    // const totalIncome = Number(raw[0]?.total_income ?? 0);
+    // // 指定月份的总支出
+    // const totalExpense = Number(raw[0]?.total_expense ?? 0);
+    // // 指定月份的总结余
+    // const balance = totalIncome - totalExpense;
 
     // 组装数据
   }
