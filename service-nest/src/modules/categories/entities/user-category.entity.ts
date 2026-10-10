@@ -16,7 +16,6 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { CategoryIconEntity } from './category-icon.entity';
-import { JoinAttribute } from 'typeorm/query-builder/JoinAttribute.js';
 
 @Entity('user_categories')
 export class UserCategoryEntity {
@@ -70,7 +69,7 @@ export class UserCategoryEntity {
   @JoinColumn({
     name: 'parent_id',
   })
-  parent!: UserCategoryEntity | null;
+  parent?: UserCategoryEntity | null;
 
   /**
    * 当前一级分类下的二级分类。
@@ -79,7 +78,7 @@ export class UserCategoryEntity {
    * 但定义这个属性可以构成完整的双向关系。
    */
   @OneToMany(() => UserCategoryEntity, (category) => category.parent)
-  children!: UserCategoryEntity[];
+  children?: UserCategoryEntity[];
 
   // 分类名称
   @Column({
@@ -122,7 +121,7 @@ export class UserCategoryEntity {
     name: 'icon_key',
     referencedColumnName: 'iconKey',
   })
-  icon!: CategoryIconEntity;
+  icon?: CategoryIconEntity;
 
   // 归档时间(软删除)，null表示未归档
   @Column({
