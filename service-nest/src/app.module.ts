@@ -12,6 +12,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TagsModule } from './modules/tags/tags.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
 
 @Module({
   imports: [
@@ -37,6 +38,8 @@ import { TagsModule } from './modules/tags/tags.module';
     CategoriesModule,
     // 标签模块
     TagsModule,
+    // 流水模块
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [

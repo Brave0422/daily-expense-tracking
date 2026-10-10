@@ -10,13 +10,23 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionEntity } from './entities/transaction.entity';
 import { TransactionTagEntity } from './entities/transaction-tag.entity';
 import { UsersModule } from '../users/users.module';
+import { UserCategoryEntity } from '../categories/entities/user-category.entity';
+import { CategoryIconEntity } from '../categories/entities/category-icon.entity';
+import { TagEntity } from '../tags/entities/tag.entity';
+import { TransactionsController } from './transactions.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TransactionEntity, TransactionTagEntity]),
+    TypeOrmModule.forFeature([
+      TransactionEntity,
+      TransactionTagEntity,
+      UserCategoryEntity,
+      CategoryIconEntity,
+      TagEntity,
+    ]),
     UsersModule,
   ],
-  controllers: [TransactionsService],
+  controllers: [TransactionsController],
   providers: [TransactionsService],
 })
 export class TransactionsModule {}

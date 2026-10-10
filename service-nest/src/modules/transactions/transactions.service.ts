@@ -29,11 +29,16 @@ import {
 import { UserCategoryEntity } from '../categories/entities/user-category.entity';
 import { TagEntity } from '../tags/entities/tag.entity';
 import { TransactionTagEntity } from './entities/transaction-tag.entity';
+import {
+  normalizeAmount,
+  amountToCents,
+  centsToAmount,
+} from 'src/common/util/convertAmount';
 
 interface CompleteTransaction {
   transactions: TransactionEntity[];
-  totalIncome: number;
-  totalExpense: number;
+  totalIncome: string;
+  totalExpense: string;
 }
 
 @Injectable()
@@ -63,8 +68,8 @@ export class TransactionsService {
     type?: TransactionType,
     categoryIds?: number[],
     tagIds?: number[],
-    minAmount?: number,
-    maxAmount?: number,
+    minAmount?: string,
+    maxAmount?: string,
     month?: string,
     year?: string,
   ): Promise<void> {
@@ -77,7 +82,7 @@ export class TransactionsService {
     if (
       minAmount !== undefined &&
       maxAmount !== undefined &&
-      this.amountToCents(minAmount) > this.amountToCents(maxAmount)
+      amountToCents(minAmount) > amountToCents(maxAmount)
     ) {
       throw new BadRequestException('最小金额不能大于最大金额');
     }
@@ -123,16 +128,6 @@ export class TransactionsService {
         throw new BadRequestException('筛选标签不存在或不可用');
       }
     }
-  }
-
-  /**
-   * 将已通过格式校验的金额字符串转换成“分”，用于精确比较。
-   */
-  private amountToCents(amount: number): bigint {
-    const strAmount = String(amount);
-    const [integerPart, decimalPart = ''] = strAmount.split('.');
-
-    return BigInt(integerPart) * 100n + BigInt(decimalPart.padEnd(2, '0'));
   }
 
   /**
@@ -191,8 +186,8 @@ export class TransactionsService {
     tagIds?: number[],
     title?: string,
     remark?: string,
-    minAmount?: number,
-    maxAmount?: number,
+    minAmount?: string,
+    maxAmount?: string,
     month?: string,
     year?: string,
   ): Promise<CompleteTransaction> {
@@ -348,7 +343,12 @@ export class TransactionsService {
         );
 
         filteredQuery.andWhere(
-          `(filteredCategory.id IN (:...categoryIds)OR filteredCategory.parentId IN (:...categoryIds))`,
+          `
+            (
+              filteredCategory.id IN (:...categoryIds)
+              OR filteredCategory.parentId IN (:...categoryIds)
+            )
+          `,
           {
             categoryIds,
           },
@@ -416,8 +416,13 @@ export class TransactionsService {
        * 因此需要同时获取实体结果和原始结果。
        */
       const { entities, raw } = await queryBuilder.getRawAndEntities();
-      const totalIncome = Number(raw[0]?.total_income ?? 0);
-      const totalExpense = Number(raw[0]?.total_expense ?? 0);
+      /**
+       * 窗口函数的统计结果是数据库 DECIMAL 字符串。
+       * 没有匹配流水时 raw 为空，normalizeAmount 会返回 "0.00"。
+       */
+      const totalIncome = normalizeAmount(raw[0]?.total_income);
+
+      const totalExpense = normalizeAmount(raw[0]?.total_expense);
 
       // TypeORM会自动把关系型数据库的扁平数据整理为嵌套对象
       return {
@@ -451,8 +456,8 @@ export class TransactionsService {
     tagIds?: number[],
     title?: string,
     remark?: string,
-    minAmount?: number,
-    maxAmount?: number,
+    minAmount?: string,
+    maxAmount?: string,
   ) {
     // 根据条件查询流水
     const transactions = await this.findTransactions(
@@ -479,10 +484,6 @@ export class TransactionsService {
         `SUM(CASE WHEN transactions.type =:expenseType THEN transactions.amount ELSE 0 END)`,
         'total_expense',
       )
-      .setParameters({
-        incomeType: TransactionType.INCOME,
-        expenseType: TransactionType.EXPENSE,
-      })
       .where('transactions.ownerUserId = :userId', {
         userId,
       })
@@ -500,16 +501,20 @@ export class TransactionsService {
         expenseType: TransactionType.EXPENSE,
       })
       .getRawOne<{
-        total_income: number;
-        total_expense: number;
+        total_income: string | null;
+        total_expense: string | null;
       }>();
 
-    // 指定月份的总收入
-    // const totalIncome = Number(raw[0]?.total_income ?? 0);
-    // // 指定月份的总支出
-    // const totalExpense = Number(raw[0]?.total_expense ?? 0);
-    // // 指定月份的总结余
-    // const balance = totalIncome - totalExpense;
+    // 完整月份的收入合计
+    const totalIncome = normalizeAmount(totalAmount?.total_income);
+
+    // 完整月份的支出合计
+    const totalExpense = normalizeAmount(totalAmount?.total_expense);
+
+    // 使用整数“分”计算结余，避免浮点数误差
+    const balance = centsToAmount(
+      amountToCents(totalIncome) - amountToCents(totalExpense),
+    );
 
     // 组装数据
   }

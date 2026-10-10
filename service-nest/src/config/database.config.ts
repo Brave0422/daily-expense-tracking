@@ -27,9 +27,9 @@ export const getDatabaseConfig = (
   database: configService.get<string>('DB_DATABASE'),
   // 自动加载所有实体类，减少在根模块里手动维护实体清单。
   autoLoadEntities: true,
-  // 让 mysql2 将 DECIMAL 和聚合结果按 number 返回，避免金额字段变成字符串
+  // 让 mysql2 将 DECIMAL 和聚合结果按 number 返回，避免金额字段变成字符串。2026年10月10日16:46:27关闭，因为流水金额带两位小数，为了方便业务逻辑操作，这里关闭
   extra: {
-    decimalNumbers: true,
+    decimalNumbers: false,
   },
   // 数据库根据 Entity 自动同步数据库表结构。线上需要关闭，避免运行时自动修改数据库结构。
   synchronize: configService.get<string>('NODE_ENV') !== 'production',

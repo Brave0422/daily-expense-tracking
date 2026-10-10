@@ -57,7 +57,7 @@ export class TransactionEntity {
     scale: 2,
     nullable: false,
   })
-  amount!: number;
+  amount!: string;
 
   // 与用户分类表建立外键category_id，关联的是user_categories表主键
   @ManyToOne(() => UserCategoryEntity)

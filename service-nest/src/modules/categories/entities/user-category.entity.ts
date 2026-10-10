@@ -11,7 +11,6 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  ForeignKey,
   ManyToOne,
   OneToMany,
   JoinColumn,
