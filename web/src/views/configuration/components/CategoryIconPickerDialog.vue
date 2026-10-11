@@ -10,7 +10,7 @@ import { Button as TButton, Dialog as TDialog } from 'tdesign-vue-next'
 
 import type { CategoryIconOption } from '@/api/category.types'
 
-import CategoryIcon from './CategoryIcon.vue'
+import CategoryIcon from '@/components/business/CategoryIcon.vue'
 
 interface Props {
   error?: string

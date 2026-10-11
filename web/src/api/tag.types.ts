@@ -9,6 +9,8 @@ export interface UserTag {
   id: number
   /** 标签展示名称。 */
   name: string
+  /** 历史账单筛选接口返回的归档状态。 */
+  archived?: boolean
 }
 
 export interface TagNameBody {

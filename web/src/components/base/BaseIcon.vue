@@ -22,6 +22,14 @@ export type IconName =
   | 'logout'
   | 'hide'
   | 'show'
+  | 'calendar'
+  | 'monthlySummary'
+  | 'dailyDetails'
+  | 'remark'
+  | 'tag'
+  | 'more'
+  | 'transactionEdit'
+  | 'transactionDelete'
 
 const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   transactions: 'icon-home',
@@ -38,6 +46,14 @@ const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   logout: 'icon-exit',
   hide: 'icon-hide',
   show: 'icon-show',
+  calendar: 'icon-rili',
+  monthlySummary: 'icon-tianjinshiliangyoujiagezhishuyuebao',
+  dailyDetails: 'icon-ribao',
+  remark: 'icon-24_beizhu',
+  tag: 'icon-biaoqianguanli',
+  more: 'icon-gengduo2_more-two',
+  transactionEdit: 'icon-bianji1',
+  transactionDelete: 'icon-shanchu1',
 }
 
 interface Props {

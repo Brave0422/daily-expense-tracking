@@ -24,6 +24,14 @@ const SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   logout: 'icon-exit',
   hide: 'icon-hide',
   show: 'icon-show',
+  calendar: 'icon-rili',
+  monthlySummary: 'icon-tianjinshiliangyoujiagezhishuyuebao',
+  dailyDetails: 'icon-ribao',
+  remark: 'icon-24_beizhu',
+  tag: 'icon-biaoqianguanli',
+  more: 'icon-gengduo2_more-two',
+  transactionEdit: 'icon-bianji1',
+  transactionDelete: 'icon-shanchu1',
 }
 
 describe('BaseIcon', () => {

@@ -14,7 +14,7 @@ import { normalizeApiError } from '@/api/http'
 import BaseIcon from '@/components/base/BaseIcon.vue'
 
 import CategoryFormDialog from './CategoryFormDialog.vue'
-import CategoryIcon from './CategoryIcon.vue'
+import CategoryIcon from '@/components/business/CategoryIcon.vue'
 
 const activeType = ref<CategoryType>('expense')
 const categoriesByType = reactive<Record<CategoryType, UserCategoryTreeItem[]>>({

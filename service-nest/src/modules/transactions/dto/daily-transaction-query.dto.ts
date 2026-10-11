@@ -19,7 +19,7 @@ import { transactionFiltersDto } from './transaction-filter.dto';
 import { Transform } from 'class-transformer';
 import { toIdArray, trimOptionalText } from '../util/query-transform.util';
 
-export class DailyTransactionsDto extends transactionFiltersDto {
+export class DailyTransactionsQueryDto extends transactionFiltersDto {
   @Transform(({ value }: { value: unknown }) => toIdArray(value))
   @IsOptional()
   @IsArray()

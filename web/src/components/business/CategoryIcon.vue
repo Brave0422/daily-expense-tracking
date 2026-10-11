@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-09-26T16:08:48+08:00
- * @description 分类图标渲染组件，通过 CSS 变量应用后端返回的最终背景色。
+ * @description 共享分类图标组件，通过 CSS 变量应用后端返回的最终背景色。
  */
 
 import { computed } from 'vue'

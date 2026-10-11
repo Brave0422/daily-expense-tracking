@@ -8,9 +8,11 @@ import type { ApiResponse } from './common.types'
 import { apiClient } from './http'
 import type { TagNameBody, UserTag } from './tag.types'
 
-/** 获取当前用户的全部未归档标签。 */
-export async function getUserTags(): Promise<UserTag[]> {
-  const response = await apiClient.get<ApiResponse<UserTag[]>>('/tags')
+/** 获取当前用户标签；账单筛选可包含归档项，默认沿用未归档列表。 */
+export async function getUserTags(includeArchived = false): Promise<UserTag[]> {
+  const response = includeArchived
+    ? await apiClient.get<ApiResponse<UserTag[]>>('/tags', { params: { includeArchived: true } })
+    : await apiClient.get<ApiResponse<UserTag[]>>('/tags')
   return response.data.data
 }
 

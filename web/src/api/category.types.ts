@@ -24,6 +24,8 @@ export interface UserCategory {
   iconKey: string
   /** 是否由默认分类模板初始化。 */
   isDefault: boolean
+  /** 账单历史筛选接口返回的归档状态。 */
+  archived?: boolean
   /** 后端根据分类层级派生的最终图标背景色。 */
   backgroundColor: string
 }

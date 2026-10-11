@@ -14,11 +14,14 @@ import type {
 import type { ApiResponse } from './common.types'
 import { apiClient } from './http'
 
-/** 获取当前用户指定收支类型的未归档分类树。 */
-export async function getUserCategories(type: CategoryType): Promise<UserCategoryTreeItem[]> {
+/** 获取当前用户指定收支类型的分类树；账单筛选可包含归档项，默认沿用未归档列表。 */
+export async function getUserCategories(
+  type: CategoryType,
+  includeArchived = false,
+): Promise<UserCategoryTreeItem[]> {
   const response = await apiClient.get<ApiResponse<UserCategoryTreeItem[]>>(
     '/categories/getUserCategories',
-    { params: { type } },
+    { params: { type, ...(includeArchived ? { includeArchived: true } : {}) } },
   )
   return response.data.data
 }

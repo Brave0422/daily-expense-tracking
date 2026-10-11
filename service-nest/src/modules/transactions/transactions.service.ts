@@ -34,11 +34,22 @@ import {
   amountToCents,
   centsToAmount,
 } from 'src/common/util/convertAmount';
+import { toDateKey } from 'src/common/util/common';
+import {
+  DailyTransactionItem,
+  DailyTransactionGroup,
+  DailyTransactionsResult,
+} from './interfaces/transaction-result';
 
 interface CompleteTransaction {
   transactions: TransactionEntity[];
   totalIncome: string;
   totalExpense: string;
+}
+
+interface TransactionTotalsRaw {
+  total_income: string | null;
+  total_expense: string | null;
 }
 
 @Injectable()
@@ -415,7 +426,8 @@ export class TransactionsService {
        * total_income、total_expense 不是 TransactionEntity 字段，需要手动从原始结果中获取
        * 因此需要同时获取实体结果和原始结果。
        */
-      const { entities, raw } = await queryBuilder.getRawAndEntities();
+      const { entities, raw } =
+        await queryBuilder.getRawAndEntities<TransactionTotalsRaw>();
       /**
        * 窗口函数的统计结果是数据库 DECIMAL 字符串。
        * 没有匹配流水时 raw 为空，normalizeAmount 会返回 "0.00"。
@@ -430,9 +442,99 @@ export class TransactionsService {
         totalIncome,
         totalExpense,
       };
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('查询流水失败，请重试');
     }
+  }
+
+  /**
+   * 把数据库流水实体转换成接口需要返回的流水结构。
+   *
+   * 这里主要完成：
+   * 1. 金额格式化；
+   * 2. 一级、二级分类拆分；
+   * 3. 标签关联表扁平化。
+   * @param transaction 流水实体
+   * @returns 单条流水详情
+   */
+  private assembleDailyTransaction(
+    transaction: TransactionEntity,
+  ): DailyTransactionItem {
+    const actualCategory = transaction.category;
+
+    // findTransactions 已经 JOIN 了 category，正常情况下不会不存在。
+    // 这里保留检查，避免关联数据异常时返回难以理解的错误。
+    if (!actualCategory) {
+      throw new InternalServerErrorException(
+        `流水 ${transaction.id} 未查询到分类信息`,
+      );
+    }
+
+    /*
+     * 支出二级分类：
+     * actualCategory 是二级分类，actualCategory.parent 是一级分类。
+     *
+     * 支出一级分类或收入分类：
+     * actualCategory 本身就是一级分类，不存在 parent。
+     */
+    const primaryCategory = actualCategory.parent ?? actualCategory;
+    const secondaryCategory = actualCategory.parent ? actualCategory : null;
+
+    if (!primaryCategory.icon) {
+      throw new InternalServerErrorException(
+        `分类 ${primaryCategory.id} 未查询到图标信息`,
+      );
+    }
+
+    return {
+      id: transaction.id,
+      type: transaction.type,
+
+      // 无论数据库返回什么格式，都保证接口金额为两位小数字符串。
+      amount: normalizeAmount(transaction.amount),
+
+      title: transaction.title ?? null,
+      remark: transaction.remark ?? null,
+      occurredDate: toDateKey(transaction.occurredDate),
+
+      category: {
+        primary: {
+          id: primaryCategory.id,
+          name: primaryCategory.name,
+          iconKey: primaryCategory.iconKey,
+          backgroundColor: primaryCategory.icon.backgroundColor,
+          archived: primaryCategory.archivedTime !== null,
+        },
+
+        // 没有父分类意味着当前分类本身就是一级分类。
+        secondary: secondaryCategory
+          ? {
+              id: secondaryCategory.id,
+              name: secondaryCategory.name,
+              iconKey: secondaryCategory.iconKey,
+
+              /*
+               * 二级分类的展示背景色继承一级分类。
+               * 因此这里使用 primaryCategory.icon.backgroundColor。
+               */
+              backgroundColor: primaryCategory.icon.backgroundColor,
+              archived: secondaryCategory.archivedTime !== null,
+            }
+          : null,
+      },
+
+      /*
+       * transactionTag 是关联表数组。
+       * 接口不需要暴露关联表，因此只取其中真正的 tag。
+       */
+      tags: (transaction.transactionTag ?? [])
+        .filter((transactionTag) => transactionTag.tag !== undefined)
+        .map((transactionTag) => ({
+          id: transactionTag.tag.id,
+          name: transactionTag.tag.name,
+          archived: transactionTag.tag.archivedTime !== null,
+        })),
+    };
   }
 
   /**
@@ -458,9 +560,13 @@ export class TransactionsService {
     remark?: string,
     minAmount?: string,
     maxAmount?: string,
-  ) {
+  ): Promise<DailyTransactionsResult> {
     // 根据条件查询流水
-    const transactions = await this.findTransactions(
+    const {
+      transactions: filteredTransactions,
+      totalIncome: filterTotalIncome,
+      totalExpense: filterTotalExpense,
+    } = await this.findTransactions(
       userId,
       type,
       categoryIds,
@@ -472,7 +578,7 @@ export class TransactionsService {
       month,
     );
 
-    // 获取指定月份的统计数据：支出、收入、结余
+    // 获取整个月份的统计数据：总支出、总收入
     const { startDate, endDate } = this.getMonthDateRange(month);
     const totalAmount = await this.transactionEntity
       .createQueryBuilder('transactions')
@@ -517,6 +623,93 @@ export class TransactionsService {
     );
 
     // 组装数据
+
+    /*
+     * Map 的 key 是日期。
+     * 每遇到一条流水，就把它加入对应日期的分组，
+     * 同时累加该日收入或支出。
+     */
+    const dayMap = new Map<
+      string,
+      {
+        date: string;
+        expenseCents: bigint;
+        incomeCents: bigint;
+        transactions: DailyTransactionItem[];
+      }
+    >();
+
+    for (const transaction of filteredTransactions) {
+      const date = toDateKey(transaction.occurredDate);
+
+      /*
+       * 当前日期第一次出现时，创建当天的统计容器。
+       */
+      let day = dayMap.get(date);
+
+      if (!day) {
+        day = {
+          date,
+          expenseCents: 0n,
+          incomeCents: 0n,
+          transactions: [],
+        };
+
+        dayMap.set(date, day);
+      }
+
+      /*
+       * 使用“分”累加每天的金额，避免 JavaScript 小数精度问题。
+       */
+      const amountCents = amountToCents(transaction.amount);
+
+      if (transaction.type === TransactionType.EXPENSE) {
+        day.expenseCents += amountCents;
+      } else {
+        day.incomeCents += amountCents;
+      }
+
+      /*
+       * 将数据库实体转换成接口所需结构后放入当天的流水列表。
+       *
+       * findTransactions 已经按照：
+       * occurredDate DESC、createdTime DESC、id DESC 排序，
+       * Map 和数组会保留这个顺序。
+       */
+      day.transactions.push(this.assembleDailyTransaction(transaction));
+    }
+
+    // 把内部使用的 Map 和 bigint 转换成最终接口结构
+    const days: DailyTransactionGroup[] = Array.from(dayMap.values()).map(
+      (day) => ({
+        date: day.date,
+        expenseTotal: centsToAmount(day.expenseCents),
+        incomeTotal: centsToAmount(day.incomeCents),
+        transactions: day.transactions,
+      }),
+    );
+
+    /*
+     * totals：整个月份的统计，不受业务筛选条件影响。
+     * filterTotals：应用筛选条件后的统计。
+     * days：只包含筛选后实际存在流水的日期。
+     */
+    return {
+      period: month,
+
+      totals: {
+        expense: totalExpense,
+        income: totalIncome,
+        balance,
+      },
+
+      filterTotals: {
+        expense: filterTotalExpense,
+        income: filterTotalIncome,
+      },
+
+      days,
+    };
   }
 
   async findMonthlySummary() {}
