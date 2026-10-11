@@ -76,7 +76,7 @@ export class TransactionEntity {
     length: 50,
     nullable: true,
   })
-  title?: string;
+  title?: string | null;
 
   // 备注
   @Column({
@@ -84,7 +84,7 @@ export class TransactionEntity {
     length: 100,
     nullable: true,
   })
-  remark?: string;
+  remark?: string | null;
 
   //   流水实际发生的日期
   @Column({
@@ -92,7 +92,8 @@ export class TransactionEntity {
     type: 'date',
     nullable: false,
   })
-  occurredDate!: Date;
+  // DATE 字段可以直接保存 YYYY-MM-DD 字符串，读取时兼容驱动返回的 Date。
+  occurredDate!: string | Date;
 
   // 归档时间(软删除)，null表示未归档
   @Column({

@@ -1025,4 +1025,202 @@ export class TransactionsService {
         }))
     );
   }
+
+  /** 将创建流水时的可选文本统一处理成非空字符串或 NULL。 */
+  private normalizeTransactionText(
+    value: string | null | undefined,
+    fieldName: string,
+    maxLength: number,
+  ): string | null {
+    if (value === undefined || value === null) {
+      return null;
+    }
+
+    if (typeof value !== 'string') {
+      throw new BadRequestException(`${fieldName}必须是字符串`);
+    }
+
+    const text = value.trim();
+
+    // 按字符计数，避免将一个表情符号的两个 UTF-16 编码单元计为两个字符。
+    if (Array.from(text).length > maxLength) {
+      throw new BadRequestException(`${fieldName}不能超过${maxLength}个字符`);
+    }
+
+    return text === '' ? null : text;
+  }
+
+  /**
+   * 创建流水并绑定已有标签；成功后由前端重新查询账单，不返回流水数据。
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param type 流水类型：支出或收入
+   * @param categoryId 支出二级分类id或收入一级分类id
+   * @param amount 大于0的金额字符串，最多13位整数和2位小数
+   * @param occurredDate 实际发生日期，格式为 YYYY-MM-DD
+   * @param title 流水标题
+   * @param tagIds 已有标签id，不传或空数组表示不绑定标签
+   * @param remark 补充备注
+   */
+  async createTransaction(
+    userId: number,
+    type: TransactionType,
+    categoryId: number,
+    amount: string,
+    occurredDate: string,
+    title?: string | null,
+    tagIds?: number[],
+    remark?: string | null,
+  ): Promise<void> {
+    // 1. 先校验不依赖数据库的参数，避免无效请求占用数据库事务。
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+      throw new BadRequestException('用户id必须是正整数');
+    }
+
+    if (type !== TransactionType.EXPENSE && type !== TransactionType.INCOME) {
+      throw new BadRequestException('流水类型不正确');
+    }
+
+    if (!Number.isSafeInteger(categoryId) || categoryId <= 0) {
+      throw new BadRequestException('分类id必须是正整数');
+    }
+
+    // 必须先检查格式再转换成分，不能让数据库截断或四舍五入多余的小数。
+    // DECIMAL(15,2) 最多容纳13位整数；金额计算全程使用 bigint，避免浮点误差。
+    if (
+      typeof amount !== 'string' ||
+      amount.trim() !== amount ||
+      !/^(?:0|[1-9]\d{0,12})(?:\.\d{1,2})?$/.test(amount)
+    ) {
+      throw new BadRequestException(
+        '金额必须是最多13位整数和2位小数的金额字符串',
+      );
+    }
+
+    const amountCents = amountToCents(amount);
+
+    if (amountCents <= 0n) {
+      throw new BadRequestException('金额必须大于0');
+    }
+
+    // MySQL DATE 支持1000至9999年；格式正确还不代表日期真实存在。
+    if (
+      typeof occurredDate !== 'string' ||
+      !/^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(occurredDate)
+    ) {
+      throw new BadRequestException('发生日期必须是 YYYY-MM-DD 格式的有效日期');
+    }
+
+    const date = new Date(`${occurredDate}T00:00:00.000Z`);
+
+    // Date 会把2月30日等日期自动顺延，必须与原始日期比较才能拒绝这种输入。
+    if (
+      Number.isNaN(date.getTime()) ||
+      date.toISOString().slice(0, 10) !== occurredDate
+    ) {
+      throw new BadRequestException('发生日期必须是有效的自然日期');
+    }
+
+    const normalizedTitle = this.normalizeTransactionText(title, '标题', 50);
+    const normalizedRemark = this.normalizeTransactionText(remark, '备注', 100);
+
+    if (
+      tagIds !== undefined &&
+      (!Array.isArray(tagIds) ||
+        tagIds.some((tagId) => !Number.isSafeInteger(tagId) || tagId <= 0))
+    ) {
+      throw new BadRequestException('标签id必须是正整数数组');
+    }
+
+    // 关联表以“流水id + 标签id”为联合主键，先去重，避免重复绑定。
+    const uniqueTagIds = [...new Set(tagIds ?? [])];
+
+    try {
+      // 2. 在同一个事务中校验分类、标签并写入数据。
+      // 必须使用当前 manager 获取仓库，才能让所有操作使用同一事务连接。
+      await this.transactionEntity.manager.transaction(async (manager) => {
+        const categoryRepo = manager.getRepository(UserCategoryEntity);
+        const transactionRepo = manager.getRepository(TransactionEntity);
+
+        const category = await categoryRepo.findOne({
+          where: {
+            id: categoryId,
+            ownerUserId: userId,
+            archivedTime: IsNull(),
+          },
+          // 共享锁保持到事务结束，防止校验通过后分类被其他请求归档。
+          lock: { mode: 'pessimistic_read' },
+        });
+
+        if (!category) {
+          throw new BadRequestException('分类不存在或已归档');
+        }
+
+        const requiredLevel = type === TransactionType.EXPENSE ? 2 : 1;
+
+        if (category.type !== type || category.level !== requiredLevel) {
+          throw new BadRequestException(
+            '支出必须绑定支出二级分类，收入必须绑定收入一级分类',
+          );
+        }
+
+        if (uniqueTagIds.length > 0) {
+          const tagRepo = manager.getRepository(TagEntity);
+          const tags = await tagRepo.find({
+            select: { id: true },
+            where: {
+              id: In(uniqueTagIds),
+              ownerUserId: userId,
+              archivedTime: IsNull(),
+            },
+            order: { id: 'ASC' },
+            lock: { mode: 'pessimistic_read' },
+          });
+
+          // 查询已经限定用户归属和未归档状态，数量不一致就表示有不可用标签。
+          if (tags.length !== uniqueTagIds.length) {
+            throw new BadRequestException('标签不存在或已归档');
+          }
+        }
+
+        // 3. 保存流水，取得数据库生成的id，供关联表使用。
+        const transaction = transactionRepo.create({
+          ownerUserId: userId,
+          type,
+          categoryId,
+          amount: centsToAmount(amountCents),
+          title: normalizedTitle,
+          remark: normalizedRemark,
+          // 直接保存日期字符串，避免时区转换改变实际发生日期。
+          occurredDate,
+          archivedTime: null,
+        });
+        const savedTransaction = await transactionRepo.save(transaction);
+
+        // 4. tagIds 指向已有标签，只新增关联记录，不重新创建标签实体。
+        if (uniqueTagIds.length > 0) {
+          const transactionTagRepo =
+            manager.getRepository(TransactionTagEntity);
+          const transactionTags = uniqueTagIds.map((tagId) =>
+            transactionTagRepo.create({
+              transactionId: savedTransaction.id,
+              tagId,
+            }),
+          );
+
+          await transactionTagRepo.save(transactionTags);
+        }
+
+        // 回调正常结束时自动提交；任一步抛出异常时自动回滚流水和全部关联。
+      });
+    } catch (error) {
+      // 保留业务校验的400错误，数据库异常才统一转换成创建失败。
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException('创建流水失败，请重新尝试', {
+        cause: error,
+      });
+    }
+  }
 }
