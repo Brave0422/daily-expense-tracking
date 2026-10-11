@@ -1,19 +1,20 @@
 /**
  * @author Brave
  * @date 2026-10-10T21:05:20+08:00
- * @description 月周期查询流程测试，覆盖防抖、竞态、精确金额校验、失败保留和清理。
+ * @description 双模式流水查询流程测试，覆盖周期转换、参数隔离、防抖、竞态及失败保留。
  */
 
 import { defineComponent } from 'vue'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { DailyTransactionsResult } from '@/api/transaction.types'
+import type { DailyTransactionsResult, MonthlySummaryResult } from '@/api/transaction.types'
 
 const apiMock = vi.hoisted(() => ({
   getDailyTransactions: vi.fn<typeof import('@/api/transaction.api').getDailyTransactions>(),
+  getMonthlySummary: vi.fn<typeof import('@/api/transaction.api').getMonthlySummary>(),
 }))
 vi.mock('@/api/transaction.api', () => apiMock)
-import { useDailyTransactions } from '@/views/transactions/composables/useDailyTransactions'
+import { useTransactions } from '@/views/transactions/composables/useTransactions'
 
 function createResult(period = '2026-10'): DailyTransactionsResult {
   return {
@@ -21,6 +22,14 @@ function createResult(period = '2026-10'): DailyTransactionsResult {
     totals: { expense: '100.00', income: '100.00', balance: '0.00' },
     filterTotals: { expense: '100.00', income: '100.00' },
     days: [],
+  }
+}
+function createMonthlyResult(period = '2026'): MonthlySummaryResult {
+  return {
+    period,
+    totals: { expense: '100.00', income: '200.00', balance: '100.00' },
+    filterTotals: { expense: '100.00', income: '200.00' },
+    months: [],
   }
 }
 function deferred<T>() {
@@ -38,11 +47,11 @@ function deferred<T>() {
 }
 const wrappers: VueWrapper[] = []
 function createHarness() {
-  let state: ReturnType<typeof useDailyTransactions> | undefined
+  let state: ReturnType<typeof useTransactions> | undefined
   const wrapper = mount(
     defineComponent({
       setup() {
-        state = useDailyTransactions()
+        state = useTransactions()
         return () => null
       },
     }),
@@ -52,11 +61,14 @@ function createHarness() {
   return { state, wrapper }
 }
 
-describe('useDailyTransactions', () => {
+describe('useTransactions', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-10-10T12:00:00+08:00'))
     apiMock.getDailyTransactions.mockReset().mockResolvedValue(createResult())
+    apiMock.getMonthlySummary
+      .mockReset()
+      .mockImplementation(async (query) => createMonthlyResult(query.year))
   })
   afterEach(() => {
     wrappers.splice(0).forEach((wrapper) => wrapper.unmount())
@@ -144,7 +156,7 @@ describe('useDailyTransactions', () => {
     const { state } = createHarness()
     const signal = apiMock.getDailyTransactions.mock.calls[0]?.[1]
     if (!signal) throw new Error('查询未传入取消信号')
-    state.updateMonth('2026-09')
+    state.updatePeriod('2026-09')
     expect(signal.aborted).toBe(true)
     first.resolve(createResult())
     await flushPromises()
@@ -193,7 +205,7 @@ describe('useDailyTransactions', () => {
   it('重置清空全部筛选，保留当前月份，并省略空参数', async () => {
     const { state } = createHarness()
     await flushPromises()
-    state.updateMonth('2025-12')
+    state.updatePeriod('2025-12')
     state.updateFilters({
       type: 'income',
       categoryIds: [1],
@@ -204,7 +216,7 @@ describe('useDailyTransactions', () => {
       maxAmount: '2',
     })
     state.resetFilters()
-    expect(state.month.value).toBe('2025-12')
+    expect(state.period.value).toBe('2025-12')
     expect(state.hasFilters.value).toBe(false)
     expect(apiMock.getDailyTransactions).toHaveBeenLastCalledWith(
       { month: '2025-12' },
@@ -226,5 +238,141 @@ describe('useDailyTransactions', () => {
     expect(signal.aborted).toBe(true)
     expect(apiMock.getDailyTransactions).toHaveBeenCalledTimes(1)
     expect(state.errorMessage.value).toBe('')
+  })
+
+  it('转年模式取消日筛选防抖，清空专用条件并仅保留类型、分类和金额参数', async () => {
+    const { state } = createHarness()
+    await flushPromises()
+    state.updateFilters({
+      ...state.filters.value,
+      type: 'expense',
+      categoryIds: [2],
+      tagIds: [3],
+    })
+    state.updateFilters({
+      ...state.filters.value,
+      title: '待查询标题',
+      remark: '待查询备注',
+      minAmount: ' 0.01 ',
+      maxAmount: '100',
+    })
+    state.toggleMode()
+    expect(state.mode.value).toBe('monthly')
+    expect(state.period.value).toBe('2026')
+    expect(state.filters.value).toMatchObject({ title: '', tagIds: [], remark: '' })
+    expect(apiMock.getMonthlySummary).toHaveBeenLastCalledWith(
+      { year: '2026', type: 'expense', categoryIds: [2], minAmount: '0.01', maxAmount: '100' },
+      expect.any(AbortSignal),
+    )
+    vi.advanceTimersByTime(300)
+    await flushPromises()
+    expect(apiMock.getDailyTransactions).toHaveBeenCalledTimes(2)
+    expect(apiMock.getMonthlySummary).toHaveBeenCalledTimes(1)
+    expect(state.monthlyResult.value?.period).toBe('2026')
+    expect(state.dailyResult.value).toBeNull()
+
+    state.updateFilters({
+      ...state.filters.value,
+      title: '禁用标题',
+      tagIds: [9],
+      remark: '禁用备注',
+    })
+    vi.advanceTimersByTime(300)
+    expect(state.filters.value).toMatchObject({ title: '', tagIds: [], remark: '' })
+    expect(apiMock.getMonthlySummary).toHaveBeenCalledTimes(1)
+    expect(state.isResultStale.value).toBe(false)
+  })
+
+  it('返回当年日明细使用当前月，其他年份使用12月，清空的日筛选不恢复', async () => {
+    const { state } = createHarness()
+    await flushPromises()
+    state.updatePeriod('2026-03')
+    state.updateFilters({ ...state.filters.value, title: '旧标题', type: 'income' })
+    state.toggleMode()
+    state.toggleMode()
+    expect(state.period.value).toBe('2026-10')
+    expect(apiMock.getDailyTransactions).toHaveBeenLastCalledWith(
+      { month: '2026-10', type: 'income' },
+      expect.any(AbortSignal),
+    )
+    state.toggleMode()
+    state.updatePeriod('2025')
+    state.toggleMode()
+    expect(state.period.value).toBe('2025-12')
+    expect(state.filters.value.title).toBe('')
+    expect(apiMock.getDailyTransactions).toHaveBeenLastCalledWith(
+      { month: '2025-12', type: 'income' },
+      expect.any(AbortSignal),
+    )
+    await flushPromises()
+  })
+
+  it('日请求迟到不能覆盖年模式，年请求迟到也不能覆盖切回后的日模式', async () => {
+    const daily = deferred<DailyTransactionsResult>()
+    const monthly = deferred<MonthlySummaryResult>()
+    const latest = deferred<DailyTransactionsResult>()
+    apiMock.getDailyTransactions
+      .mockReset()
+      .mockReturnValueOnce(daily.promise)
+      .mockReturnValueOnce(latest.promise)
+    apiMock.getMonthlySummary.mockReturnValueOnce(monthly.promise)
+    const { state } = createHarness()
+    const dailySignal = apiMock.getDailyTransactions.mock.calls[0]?.[1]
+    state.toggleMode()
+    expect(dailySignal?.aborted).toBe(true)
+    daily.resolve(createResult())
+    await flushPromises()
+    expect(state.result.value).toBeNull()
+    expect(state.isLoading.value).toBe(true)
+    const monthlySignal = apiMock.getMonthlySummary.mock.calls[0]?.[1]
+    state.toggleMode()
+    expect(monthlySignal?.aborted).toBe(true)
+    monthly.resolve(createMonthlyResult())
+    await flushPromises()
+    expect(state.result.value).toBeNull()
+    expect(state.isLoading.value).toBe(true)
+    latest.resolve(createResult())
+    await flushPromises()
+    expect(state.dailyResult.value).toEqual(createResult())
+    expect(state.monthlyResult.value).toBeNull()
+    expect(state.isLoading.value).toBe(false)
+  })
+
+  it('年查询失败保留旧结果，重试与重置保留年模式及年份，金额仍防抖和校验', async () => {
+    const { state } = createHarness()
+    await flushPromises()
+    apiMock.getMonthlySummary.mockRejectedValueOnce(new Error('年查询失败'))
+    state.toggleMode()
+    await flushPromises()
+    expect(state.errorMessage.value).toBe('年查询失败')
+    expect(state.dailyResult.value).toEqual(createResult())
+    expect(state.hasCurrentPeriod.value).toBe(false)
+    await state.refresh()
+    state.updatePeriod('2025')
+    await flushPromises()
+    state.updateFilters({ ...state.filters.value, minAmount: '10', maxAmount: '1' })
+    const requestCount = apiMock.getMonthlySummary.mock.calls.length
+    vi.advanceTimersByTime(300)
+    expect(state.amountError.value).toBe('最小金额不能大于最大金额')
+    expect(apiMock.getMonthlySummary).toHaveBeenCalledTimes(requestCount)
+    state.updateFilters({ ...state.filters.value, maxAmount: '100' })
+    vi.advanceTimersByTime(299)
+    expect(apiMock.getMonthlySummary).toHaveBeenCalledTimes(requestCount)
+    vi.advanceTimersByTime(1)
+    await flushPromises()
+    expect(apiMock.getMonthlySummary).toHaveBeenLastCalledWith(
+      { year: '2025', minAmount: '10', maxAmount: '100' },
+      expect.any(AbortSignal),
+    )
+    state.resetFilters()
+    await flushPromises()
+    expect(state.mode.value).toBe('monthly')
+    expect(state.period.value).toBe('2025')
+    expect(state.hasFilters.value).toBe(false)
+    expect(apiMock.getMonthlySummary).toHaveBeenLastCalledWith(
+      { year: '2025' },
+      expect.any(AbortSignal),
+    )
+    expect(state.result.value?.filterTotals).toEqual({ expense: '100.00', income: '200.00' })
   })
 })

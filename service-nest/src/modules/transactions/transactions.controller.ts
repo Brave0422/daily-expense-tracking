@@ -7,12 +7,22 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { CurrentUserId } from '../auth/decorators/current-user.decorator';
 import { DailyTransactionsQueryDto } from './dto/daily-transaction-query.dto';
-import { DailyTransactionsResult } from './interfaces/transaction-result';
+import {
+  DailyTransactionsResult,
+  MonthlySummaryResult,
+} from './interfaces/transaction-result';
 import { TransactionsService } from './transactions.service';
+import { MonthlySummaryQueryDto } from './dto/monthly-summary-query.dto';
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
+  /**
+   * 获取每日流水详情(以月为周期查询流水)
+   * @param userId
+   * @param query
+   * @returns
+   */
   @Get('daily')
   findDailyTransactions(
     @CurrentUserId() userId: number,
@@ -37,6 +47,29 @@ export class TransactionsController {
       tagIds,
       title,
       remark,
+      minAmount,
+      maxAmount,
+    );
+  }
+
+  /**
+   * 获取每月流水汇总(以年为周期查询流水)
+   * @param userId
+   * @param query
+   * @returns
+   */
+  @Get('monthly-summary')
+  findMonthlySummary(
+    @CurrentUserId() userId: number,
+    @Query() query: MonthlySummaryQueryDto,
+  ): Promise<MonthlySummaryResult> {
+    const { type, categoryIds, minAmount, maxAmount, year } = query;
+
+    return this.transactionsService.findMonthlySummary(
+      userId,
+      year,
+      type,
+      categoryIds,
       minAmount,
       maxAmount,
     );

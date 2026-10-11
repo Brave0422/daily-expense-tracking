@@ -37,15 +37,14 @@ export interface DailyTransactionItem {
   tags: TagResponseItem[];
 }
 
-export interface DailyTransactionGroup {
+// 日的流水汇总
+export interface DailyTransactionGroup extends TransactionGroupTotals {
   date: string;
-  expenseTotal: string;
-  incomeTotal: string;
   transactions: DailyTransactionItem[];
 }
 
-// 按月周期查询流水详情的结构
-export interface DailyTransactionsResult {
+// 整个周期的收支汇总
+export interface TransactionPeriodSummary {
   period: string;
   totals: {
     expense: string;
@@ -56,5 +55,37 @@ export interface DailyTransactionsResult {
     expense: string;
     income: string;
   };
+}
+
+// 分组的收支汇总
+export interface TransactionGroupTotals {
+  expenseTotal: string;
+  incomeTotal: string;
+}
+
+// 按月周期查询流水详情的结构
+export interface DailyTransactionsResult extends TransactionPeriodSummary {
   days: DailyTransactionGroup[];
+}
+
+// 按年周期查询月分类汇总
+export interface MonthlySummaryResult extends TransactionPeriodSummary {
+  months: MonthlySummaryGroup[];
+}
+
+// 月流水汇总
+export interface MonthlySummaryGroup extends TransactionGroupTotals {
+  month: number;
+  expenseCategories: ExpenseCategorySummary[];
+  incomeCategories: CategorySummaryItem[];
+}
+
+// 单个分类下的金额汇总
+export interface CategorySummaryItem extends CategoryResponseItem {
+  amount: string;
+}
+
+// 月流水的分类详情
+export interface ExpenseCategorySummary extends CategorySummaryItem {
+  children: CategorySummaryItem[];
 }

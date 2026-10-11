@@ -10,7 +10,7 @@ const apiMock = vi.hoisted(() => ({
   get: vi.fn<(url: string, config?: AxiosRequestConfig) => Promise<{ data: { data: unknown } }>>(),
 }))
 vi.mock('@/api/http', () => ({ apiClient: apiMock }))
-import { getDailyTransactions } from '@/api/transaction.api'
+import { getDailyTransactions, getMonthlySummary } from '@/api/transaction.api'
 import { getUserCategories } from '@/api/category.api'
 import { getUserTags } from '@/api/tag.api'
 
@@ -45,5 +45,26 @@ describe('transaction query api', () => {
       params: { type: 'expense', includeArchived: true },
     })
     expect(apiMock.get).toHaveBeenCalledWith('/tags', { params: { includeArchived: true } })
+  })
+  it('年查询使用monthly-summary路径、字符串period和兼容Nest的分类参数编码', async () => {
+    const result = { period: '2025', months: [] }
+    apiMock.get.mockResolvedValue({ data: { data: result } })
+    const signal = new AbortController().signal
+    const query = { year: '2025', categoryIds: [1, 2], minAmount: '0.01' }
+    await expect(getMonthlySummary(query, signal)).resolves.toEqual(result)
+    expect(apiMock.get).toHaveBeenCalledWith('/transactions/monthly-summary', {
+      params: query,
+      paramsSerializer: { indexes: null },
+      signal,
+    })
+    const url = axios.getUri({
+      url: '/transactions/monthly-summary',
+      params: query,
+      paramsSerializer: { indexes: null },
+    })
+    const params = new URL(url, 'http://localhost').searchParams
+    expect(params.get('year')).toBe('2025')
+    expect(params.getAll('categoryIds')).toEqual(['1', '2'])
+    for (const name of ['title', 'tagIds', 'remark', 'month']) expect(params.has(name)).toBe(false)
   })
 })

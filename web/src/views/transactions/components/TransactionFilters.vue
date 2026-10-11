@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:54:40+08:00
- * @description 账单筛选卡片，加载历史分类与标签，提供筛选输入及只读筛选合计。
+ * @description 账单筛选卡片，按展示模式启用条件，加载历史分类标签并展示只读筛选合计。
  */
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -15,6 +15,7 @@ import type { UserTag } from '@/api/tag.types'
 import type {
   TransactionFilters,
   TransactionFilterTotals,
+  TransactionDisplayMode,
   TransactionTypeFilter,
 } from '@/api/transaction.types'
 import BaseIcon from '@/components/base/BaseIcon.vue'
@@ -27,6 +28,7 @@ interface CategoryOption {
   children?: CategoryOption[]
 }
 const props = defineProps<{
+  mode: TransactionDisplayMode
   filters: TransactionFilters
   totals: TransactionFilterTotals | null
   amountError: string
@@ -54,6 +56,7 @@ const categoryError = ref('')
 const tagError = ref('')
 let isActive = true
 
+const isDailyFiltersDisabled = computed(() => props.mode === 'monthly')
 const categoryById = computed(
   () =>
     new Map(
@@ -106,6 +109,8 @@ function updateField<Key extends keyof TransactionFilters>(
   key: Key,
   value: TransactionFilters[Key],
 ): void {
+  if (isDailyFiltersDisabled.value && (key === 'title' || key === 'tagIds' || key === 'remark'))
+    return
   emit('update:filters', { ...props.filters, [key]: value })
 }
 /** 切换类型时一次性清除不匹配的分类，避免发送中间无效条件。 */
@@ -250,7 +255,7 @@ onBeforeUnmount(() => {
           <button type="button" class="filter-retry" @click="loadCategories">重试</button>
         </p>
       </div>
-      <div class="filter-field">
+      <div class="filter-field" :class="{ 'filter-field--disabled': isDailyFiltersDisabled }">
         <label for="transaction-title">标题</label>
         <div class="filter-input">
           <BaseIcon name="search" :size="17" />
@@ -259,12 +264,13 @@ onBeforeUnmount(() => {
             :value="props.filters.title"
             type="search"
             maxlength="50"
-            placeholder="搜索标题"
+            :disabled="isDailyFiltersDisabled"
+            :placeholder="isDailyFiltersDisabled ? '仅日明细可用' : '搜索标题'"
             @input="handleTextInput('title', $event)"
           />
         </div>
       </div>
-      <div class="filter-field">
+      <div class="filter-field" :class="{ 'filter-field--disabled': isDailyFiltersDisabled }">
         <label id="transaction-tag-label">标签</label>
         <TSelect
           :value="props.filters.tagIds"
@@ -274,12 +280,12 @@ onBeforeUnmount(() => {
           clearable
           :min-collapsed-num="1"
           :loading="isTagsLoading"
-          :disabled="isTagsLoading || Boolean(tagError)"
+          :disabled="isDailyFiltersDisabled || isTagsLoading || Boolean(tagError)"
           aria-labelledby="transaction-tag-label"
-          placeholder="搜索并选择标签"
+          :placeholder="isDailyFiltersDisabled ? '仅日明细可用' : '搜索并选择标签'"
           empty="暂无匹配标签"
           @change="handleTagChange"
-          @enter="emit('search')"
+          @enter="!isDailyFiltersDisabled && emit('search')"
         >
           <template #prefixIcon
             ><BaseIcon class="filter-tag-icon" name="tag" :size="17"
@@ -287,10 +293,17 @@ onBeforeUnmount(() => {
         </TSelect>
         <p v-if="tagError" class="filter-field__error" role="alert">
           {{ tagError }}
-          <button type="button" class="filter-retry" @click="loadTags">重试</button>
+          <button
+            type="button"
+            class="filter-retry"
+            :disabled="isDailyFiltersDisabled"
+            @click="loadTags"
+          >
+            重试
+          </button>
         </p>
       </div>
-      <div class="filter-field">
+      <div class="filter-field" :class="{ 'filter-field--disabled': isDailyFiltersDisabled }">
         <label for="transaction-remark">备注</label>
         <div class="filter-input">
           <BaseIcon name="remark" :size="17" />
@@ -299,7 +312,8 @@ onBeforeUnmount(() => {
             :value="props.filters.remark"
             type="search"
             maxlength="100"
-            placeholder="搜索备注"
+            :disabled="isDailyFiltersDisabled"
+            :placeholder="isDailyFiltersDisabled ? '仅日明细可用' : '搜索备注'"
             @input="handleTextInput('remark', $event)"
           />
         </div>
@@ -477,6 +491,22 @@ onBeforeUnmount(() => {
 .filter-tag-icon {
   color: #9a7b08;
 }
+/* 年周期保留控件位置，禁用字段与图标使用统一灰色。 */
+.filter-field--disabled > label,
+.filter-field--disabled .filter-input,
+.filter-field--disabled .filter-tag-icon,
+.filter-field--disabled input {
+  color: #b7bbc3;
+}
+.filter-field--disabled .filter-input {
+  background: #f3f4f6;
+}
+.filter-field--disabled input {
+  cursor: not-allowed;
+}
+.filter-field--disabled :deep(.t-select-input__wrap .t-input) {
+  background: #f3f4f6;
+}
 .filter-amounts {
   display: flex;
   align-items: center;
@@ -516,9 +546,13 @@ onBeforeUnmount(() => {
   color: var(--color-text);
   cursor: pointer;
 }
-.filter-retry:is(:hover, :focus-visible) {
+.filter-retry:not(:disabled):is(:hover, :focus-visible) {
   background: var(--color-primary-soft);
   border-color: var(--color-primary);
+}
+.filter-retry:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
 }
 .filter-totals {
   margin-top: 29px;

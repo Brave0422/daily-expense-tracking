@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:28:28+08:00
- * @description 账单列表页，接通月周期查询与筛选，展示周期总览和日明细及完整请求状态。
+ * @description 账单列表页，切换日明细与月汇总，展示接口周期、两类合计及完整请求状态。
  */
 
 import { computed, ref } from 'vue'
@@ -16,12 +16,16 @@ import BaseTooltip from '@/components/base/BaseTooltip.vue'
 import { formatAmount, formatBalance, isZeroAmount } from '@/utils/money'
 import TransactionDailyList from './components/TransactionDailyList.vue'
 import TransactionFilters from './components/TransactionFilters.vue'
-import { useDailyTransactions } from './composables/useDailyTransactions'
+import TransactionMonthlyList from './components/TransactionMonthlyList.vue'
+import { useTransactions } from './composables/useTransactions'
 
 const {
-  month,
+  mode,
+  period,
   filters,
   result,
+  dailyResult,
+  monthlyResult,
   resultType,
   isLoading,
   isRefreshing,
@@ -33,18 +37,28 @@ const {
   isResultStale,
   refresh,
   updateFilters,
-  updateMonth,
+  updatePeriod,
+  toggleMode,
   resetFilters,
-} = useDailyTransactions()
-const isMonthPickerOpen = ref(false)
+} = useTransactions()
+const isDatePickerOpen = ref(false)
 
 function formatPeriod(period: string): string {
-  const [year, monthNumber = ''] = period.split('-')
-  return `${year}年${Number(monthNumber)}月`
+  const [year, monthNumber] = period.split('-')
+  return monthNumber ? `${year}年${Number(monthNumber)}月` : `${year}年`
 }
-const periodLabel = computed(() => formatPeriod(month.value))
+const periodLabel = computed(() =>
+  formatPeriod(hasCurrentPeriod.value && result.value ? result.value.period : period.value),
+)
+const periodPrefix = computed(() => (mode.value === 'daily' ? '本月' : '本年'))
+const switchLabel = computed(() => (mode.value === 'daily' ? '切换到月汇总' : '切换到日明细'))
+const dateUnit = computed(() => (mode.value === 'daily' ? '月份' : '年份'))
+const displayedMode = computed(() =>
+  dailyResult.value ? 'daily' : monthlyResult.value ? 'monthly' : mode.value,
+)
+const listLabel = computed(() => (displayedMode.value === 'daily' ? '日明细' : '月汇总'))
 const recordCount = computed(
-  () => result.value?.days.reduce((count, day) => count + day.transactions.length, 0) ?? 0,
+  () => dailyResult.value?.days.reduce((count, day) => count + day.transactions.length, 0) ?? 0,
 )
 const balanceClass = computed(() => {
   const balance = result.value?.totals.balance
@@ -64,17 +78,22 @@ const resultStatus = computed(() => {
   if (isResultStale.value) return '筛选条件尚未应用，下方显示上次结果'
   return ''
 })
-function handleMonthChange(value: unknown): void {
+function handlePeriodChange(value: unknown): void {
   if (typeof value === 'string') {
-    updateMonth(value)
-    isMonthPickerOpen.value = false
+    updatePeriod(value)
+    isDatePickerOpen.value = false
   }
+}
+function handleModeChange(): void {
+  isDatePickerOpen.value = false
+  toggleMode()
 }
 </script>
 
 <template>
   <div class="transactions-view">
     <TransactionFilters
+      :mode="mode"
       :filters="filters"
       :totals="result?.filterTotals ?? null"
       :amount-error="amountError"
@@ -86,7 +105,7 @@ function handleMonthChange(value: unknown): void {
       @search="refresh"
       @reset="resetFilters"
     />
-    <section class="transaction-card" aria-label="账单日明细">
+    <section class="transaction-card" :aria-label="`账单${listLabel}`">
       <!-- 周期总览固定展示，筛选只改变列表与筛选合计 -->
       <header class="transaction-overview">
         <div class="transaction-overview__period">
@@ -95,54 +114,56 @@ function handleMonthChange(value: unknown): void {
         </div>
         <dl class="transaction-overview__totals" :aria-busy="isLoading && !hasCurrentPeriod">
           <div class="transaction-overview__expense">
-            <dt>本月支出</dt>
+            <dt>{{ periodPrefix }}支出</dt>
             <dd class="amount-expense" data-testid="period-expense">
               {{ hasCurrentPeriod && result ? `¥ ${formatAmount(result.totals.expense)}` : '—' }}
             </dd>
           </div>
           <div>
-            <dt>本月收入</dt>
+            <dt>{{ periodPrefix }}收入</dt>
             <dd class="amount-income" data-testid="period-income">
               {{ hasCurrentPeriod && result ? `¥ ${formatAmount(result.totals.income)}` : '—' }}
             </dd>
           </div>
           <div>
-            <dt>本月结余</dt>
+            <dt>{{ periodPrefix }}结余</dt>
             <dd :class="balanceClass" data-testid="period-balance">
               {{ hasCurrentPeriod && result ? formatBalance(result.totals.balance) : '—' }}
             </dd>
           </div>
         </dl>
         <div class="transaction-overview__actions">
-          <BaseTooltip content="切换到月汇总（暂不可用）"
-            ><span
-              ><button
-                class="transaction-button transaction-overview__icon"
-                type="button"
-                disabled
-                aria-label="切换到月汇总（暂不可用）"
-              >
-                <BaseIcon name="monthlySummary" :size="20" /></button></span
+          <BaseTooltip :content="switchLabel"
+            ><button
+              class="transaction-button transaction-overview__icon"
+              type="button"
+              :aria-label="switchLabel"
+              @click="handleModeChange"
+            >
+              <BaseIcon
+                :name="mode === 'daily' ? 'monthlySummary' : 'dailyDetails'"
+                :size="20"
+              /></button
           ></BaseTooltip>
-          <TPopup v-model:visible="isMonthPickerOpen" trigger="click" placement="bottom-right">
-            <BaseTooltip content="选择月份">
+          <TPopup v-model:visible="isDatePickerOpen" trigger="click" placement="bottom-right">
+            <BaseTooltip :content="`选择${dateUnit}`">
               <button
                 class="transaction-button transaction-overview__icon"
                 type="button"
-                :aria-label="`选择账单月份，当前${periodLabel}`"
-                :aria-expanded="isMonthPickerOpen"
-                @keydown.esc="isMonthPickerOpen = false"
+                :aria-label="`选择账单${dateUnit}，当前${periodLabel}`"
+                :aria-expanded="isDatePickerOpen"
+                @keydown.esc="isDatePickerOpen = false"
               >
                 <BaseIcon name="calendar" :size="20" />
               </button>
             </BaseTooltip>
             <template #content>
               <TDatePickerPanel
-                :value="month"
-                mode="month"
-                format="YYYY-MM"
-                :need-confirm="false"
-                @change="handleMonthChange"
+                :key="mode"
+                :value="period"
+                :mode="mode === 'daily' ? 'month' : 'year'"
+                :format="mode === 'daily' ? 'YYYY-MM' : 'YYYY'"
+                @change="handlePeriodChange"
               />
             </template>
           </TPopup>
@@ -159,10 +180,13 @@ function handleMonthChange(value: unknown): void {
         </div>
       </header>
       <div class="transaction-card__list-heading">
-        <h2>日明细</h2>
-        <span v-if="result">按发生日期倒序 · 共 {{ recordCount }} 笔记录</span>
+        <h2>{{ listLabel }}</h2>
+        <span v-if="dailyResult">按发生日期倒序 · 共 {{ recordCount }} 笔记录</span>
+        <span v-else-if="monthlyResult"
+          >按月份倒序 · 共 {{ monthlyResult.months.length }} 个月</span
+        >
       </div>
-      <!-- 刷新和失败明确标记旧结果，重试保留当前月份与筛选 -->
+      <!-- 刷新和失败明确标记旧结果，重试保留当前模式、周期与筛选 -->
       <div
         v-if="resultStatus"
         class="transaction-status"
@@ -189,16 +213,25 @@ function handleMonthChange(value: unknown): void {
           <BaseIcon name="emptyData" :size="82" />
           <h3>{{ errorMessage ? '账单加载失败' : '等待有效筛选条件' }}</h3>
           <p>
-            {{ errorMessage ? '请重新加载，月份和筛选条件已保留。' : '请检查金额区间后继续查询。' }}
+            {{
+              errorMessage ? '请重新加载，账单周期和筛选条件已保留。' : '请检查金额区间后继续查询。'
+            }}
           </p>
         </div>
         <TransactionDailyList
-          v-else-if="result.days.length"
-          :days="result.days"
-          :period="result.period"
+          v-else-if="dailyResult?.days.length"
+          :days="dailyResult.days"
+          :period="dailyResult.period"
           :type="resultType"
         />
-        <div v-else class="transaction-empty">
+        <TransactionMonthlyList
+          v-else-if="monthlyResult?.months.length"
+          :key="monthlyResult.period"
+          :months="monthlyResult.months"
+          :period="monthlyResult.period"
+          :type="resultType"
+        />
+        <div v-else-if="result" class="transaction-empty">
           <BaseIcon name="emptyData" :size="82" />
           <h3>{{ hasPeriodTransactions ? '未找到匹配记录' : '暂无账单记录' }}</h3>
           <p>

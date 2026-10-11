@@ -39,8 +39,12 @@ import {
   DailyTransactionItem,
   DailyTransactionGroup,
   DailyTransactionsResult,
+  CategorySummaryItem,
+  MonthlySummaryGroup,
+  MonthlySummaryResult,
 } from './interfaces/transaction-result';
 
+// 完整的流水记录
 interface CompleteTransaction {
   transactions: TransactionEntity[];
   totalIncome: string;
@@ -50,6 +54,33 @@ interface CompleteTransaction {
 interface TransactionTotalsRaw {
   total_income: string | null;
   total_expense: string | null;
+}
+
+// 周期内的所有金额汇总
+interface PeriodAmountSummary {
+  totalIncome: string;
+  totalExpense: string;
+  balance: string;
+}
+
+// 一个分类的内部累计结果。
+interface CategoryAmountAccumulator {
+  category: UserCategoryEntity;
+  amountCents: bigint;
+}
+
+// 支出一级分类还需要保存其二级分类汇总。
+interface ExpenseCategoryAccumulator extends CategoryAmountAccumulator {
+  children: Map<number, CategoryAmountAccumulator>;
+}
+
+// 一个月份的内部累计结果。
+interface MonthlySummaryAccumulator {
+  month: number;
+  expenseCents: bigint;
+  incomeCents: bigint;
+  expenseCategories: Map<number, ExpenseCategoryAccumulator>;
+  incomeCategories: Map<number, CategoryAmountAccumulator>;
 }
 
 @Injectable()
@@ -538,48 +569,17 @@ export class TransactionsService {
   }
 
   /**
-   * 以月为周期查询流水
+   * 统计指定日期范围内的收支
    * @param userId 用户id
-   * @param month 流水月份
-   * @param type 流水类型
-   * @param categoryIds 流水分类id集合
-   * @param tagIds 流水标签id集合
-   * @param title 流水标题
-   * @param remark 流水备注
-   * @param minAmount 金额最小值
-   * @param maxAmount 金额最大值
-   * @returns 每月流水列表
+   * @param month 月份
+   * @param month 月份
+   * @returns 指定月份的金额统计
    */
-  async findDailyTransactions(
+  private async calculatePeriodAmount(
     userId: number,
-    month: string,
-    type?: TransactionType,
-    categoryIds?: number[],
-    tagIds?: number[],
-    title?: string,
-    remark?: string,
-    minAmount?: string,
-    maxAmount?: string,
-  ): Promise<DailyTransactionsResult> {
-    // 根据条件查询流水
-    const {
-      transactions: filteredTransactions,
-      totalIncome: filterTotalIncome,
-      totalExpense: filterTotalExpense,
-    } = await this.findTransactions(
-      userId,
-      type,
-      categoryIds,
-      tagIds,
-      title,
-      remark,
-      minAmount,
-      maxAmount,
-      month,
-    );
-
-    // 获取整个月份的统计数据：总支出、总收入
-    const { startDate, endDate } = this.getMonthDateRange(month);
+    startDate: string,
+    endDate: string,
+  ): Promise<PeriodAmountSummary> {
     const totalAmount = await this.transactionEntity
       .createQueryBuilder('transactions')
       .select(
@@ -621,6 +621,59 @@ export class TransactionsService {
     const balance = centsToAmount(
       amountToCents(totalIncome) - amountToCents(totalExpense),
     );
+
+    return {
+      totalIncome,
+      totalExpense,
+      balance,
+    };
+  }
+
+  /**
+   * 以月为周期查询流水
+   * @param userId 用户id
+   * @param month 流水月份
+   * @param type 流水类型
+   * @param categoryIds 流水分类id集合
+   * @param tagIds 流水标签id集合
+   * @param title 流水标题
+   * @param remark 流水备注
+   * @param minAmount 金额最小值
+   * @param maxAmount 金额最大值
+   * @returns 每月流水列表
+   */
+  async findDailyTransactions(
+    userId: number,
+    month: string,
+    type?: TransactionType,
+    categoryIds?: number[],
+    tagIds?: number[],
+    title?: string,
+    remark?: string,
+    minAmount?: string,
+    maxAmount?: string,
+  ): Promise<DailyTransactionsResult> {
+    // 按“指定月份 + 当前筛选条件”查询流水和筛选合计
+    const {
+      transactions: filteredTransactions,
+      totalIncome: filterTotalIncome,
+      totalExpense: filterTotalExpense,
+    } = await this.findTransactions(
+      userId,
+      type,
+      categoryIds,
+      tagIds,
+      title,
+      remark,
+      minAmount,
+      maxAmount,
+      month,
+    );
+
+    // 获取指定月份的金额统计数据
+    const { startDate, endDate } = this.getMonthDateRange(month);
+    const { totalIncome, totalExpense, balance } =
+      await this.calculatePeriodAmount(userId, startDate, endDate);
 
     // 组装数据
 
@@ -712,5 +765,264 @@ export class TransactionsService {
     };
   }
 
-  async findMonthlySummary() {}
+  /**
+   * 以年为周期查询流水
+   * @param userId 用户id
+   * @param year 流水月份
+   * @param type 流水类型
+   * @param categoryIds 流水分类id集合
+   * @param minAmount 金额最小值
+   * @param maxAmount 金额最大值
+   * @returns 每年流水列表
+   */
+  async findMonthlySummary(
+    userId: number,
+    year: string,
+    type?: TransactionType,
+    categoryIds?: number[],
+    minAmount?: string,
+    maxAmount?: string,
+  ): Promise<MonthlySummaryResult> {
+    // 按“指定年份 + 当前筛选条件”查询流水和筛选合计，年周期不支持标签、标题、备注
+    const {
+      transactions: filteredTransactions,
+      totalIncome: filterTotalIncome,
+      totalExpense: filterTotalExpense,
+    } = await this.findTransactions(
+      userId,
+      type,
+      categoryIds,
+      undefined, // tagIds
+      undefined, // title
+      undefined, // remark
+      minAmount,
+      maxAmount,
+      undefined, // month
+      year,
+    );
+
+    // 获取指定年份的金额统计数据
+    const { startDate, endDate } = this.getYearDateRange(year);
+    const { totalIncome, totalExpense, balance } =
+      await this.calculatePeriodAmount(userId, startDate, endDate);
+
+    // 组装数据
+    const months = this.assembleMonthlySummary(filteredTransactions);
+
+    return {
+      period: year,
+
+      totals: {
+        expense: totalExpense,
+        income: totalIncome,
+        balance,
+      },
+
+      filterTotals: {
+        expense: filterTotalExpense,
+        income: filterTotalIncome,
+      },
+
+      months,
+    };
+  }
+
+  /**
+   * 把分类实体和累计金额转换成分类汇总响应。
+   * colorSource 表示最终背景色来自哪个分类，默认使用当前分类。
+   * @param category 用户分类
+   * @param amountCents 改分类下的金额
+   * @param colorSource 分类背景色来源
+   * @returns 一个分类的数据结构
+   */
+  private assembleCategorySummary(
+    category: UserCategoryEntity,
+    amountCents: bigint,
+    colorSource: UserCategoryEntity = category,
+  ): CategorySummaryItem {
+    if (!colorSource.icon) {
+      throw new InternalServerErrorException(
+        `分类 ${colorSource.id} 未查询到图标信息`,
+      );
+    }
+
+    return {
+      id: category.id,
+      name: category.name,
+      iconKey: category.iconKey,
+      backgroundColor: colorSource.icon.backgroundColor,
+
+      // 已归档分类仍参与历史汇总，只返回其归档状态。
+      archived: category.archivedTime !== null,
+
+      amount: centsToAmount(amountCents),
+    };
+  }
+
+  /** 按“月份 → 一级分类 → 二级分类”组装筛选后的汇总。 */
+  private assembleMonthlySummary(
+    transactions: TransactionEntity[],
+  ): MonthlySummaryGroup[] {
+    const monthMap = new Map<number, MonthlySummaryAccumulator>();
+
+    for (const transaction of transactions) {
+      // 使用实际发生日期分组，而不是创建日期。
+      // 月份可以转为 number，金额仍使用 bigint。
+      const monthNumber = Number(
+        toDateKey(transaction.occurredDate).slice(5, 7),
+      );
+      const amountCents = amountToCents(transaction.amount);
+      const category = transaction.category;
+
+      if (!category) {
+        throw new InternalServerErrorException(
+          `流水 ${transaction.id} 未查询到分类信息`,
+        );
+      }
+
+      let monthGroup = monthMap.get(monthNumber);
+
+      // 第一次遇到该月份时，初始化累计容器。
+      if (!monthGroup) {
+        monthGroup = {
+          month: monthNumber,
+          expenseCents: 0n,
+          incomeCents: 0n,
+          expenseCategories: new Map(),
+          incomeCategories: new Map(),
+        };
+
+        monthMap.set(monthNumber, monthGroup);
+      }
+
+      if (transaction.type === TransactionType.EXPENSE) {
+        const primaryCategory = category.parent;
+
+        // 支出必须绑定二级分类，并且存在支出一级分类。
+        // 遇到异常关联时直接报错，避免组装出错误的分类层级。
+        if (
+          category.level !== 2 ||
+          category.type !== TransactionType.EXPENSE ||
+          !primaryCategory ||
+          primaryCategory.level !== 1 ||
+          primaryCategory.type !== TransactionType.EXPENSE
+        ) {
+          throw new InternalServerErrorException(
+            `支出流水 ${transaction.id} 的分类层级或类型异常`,
+          );
+        }
+
+        // 累加该月份的支出。
+        monthGroup.expenseCents += amountCents;
+
+        let primaryGroup = monthGroup.expenseCategories.get(primaryCategory.id);
+
+        // 第一次遇到该一级分类时，创建分类累计容器。
+        if (!primaryGroup) {
+          primaryGroup = {
+            category: primaryCategory,
+            amountCents: 0n,
+            children: new Map(),
+          };
+
+          monthGroup.expenseCategories.set(primaryCategory.id, primaryGroup);
+        }
+
+        let secondaryGroup = primaryGroup.children.get(category.id);
+
+        if (!secondaryGroup) {
+          secondaryGroup = {
+            category,
+            amountCents: 0n,
+          };
+
+          primaryGroup.children.set(category.id, secondaryGroup);
+        }
+
+        // 同一笔支出分别计入父分类和子分类。
+        // 每个层级内只累计一次，父分类金额等于子分类金额之和。
+        primaryGroup.amountCents += amountCents;
+        secondaryGroup.amountCents += amountCents;
+      } else if (transaction.type === TransactionType.INCOME) {
+        // 收入只汇总一级分类，不创建二级分类数组。
+        if (category.level !== 1 || category.type !== TransactionType.INCOME) {
+          throw new InternalServerErrorException(
+            `收入流水 ${transaction.id} 的分类层级或类型异常`,
+          );
+        }
+
+        monthGroup.incomeCents += amountCents;
+
+        let incomeGroup = monthGroup.incomeCategories.get(category.id);
+
+        if (!incomeGroup) {
+          incomeGroup = {
+            category,
+            amountCents: 0n,
+          };
+
+          monthGroup.incomeCategories.set(category.id, incomeGroup);
+        }
+
+        incomeGroup.amountCents += amountCents;
+      } else {
+        throw new InternalServerErrorException(
+          `流水 ${transaction.id} 的收支类型异常`,
+        );
+      }
+    }
+
+    // 分类按照用户设置的 sortOrder、id 排序。
+    // Map 的插入顺序来自流水，不能直接作为分类展示顺序。
+    const compareCategories = (
+      left: CategoryAmountAccumulator,
+      right: CategoryAmountAccumulator,
+    ): number =>
+      left.category.sortOrder - right.category.sortOrder ||
+      left.category.id - right.category.id;
+
+    return (
+      Array.from(monthMap.values())
+
+        // 月份倒序排列。
+        .sort((left, right) => right.month - left.month)
+        .map((monthGroup) => ({
+          month: monthGroup.month,
+
+          // bigint 只用于内部计算，响应转换成两位小数字符串。
+          expenseTotal: centsToAmount(monthGroup.expenseCents),
+          incomeTotal: centsToAmount(monthGroup.incomeCents),
+
+          expenseCategories: Array.from(monthGroup.expenseCategories.values())
+            .sort(compareCategories)
+            .map((primaryGroup) => ({
+              ...this.assembleCategorySummary(
+                primaryGroup.category,
+                primaryGroup.amountCents,
+              ),
+
+              children: Array.from(primaryGroup.children.values())
+                .sort(compareCategories)
+                .map((secondaryGroup) =>
+                  this.assembleCategorySummary(
+                    secondaryGroup.category,
+                    secondaryGroup.amountCents,
+
+                    // 二级分类背景色继承一级分类。
+                    primaryGroup.category,
+                  ),
+                ),
+            })),
+
+          incomeCategories: Array.from(monthGroup.incomeCategories.values())
+            .sort(compareCategories)
+            .map((incomeGroup) =>
+              this.assembleCategorySummary(
+                incomeGroup.category,
+                incomeGroup.amountCents,
+              ),
+            ),
+        }))
+    );
+  }
 }
