@@ -13,6 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionEntity } from './entities/transaction.entity';
 import {
   Between,
+  EntityManager,
   FindOptionsWhere,
   In,
   IsNull,
@@ -83,11 +84,23 @@ interface MonthlySummaryAccumulator {
   incomeCategories: Map<number, CategoryAmountAccumulator>;
 }
 
+// 创建流水时已校验、规范化的数据，标签id已去重。
+interface CreateTransactionData {
+  ownerUserId: number;
+  type: TransactionType;
+  categoryId: number;
+  amount: string;
+  occurredDate: string;
+  title: string | null;
+  remark: string | null;
+  tagIds: number[];
+}
+
 @Injectable()
 export class TransactionsService {
   constructor(
     @InjectRepository(TransactionEntity)
-    private readonly transactionEntity: Repository<TransactionEntity>,
+    private readonly transactionRepo: Repository<TransactionEntity>,
     @InjectRepository(UserCategoryEntity)
     private readonly userCategoryRepo: Repository<UserCategoryEntity>,
     @InjectRepository(TagEntity)
@@ -299,7 +312,7 @@ export class TransactionsService {
        * 1. 筛选符合条件的流水
        * 2. 在关联标签之前计算总金额
        */
-      const filteredQuery = this.transactionEntity
+      const filteredQuery = this.transactionRepo
         .createQueryBuilder('filteredTransaction')
         .select('filteredTransaction.id', 'id')
         .addSelect(
@@ -402,7 +415,7 @@ export class TransactionsService {
        * 根据内层查询得到的流水 ID 查询完整实体，
        * 然后关联流水的全部标签。
        */
-      const queryBuilder = this.transactionEntity
+      const queryBuilder = this.transactionRepo
         .createQueryBuilder('transaction')
         .innerJoin(
           // ilteredQuery.getQuery() 只取出 SQL 字符串，如得到的字符串里只有:userId 、:startDate等等。参数的真实值仍然保存在 filteredQuery 内部，类似{userId: 1,startDate: '2026-10-01',}，这一步叫手动嵌入子查询。把 SQL 字符串放进外层查询后，外层 queryBuilder 并不知道这些参数是什么，需要显示设置参数
@@ -580,7 +593,7 @@ export class TransactionsService {
     startDate: string,
     endDate: string,
   ): Promise<PeriodAmountSummary> {
-    const totalAmount = await this.transactionEntity
+    const totalAmount = await this.transactionRepo
       .createQueryBuilder('transactions')
       .select(
         `SUM(CASE WHEN transactions.type =:incomeType THEN transactions.amount ELSE 0 END)`,
@@ -1051,17 +1064,10 @@ export class TransactionsService {
   }
 
   /**
-   * 创建流水并绑定已有标签；成功后由前端重新查询账单，不返回流水数据。
-   * @param userId 当前登录用户id，由认证上下文提供
-   * @param type 流水类型：支出或收入
-   * @param categoryId 支出二级分类id或收入一级分类id
-   * @param amount 大于0的金额字符串，最多13位整数和2位小数
-   * @param occurredDate 实际发生日期，格式为 YYYY-MM-DD
-   * @param title 流水标题
-   * @param tagIds 已有标签id，不传或空数组表示不绑定标签
-   * @param remark 补充备注
+   * 校验并规范化创建参数，在开启数据库事务前拒绝无效输入。
+   * 当前没有创建流水的 DTO，因此在这里保留基础类型与格式校验。
    */
-  async createTransaction(
+  private validateCreateTransactionParams(
     userId: number,
     type: TransactionType,
     categoryId: number,
@@ -1070,8 +1076,7 @@ export class TransactionsService {
     title?: string | null,
     tagIds?: number[],
     remark?: string | null,
-  ): Promise<void> {
-    // 1. 先校验不依赖数据库的参数，避免无效请求占用数据库事务。
+  ): CreateTransactionData {
     if (!Number.isSafeInteger(userId) || userId <= 0) {
       throw new BadRequestException('用户id必须是正整数');
     }
@@ -1132,83 +1137,155 @@ export class TransactionsService {
     }
 
     // 关联表以“流水id + 标签id”为联合主键，先去重，避免重复绑定。
-    const uniqueTagIds = [...new Set(tagIds ?? [])];
+    return {
+      ownerUserId: userId,
+      type,
+      categoryId,
+      amount: centsToAmount(amountCents),
+      occurredDate,
+      title: normalizedTitle,
+      remark: normalizedRemark,
+      tagIds: [...new Set(tagIds ?? [])],
+    };
+  }
+
+  /** 在当前事务中校验分类、标签的归属、归档状态和分类收支规则。 */
+  private async validateCreateTransactionRelations(
+    manager: EntityManager,
+    data: CreateTransactionData,
+  ): Promise<void> {
+    const { ownerUserId, type, categoryId, tagIds } = data;
+    const categoryRepo = manager.getRepository(UserCategoryEntity);
+
+    const category = await categoryRepo.findOne({
+      where: {
+        id: categoryId,
+        ownerUserId,
+        archivedTime: IsNull(),
+      },
+      // 共享锁保持到事务结束，防止校验通过后分类被其他请求归档。
+      lock: { mode: 'pessimistic_read' },
+    });
+
+    if (!category) {
+      throw new BadRequestException('分类不存在或已归档');
+    }
+
+    const requiredLevel = type === TransactionType.EXPENSE ? 2 : 1;
+
+    if (category.type !== type || category.level !== requiredLevel) {
+      throw new BadRequestException(
+        '支出必须绑定支出二级分类，收入必须绑定收入一级分类',
+      );
+    }
+
+    if (tagIds.length > 0) {
+      const tagRepo = manager.getRepository(TagEntity);
+      const tags = await tagRepo.find({
+        select: { id: true },
+        where: {
+          id: In(tagIds),
+          ownerUserId,
+          archivedTime: IsNull(),
+        },
+        order: { id: 'ASC' },
+        lock: { mode: 'pessimistic_read' },
+      });
+
+      // 查询已经限定用户归属和未归档状态，数量不一致就表示有不可用标签。
+      if (tags.length !== tagIds.length) {
+        throw new BadRequestException('标签不存在或已归档');
+      }
+    }
+  }
+
+  /** 将规范化后的数据映射为流水实体。 */
+  private buildTransactionEntity(
+    transactionRepo: Repository<TransactionEntity>,
+    data: CreateTransactionData,
+  ): TransactionEntity {
+    return transactionRepo.create({
+      ownerUserId: data.ownerUserId,
+      type: data.type,
+      categoryId: data.categoryId,
+      amount: data.amount,
+      title: data.title,
+      remark: data.remark,
+      // 直接保存日期字符串，避免时区转换改变实际发生日期。
+      occurredDate: data.occurredDate,
+      archivedTime: null,
+    });
+  }
+
+  /** 在当前事务中绑定已有标签，只新增关联记录。 */
+  private async bindTransactionTags(
+    manager: EntityManager,
+    transactionId: number,
+    tagIds: number[],
+  ): Promise<void> {
+    if (tagIds.length === 0) {
+      return;
+    }
+
+    const transactionTagRepo = manager.getRepository(TransactionTagEntity);
+    const transactionTags = tagIds.map((tagId) =>
+      transactionTagRepo.create({ transactionId, tagId }),
+    );
+
+    await transactionTagRepo.save(transactionTags);
+  }
+
+  /**
+   * 创建流水并绑定已有标签；成功后由前端重新查询账单，不返回流水数据。
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param type 流水类型：支出或收入
+   * @param categoryId 支出二级分类id或收入一级分类id
+   * @param amount 大于0的金额字符串，最多13位整数和2位小数
+   * @param occurredDate 实际发生日期，格式为 YYYY-MM-DD
+   * @param title 流水标题
+   * @param tagIds 已有标签id，不传或空数组表示不绑定标签
+   * @param remark 补充备注
+   */
+  async createTransaction(
+    userId: number,
+    type: TransactionType,
+    categoryId: number,
+    amount: string,
+    occurredDate: string,
+    title?: string | null,
+    tagIds?: number[],
+    remark?: string | null,
+  ): Promise<void> {
+    // 1. 校验并规范化参数。
+    const data = this.validateCreateTransactionParams(
+      userId,
+      type,
+      categoryId,
+      amount,
+      occurredDate,
+      title,
+      tagIds,
+      remark,
+    );
 
     try {
-      // 2. 在同一个事务中校验分类、标签并写入数据。
-      // 必须使用当前 manager 获取仓库，才能让所有操作使用同一事务连接。
-      await this.transactionEntity.manager.transaction(async (manager) => {
-        const categoryRepo = manager.getRepository(UserCategoryEntity);
+      // 关联校验和全部写入共用事务 manager，保证锁与事务边界一致。
+      await this.transactionRepo.manager.transaction(async (manager) => {
+        await this.validateCreateTransactionRelations(manager, data);
+
+        // 2. 创建实体。
         const transactionRepo = manager.getRepository(TransactionEntity);
+        const transaction = this.buildTransactionEntity(transactionRepo, data);
 
-        const category = await categoryRepo.findOne({
-          where: {
-            id: categoryId,
-            ownerUserId: userId,
-            archivedTime: IsNull(),
-          },
-          // 共享锁保持到事务结束，防止校验通过后分类被其他请求归档。
-          lock: { mode: 'pessimistic_read' },
-        });
-
-        if (!category) {
-          throw new BadRequestException('分类不存在或已归档');
-        }
-
-        const requiredLevel = type === TransactionType.EXPENSE ? 2 : 1;
-
-        if (category.type !== type || category.level !== requiredLevel) {
-          throw new BadRequestException(
-            '支出必须绑定支出二级分类，收入必须绑定收入一级分类',
-          );
-        }
-
-        if (uniqueTagIds.length > 0) {
-          const tagRepo = manager.getRepository(TagEntity);
-          const tags = await tagRepo.find({
-            select: { id: true },
-            where: {
-              id: In(uniqueTagIds),
-              ownerUserId: userId,
-              archivedTime: IsNull(),
-            },
-            order: { id: 'ASC' },
-            lock: { mode: 'pessimistic_read' },
-          });
-
-          // 查询已经限定用户归属和未归档状态，数量不一致就表示有不可用标签。
-          if (tags.length !== uniqueTagIds.length) {
-            throw new BadRequestException('标签不存在或已归档');
-          }
-        }
-
-        // 3. 保存流水，取得数据库生成的id，供关联表使用。
-        const transaction = transactionRepo.create({
-          ownerUserId: userId,
-          type,
-          categoryId,
-          amount: centsToAmount(amountCents),
-          title: normalizedTitle,
-          remark: normalizedRemark,
-          // 直接保存日期字符串，避免时区转换改变实际发生日期。
-          occurredDate,
-          archivedTime: null,
-        });
+        // 3. 保存流水，取得数据库生成的id。
         const savedTransaction = await transactionRepo.save(transaction);
 
-        // 4. tagIds 指向已有标签，只新增关联记录，不重新创建标签实体。
-        if (uniqueTagIds.length > 0) {
-          const transactionTagRepo =
-            manager.getRepository(TransactionTagEntity);
-          const transactionTags = uniqueTagIds.map((tagId) =>
-            transactionTagRepo.create({
-              transactionId: savedTransaction.id,
-              tagId,
-            }),
-          );
-
-          await transactionTagRepo.save(transactionTags);
-        }
+        // 4. 关联流水与标签。
+        await this.bindTransactionTags(
+          manager,
+          savedTransaction.id,
+          data.tagIds,
+        );
 
         // 回调正常结束时自动提交；任一步抛出异常时自动回滚流水和全部关联。
       });
