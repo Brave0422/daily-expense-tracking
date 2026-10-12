@@ -1065,7 +1065,7 @@ export class TransactionsService {
 
   /**
    * 校验并规范化创建参数，在开启数据库事务前拒绝无效输入。
-   * 当前没有创建流水的 DTO，因此在这里保留基础类型与格式校验。
+   * 保留服务层校验，确保非 HTTP 调用也遵守创建约束。
    */
   private validateCreateTransactionParams(
     userId: number,

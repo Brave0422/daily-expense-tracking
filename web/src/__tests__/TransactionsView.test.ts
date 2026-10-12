@@ -24,6 +24,7 @@ vi.mock('@/api/tag.api', () => ({ getUserTags: apiMocks.getUserTags }))
 import TransactionsView from '@/views/transactions/TransactionsView.vue'
 import TransactionFilters from '@/views/transactions/components/TransactionFilters.vue'
 import TransactionMonthlyList from '@/views/transactions/components/TransactionMonthlyList.vue'
+import TransactionCreateDialog from '@/views/transactions/components/TransactionCreateDialog.vue'
 import CategoryIcon from '@/components/business/CategoryIcon.vue'
 
 const primary = {
@@ -116,6 +117,7 @@ function createMonthlyResult(period = '2026'): MonthlySummaryResult {
 }
 const wrappers: VueWrapper[] = []
 const stubs = {
+  TransactionCreateDialog: true,
   TTooltip: { template: '<span><slot /></span>' },
   TPopup: { template: '<div><slot /><slot name="content" /></div>' },
   TLoading: true,
@@ -235,7 +237,7 @@ describe('TransactionsView', () => {
     )
   })
 
-  it('日期默认展开，折叠不触发查询或改变合计，未完成操作入口禁用', async () => {
+  it('日期默认展开，折叠不触发查询或改变合计，新增入口可用', async () => {
     const wrapper = mountPage()
     await flushPromises()
     expect(wrapper.get('.daily-group__heading').attributes('aria-expanded')).toBe('true')
@@ -245,9 +247,7 @@ describe('TransactionsView', () => {
     expect(wrapper.get('button[aria-label="切换到月汇总"]').attributes()).not.toHaveProperty(
       'disabled',
     )
-    expect(wrapper.get('button[aria-label="新增流水（暂不可用）"]').attributes()).toHaveProperty(
-      'disabled',
-    )
+    expect(wrapper.get('button[aria-label="新增流水"]').attributes()).not.toHaveProperty('disabled')
     expect(wrapper.get('button[aria-label="编辑流水（暂不可用）"]').attributes()).toHaveProperty(
       'disabled',
     )
@@ -269,7 +269,7 @@ describe('TransactionsView', () => {
     expect(wrapper.get('[data-testid="period-expense"]').text()).toBe('¥ 1,299.00')
   })
 
-  it('整个周期无记录显示新增禁用入口，不把首次未知金额当作零', async () => {
+  it('整个周期无记录显示新增入口，不把首次未知金额当作零', async () => {
     apiMocks.getDailyTransactions.mockResolvedValue({
       period: '2026-10',
       totals: { expense: '0.00', income: '0.00', balance: '0.00' },
@@ -281,7 +281,51 @@ describe('TransactionsView', () => {
     expect(wrapper.get('[data-testid="filter-expense"]').text()).toBe('—')
     await flushPromises()
     expect(wrapper.text()).toContain('暂无账单记录')
-    expect(wrapper.get('.transaction-empty button').attributes()).toHaveProperty('disabled')
+    expect(wrapper.get('.transaction-empty button').attributes()).not.toHaveProperty('disabled')
+    await wrapper.get('.transaction-empty button').trigger('click')
+    expect(wrapper.getComponent(TransactionCreateDialog).props('visible')).toBe(true)
+  })
+
+  it('新增成功保留当前日明细周期和筛选并重新查询列表及合计', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+    await wrapper.get('#transaction-title').setValue('显示器')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    await wrapper.get('button[aria-label="新增流水"]').trigger('click')
+    const dialog = wrapper.getComponent(TransactionCreateDialog)
+    expect(dialog.props('visible')).toBe(true)
+    dialog.vm.$emit('submit-success')
+    await flushPromises()
+    expect(apiMocks.getDailyTransactions).toHaveBeenLastCalledWith(
+      { month: '2026-10', title: '显示器' },
+      expect.any(AbortSignal),
+    )
+    expect(apiMocks.getDailyTransactions).toHaveBeenCalledTimes(3)
+  })
+
+  it('新增成功在月汇总模式刷新当前年份和分类筛选', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+    await wrapper.get('button[aria-label="切换到月汇总"]').trigger('click')
+    await flushPromises()
+    wrapper.getComponent(TransactionFilters).vm.$emit('update:filters', {
+      type: 'income',
+      categoryIds: [3],
+      title: '',
+      tagIds: [],
+      remark: '',
+      minAmount: '',
+      maxAmount: '',
+    })
+    await flushPromises()
+    wrapper.getComponent(TransactionCreateDialog).vm.$emit('submit-success')
+    await flushPromises()
+    expect(apiMocks.getMonthlySummary).toHaveBeenLastCalledWith(
+      { year: '2026', type: 'income', categoryIds: [3] },
+      expect.any(AbortSignal),
+    )
+    expect(apiMocks.getMonthlySummary).toHaveBeenCalledTimes(3)
   })
 
   it('加载失败保留列表与合计，并使用当前条件重试', async () => {

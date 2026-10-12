@@ -1,13 +1,29 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:51:49+08:00
- * @description 日明细与月汇总查询契约，共用周期及分组合计，金额使用十进制字符串。
+ * @description 流水创建、日明细与月汇总契约，金额使用十进制字符串。
  */
 
 import type { CategoryType } from './category.types'
 
 export type TransactionTypeFilter = 'all' | CategoryType
 export type TransactionDisplayMode = 'daily' | 'monthly'
+
+export interface CreateTransactionBody {
+  type: CategoryType
+  /** 支出二级分类 ID 或收入一级分类 ID。 */
+  categoryId: number
+  /** 大于零，最多 13 位整数和 2 位小数，单位：元。 */
+  amount: string
+  /** 有效自然日期 YYYY-MM-DD，不转换为 UTC 时间点。 */
+  occurredDate: string
+  /** 去除首尾空格后最多 50 个字符；空值由后端保存为 NULL。 */
+  title?: string | null
+  /** 当前用户未归档标签；省略或空数组表示不绑定标签。 */
+  tagIds?: number[]
+  /** 去除首尾空格后最多 100 个字符。 */
+  remark?: string | null
+}
 
 export interface TransactionQueryFilters {
   type?: CategoryType

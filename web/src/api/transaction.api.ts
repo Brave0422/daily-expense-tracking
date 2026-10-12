@@ -1,17 +1,23 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:51:49+08:00
- * @description 日明细与月汇总查询接口，负责查询参数序列化和响应解包。
+ * @description 流水创建与查询接口，负责请求发送、查询参数序列化和响应解包。
  */
 
 import type { ApiResponse } from './common.types'
 import { apiClient } from './http'
 import type {
+  CreateTransactionBody,
   DailyTransactionsQuery,
   DailyTransactionsResult,
   MonthlySummaryQuery,
   MonthlySummaryResult,
 } from './transaction.types'
+
+/** POST /transactions：创建流水及已有标签关联，成功后调用方刷新账单。 */
+export async function createTransaction(body: CreateTransactionBody): Promise<void> {
+  await apiClient.post<ApiResponse<void>>('/transactions', body)
+}
 
 /**
  * GET /transactions/daily：查询完整月总览、筛选合计与日明细。

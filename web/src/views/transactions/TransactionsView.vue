@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:28:28+08:00
- * @description 账单列表页，切换日明细与月汇总，展示接口周期、两类合计及完整请求状态。
+ * @description 账单列表页，创建流水、切换日明细与月汇总，展示周期合计及完整请求状态。
  */
 
 import { computed, ref } from 'vue'
@@ -15,6 +15,7 @@ import BaseIcon from '@/components/base/BaseIcon.vue'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
 import { formatAmount, formatBalance, isZeroAmount } from '@/utils/money'
 import TransactionDailyList from './components/TransactionDailyList.vue'
+import TransactionCreateDialog from './components/TransactionCreateDialog.vue'
 import TransactionFilters from './components/TransactionFilters.vue'
 import TransactionMonthlyList from './components/TransactionMonthlyList.vue'
 import { useTransactions } from './composables/useTransactions'
@@ -42,6 +43,7 @@ const {
   resetFilters,
 } = useTransactions()
 const isDatePickerOpen = ref(false)
+const isCreateDialogOpen = ref(false)
 
 function formatPeriod(period: string): string {
   const [year, monthNumber] = period.split('-')
@@ -167,15 +169,14 @@ function handleModeChange(): void {
               />
             </template>
           </TPopup>
-          <BaseTooltip content="新增流水（暂不可用）"
-            ><span
-              ><button
-                class="transaction-button transaction-overview__icon transaction-overview__add"
-                type="button"
-                disabled
-                aria-label="新增流水（暂不可用）"
-              >
-                <BaseIcon name="add" :size="20" /></button></span
+          <BaseTooltip content="新增流水"
+            ><button
+              class="transaction-button transaction-overview__icon transaction-overview__add"
+              type="button"
+              aria-label="新增流水"
+              @click="isCreateDialogOpen = true"
+            >
+              <BaseIcon name="add" :size="20" /></button
           ></BaseTooltip>
         </div>
       </header>
@@ -249,16 +250,18 @@ function handleModeChange(): void {
           >
             重置筛选
           </button>
-          <BaseTooltip v-else-if="!hasPeriodTransactions" content="新增流水（暂不可用）"
-            ><span
-              ><button class="transaction-button" type="button" disabled>
-                <BaseIcon name="add" :size="17" />新增流水
-              </button></span
-            ></BaseTooltip
+          <button
+            v-else-if="!hasPeriodTransactions"
+            class="transaction-button"
+            type="button"
+            @click="isCreateDialogOpen = true"
           >
+            <BaseIcon name="add" :size="17" />新增流水
+          </button>
         </div>
       </div>
     </section>
+    <TransactionCreateDialog v-model:visible="isCreateDialogOpen" @submit-success="refresh" />
   </div>
 </template>
 
