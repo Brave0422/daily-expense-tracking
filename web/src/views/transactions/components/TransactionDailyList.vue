@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:54:40+08:00
- * @description 日流水分组与记录展示，提供折叠、标签备注提示及暂时禁用的编辑删除入口。
+ * @description 日流水分组与记录展示，提供折叠、标签备注提示和编辑入口。
  */
 
 import { computed, ref, watch } from 'vue'
@@ -22,6 +22,7 @@ const props = defineProps<{
   period: string
   type: TransactionTypeFilter
 }>()
+const emit = defineEmits<{ edit: [transaction: DailyTransactionItem] }>()
 const collapsedDates = ref(new Set<string>())
 const openTransactionId = ref<number | null>(null)
 const visibleTransactionIds = computed(
@@ -52,6 +53,15 @@ function toggleDate(date: string): void {
 function handlePopupVisibleChange(id: number, isVisible: boolean): void {
   if (isVisible) openTransactionId.value = id
   else if (openTransactionId.value === id) openTransactionId.value = null
+}
+/**
+ * 关闭操作浮层并交给页面编辑当前记录，不触发日期分组折叠。
+ * @param transaction - 用户点击的完整流水记录，用于回填编辑草稿
+ * @returns 无返回值
+ */
+function handleEditTransaction(transaction: DailyTransactionItem): void {
+  openTransactionId.value = null
+  emit('edit', transaction)
 }
 watch(
   () => props.period,
@@ -159,15 +169,14 @@ watch(visibleTransactionIds, (ids) => {
               ></BaseTooltip>
               <template #content>
                 <div class="transaction-row__menu" aria-label="流水操作">
-                  <BaseTooltip content="编辑流水（暂不可用）"
-                    ><span
-                      ><button
-                        disabled
-                        type="button"
-                        class="transaction-button"
-                        aria-label="编辑流水（暂不可用）"
-                      >
-                        <BaseIcon name="transactionEdit" :size="20" /></button></span
+                  <BaseTooltip content="编辑流水"
+                    ><button
+                      type="button"
+                      class="transaction-button"
+                      aria-label="编辑流水"
+                      @click.stop="handleEditTransaction(transaction)"
+                    >
+                      <BaseIcon name="transactionEdit" :size="20" /></button
                   ></BaseTooltip>
                   <BaseTooltip content="删除流水（暂不可用）"
                     ><span
@@ -330,6 +339,16 @@ watch(visibleTransactionIds, (ids) => {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   color: var(--color-icon);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+.transaction-row__menu button:not(:disabled):is(:hover, :focus-visible) {
+  color: var(--color-text);
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+}
+/* 浮层中的可用按钮保持正常显示，禁用外观只应用于带 disabled 属性的按钮。 */
+.transaction-row__menu button:disabled {
   opacity: 0.42;
   cursor: not-allowed;
 }

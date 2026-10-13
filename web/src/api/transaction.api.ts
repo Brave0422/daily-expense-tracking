@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:51:49+08:00
- * @description 流水创建与查询接口，负责请求发送、查询参数序列化和响应解包。
+ * @description 流水创建、编辑与查询接口，负责请求发送、查询参数序列化和响应解包。
  */
 
 import type { ApiResponse } from './common.types'
@@ -12,11 +12,29 @@ import type {
   DailyTransactionsResult,
   MonthlySummaryQuery,
   MonthlySummaryResult,
+  UpdateTransactionBody,
 } from './transaction.types'
 
-/** POST /transactions：创建流水及已有标签关联，成功后调用方刷新账单。 */
+/**
+ * POST /transactions：创建流水及已有标签关联，成功后调用方刷新账单。
+ * @param body - 符合 CreateTransactionBody 的创建请求，金额和日期使用字符串
+ * @returns 创建完成后无返回数据；失败时抛出接口错误
+ */
 export async function createTransaction(body: CreateTransactionBody): Promise<void> {
   await apiClient.post<ApiResponse<void>>('/transactions', body)
+}
+
+/**
+ * PATCH /transactions/:id：完整更新可编辑字段及标签关联，成功后调用方刷新账单。
+ * @param transactionId - 当前用户需要编辑的流水id
+ * @param body - 符合 UpdateTransactionBody 的完整请求，不包含流水类型
+ * @returns 编辑完成后无返回数据；失败时抛出接口错误
+ */
+export async function updateTransaction(
+  transactionId: number,
+  body: UpdateTransactionBody,
+): Promise<void> {
+  await apiClient.patch<ApiResponse<void>>(`/transactions/${transactionId}`, body)
 }
 
 /**

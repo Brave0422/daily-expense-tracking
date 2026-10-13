@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T21:05:20+08:00
- * @description 流水接口测试，验证创建请求、查询解包、取消信号及兼容 Nest 的数组参数编码。
+ * @description 流水接口测试，验证创建编辑请求、查询解包、取消信号及兼容 Nest 的数组参数编码。
  */
 
 import axios, { type AxiosRequestConfig } from 'axios'
@@ -9,9 +9,15 @@ import { describe, expect, it, vi } from 'vitest'
 const apiMock = vi.hoisted(() => ({
   get: vi.fn<(url: string, config?: AxiosRequestConfig) => Promise<{ data: { data: unknown } }>>(),
   post: vi.fn(),
+  patch: vi.fn(),
 }))
 vi.mock('@/api/http', () => ({ apiClient: apiMock }))
-import { createTransaction, getDailyTransactions, getMonthlySummary } from '@/api/transaction.api'
+import {
+  createTransaction,
+  updateTransaction,
+  getDailyTransactions,
+  getMonthlySummary,
+} from '@/api/transaction.api'
 import { getUserCategories } from '@/api/category.api'
 import { getUserTags } from '@/api/tag.api'
 
@@ -29,6 +35,33 @@ describe('transaction query api', () => {
     apiMock.post.mockResolvedValue({ data: { code: 200, success: true } })
     await expect(createTransaction(body)).resolves.toBeUndefined()
     expect(apiMock.post).toHaveBeenCalledWith('/transactions', body)
+  })
+  it('编辑使用路径id与完整六个字段，不提交流水类型或依赖响应数据', async () => {
+    const body = {
+      categoryId: 2,
+      amount: '9999999999999.99',
+      occurredDate: '2024-02-29',
+      title: null,
+      tagIds: [],
+      remark: null,
+    }
+    apiMock.patch.mockResolvedValue({ data: { code: 200, success: true } })
+    await expect(updateTransaction(101, body)).resolves.toBeUndefined()
+    expect(apiMock.patch).toHaveBeenCalledWith('/transactions/101', body)
+  })
+  it('编辑请求失败时将错误交给表单处理', async () => {
+    const error = new Error('流水记录不存在')
+    apiMock.patch.mockRejectedValueOnce(error)
+    await expect(
+      updateTransaction(101, {
+        categoryId: 2,
+        amount: '1.00',
+        occurredDate: '2026-10-13',
+        title: null,
+        tagIds: [],
+        remark: null,
+      }),
+    ).rejects.toBe(error)
   })
   it('解包月结果并使用重复键而非带方括号数组参数', async () => {
     const result = { period: '2026-10', days: [] }

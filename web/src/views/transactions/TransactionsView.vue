@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:28:28+08:00
- * @description 账单列表页，创建流水、切换日明细与月汇总，展示周期合计及完整请求状态。
+ * @description 账单列表页，新增编辑流水、切换日明细与月汇总，展示周期合计及完整请求状态。
  */
 
 import { computed, ref } from 'vue'
@@ -13,9 +13,10 @@ import {
 } from 'tdesign-vue-next'
 import BaseIcon from '@/components/base/BaseIcon.vue'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
+import type { DailyTransactionItem } from '@/api/transaction.types'
 import { formatAmount, formatBalance, isZeroAmount } from '@/utils/money'
 import TransactionDailyList from './components/TransactionDailyList.vue'
-import TransactionCreateDialog from './components/TransactionCreateDialog.vue'
+import TransactionFormDialog from './components/TransactionFormDialog.vue'
 import TransactionFilters from './components/TransactionFilters.vue'
 import TransactionMonthlyList from './components/TransactionMonthlyList.vue'
 import { useTransactions } from './composables/useTransactions'
@@ -43,7 +44,8 @@ const {
   resetFilters,
 } = useTransactions()
 const isDatePickerOpen = ref(false)
-const isCreateDialogOpen = ref(false)
+const isFormDialogOpen = ref(false)
+const editingTransaction = ref<DailyTransactionItem | null>(null)
 
 function formatPeriod(period: string): string {
   const [year, monthNumber] = period.split('-')
@@ -89,6 +91,32 @@ function handlePeriodChange(value: unknown): void {
 function handleModeChange(): void {
   isDatePickerOpen.value = false
   toggleMode()
+}
+/**
+ * 打开默认新增表单，并清理上一次的编辑目标。
+ * @returns 无返回值
+ */
+function handleCreateTransaction(): void {
+  editingTransaction.value = null
+  isFormDialogOpen.value = true
+}
+/**
+ * 以点击记录作为编辑目标，表单内部建立独立草稿。
+ * @param transaction - 当前用户点击的日明细记录
+ * @returns 无返回值
+ */
+function handleEditTransaction(transaction: DailyTransactionItem): void {
+  editingTransaction.value = transaction
+  isFormDialogOpen.value = true
+}
+/**
+ * 同步弹窗状态，关闭时清空编辑目标，下一次打开不保留旧草稿。
+ * @param visible - 弹窗期望的显示状态；提交期间由表单阻止关闭
+ * @returns 无返回值
+ */
+function handleFormVisibleChange(visible: boolean): void {
+  isFormDialogOpen.value = visible
+  if (!visible) editingTransaction.value = null
 }
 </script>
 
@@ -174,7 +202,7 @@ function handleModeChange(): void {
               class="transaction-button transaction-overview__icon transaction-overview__add"
               type="button"
               aria-label="新增流水"
-              @click="isCreateDialogOpen = true"
+              @click="handleCreateTransaction"
             >
               <BaseIcon name="add" :size="20" /></button
           ></BaseTooltip>
@@ -224,6 +252,7 @@ function handleModeChange(): void {
           :days="dailyResult.days"
           :period="dailyResult.period"
           :type="resultType"
+          @edit="handleEditTransaction"
         />
         <TransactionMonthlyList
           v-else-if="monthlyResult?.months.length"
@@ -254,14 +283,20 @@ function handleModeChange(): void {
             v-else-if="!hasPeriodTransactions"
             class="transaction-button"
             type="button"
-            @click="isCreateDialogOpen = true"
+            @click="handleCreateTransaction"
           >
             <BaseIcon name="add" :size="17" />新增流水
           </button>
         </div>
       </div>
     </section>
-    <TransactionCreateDialog v-model:visible="isCreateDialogOpen" @submit-success="refresh" />
+    <!-- 新增和编辑共用字段与校验；保存成功刷新当前周期、筛选列表及两种合计 -->
+    <TransactionFormDialog
+      :visible="isFormDialogOpen"
+      :transaction="editingTransaction"
+      @update:visible="handleFormVisibleChange"
+      @submit-success="refresh"
+    />
   </div>
 </template>
 

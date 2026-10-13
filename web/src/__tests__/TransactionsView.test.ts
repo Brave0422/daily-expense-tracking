@@ -24,7 +24,7 @@ vi.mock('@/api/tag.api', () => ({ getUserTags: apiMocks.getUserTags }))
 import TransactionsView from '@/views/transactions/TransactionsView.vue'
 import TransactionFilters from '@/views/transactions/components/TransactionFilters.vue'
 import TransactionMonthlyList from '@/views/transactions/components/TransactionMonthlyList.vue'
-import TransactionCreateDialog from '@/views/transactions/components/TransactionCreateDialog.vue'
+import TransactionFormDialog from '@/views/transactions/components/TransactionFormDialog.vue'
 import CategoryIcon from '@/components/business/CategoryIcon.vue'
 
 const primary = {
@@ -117,7 +117,7 @@ function createMonthlyResult(period = '2026'): MonthlySummaryResult {
 }
 const wrappers: VueWrapper[] = []
 const stubs = {
-  TransactionCreateDialog: true,
+  TransactionFormDialog: true,
   TTooltip: { template: '<span><slot /></span>' },
   TPopup: { template: '<div><slot /><slot name="content" /></div>' },
   TLoading: true,
@@ -248,9 +248,7 @@ describe('TransactionsView', () => {
       'disabled',
     )
     expect(wrapper.get('button[aria-label="新增流水"]').attributes()).not.toHaveProperty('disabled')
-    expect(wrapper.get('button[aria-label="编辑流水（暂不可用）"]').attributes()).toHaveProperty(
-      'disabled',
-    )
+    expect(wrapper.get('button[aria-label="编辑流水"]').attributes()).not.toHaveProperty('disabled')
     expect(wrapper.get('button[aria-label="删除流水（暂不可用）"]').attributes()).toHaveProperty(
       'disabled',
     )
@@ -283,7 +281,7 @@ describe('TransactionsView', () => {
     expect(wrapper.text()).toContain('暂无账单记录')
     expect(wrapper.get('.transaction-empty button').attributes()).not.toHaveProperty('disabled')
     await wrapper.get('.transaction-empty button').trigger('click')
-    expect(wrapper.getComponent(TransactionCreateDialog).props('visible')).toBe(true)
+    expect(wrapper.getComponent(TransactionFormDialog).props('visible')).toBe(true)
   })
 
   it('新增成功保留当前日明细周期和筛选并重新查询列表及合计', async () => {
@@ -293,7 +291,7 @@ describe('TransactionsView', () => {
     await wrapper.get('form').trigger('submit')
     await flushPromises()
     await wrapper.get('button[aria-label="新增流水"]').trigger('click')
-    const dialog = wrapper.getComponent(TransactionCreateDialog)
+    const dialog = wrapper.getComponent(TransactionFormDialog)
     expect(dialog.props('visible')).toBe(true)
     dialog.vm.$emit('submit-success')
     await flushPromises()
@@ -302,6 +300,31 @@ describe('TransactionsView', () => {
       expect.any(AbortSignal),
     )
     expect(apiMocks.getDailyTransactions).toHaveBeenCalledTimes(3)
+  })
+
+  it('点击编辑打开所选记录，保存后保留当前筛选并刷新列表及合计，关闭清空编辑状态', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+    await wrapper.get('#transaction-title').setValue('显示器')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    await wrapper.get('button[aria-label="编辑流水"]').trigger('click')
+    const dialog = wrapper.getComponent(TransactionFormDialog)
+    expect(dialog.props('visible')).toBe(true)
+    expect(dialog.props('transaction')).toEqual(createResult().days[0]?.transactions[0])
+    expect(wrapper.get('.daily-group__heading').attributes('aria-expanded')).toBe('true')
+    dialog.vm.$emit('update:visible', false)
+    dialog.vm.$emit('submit-success')
+    await flushPromises()
+    expect(dialog.props('visible')).toBe(false)
+    expect(dialog.props('transaction')).toBeNull()
+    expect(apiMocks.getDailyTransactions).toHaveBeenLastCalledWith(
+      { month: '2026-10', title: '显示器' },
+      expect.any(AbortSignal),
+    )
+    expect(apiMocks.getDailyTransactions).toHaveBeenCalledTimes(3)
+    await wrapper.get('button[aria-label="新增流水"]').trigger('click')
+    expect(dialog.props('transaction')).toBeNull()
   })
 
   it('新增成功在月汇总模式刷新当前年份和分类筛选', async () => {
@@ -319,7 +342,7 @@ describe('TransactionsView', () => {
       maxAmount: '',
     })
     await flushPromises()
-    wrapper.getComponent(TransactionCreateDialog).vm.$emit('submit-success')
+    wrapper.getComponent(TransactionFormDialog).vm.$emit('submit-success')
     await flushPromises()
     expect(apiMocks.getMonthlySummary).toHaveBeenLastCalledWith(
       { year: '2026', type: 'income', categoryIds: [3] },

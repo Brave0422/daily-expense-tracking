@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:51:49+08:00
- * @description 流水创建、日明细与月汇总契约，金额使用十进制字符串。
+ * @description 流水创建、编辑、日明细与月汇总契约，金额使用十进制字符串。
  */
 
 import type { CategoryType } from './category.types'
@@ -23,6 +23,22 @@ export interface CreateTransactionBody {
   tagIds?: number[]
   /** 去除首尾空格后最多 100 个字符。 */
   remark?: string | null
+}
+
+/** 编辑时完整提交六个可编辑字段，流水类型不属于请求体。 */
+export interface UpdateTransactionBody {
+  /** 支出二级分类或收入一级分类；原有归档分类可继续保留。 */
+  categoryId: number
+  /** 大于零，最多13位整数和2位小数，单位：元。 */
+  amount: string
+  /** 有效自然日期 YYYY-MM-DD。 */
+  occurredDate: string
+  /** 去除首尾空格后最多50个字符；null 表示清空。 */
+  title: string | null
+  /** 编辑后的完整标签集合；空数组清空，原有归档标签可保留或移除。 */
+  tagIds: number[]
+  /** 去除首尾空格后最多100个字符；null 表示清空。 */
+  remark: string | null
 }
 
 export interface TransactionQueryFilters {
