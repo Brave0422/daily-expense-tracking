@@ -64,6 +64,14 @@ interface PeriodAmountSummary {
   balance: string;
 }
 
+// 一天的内部累计结果。
+interface DailyTransactionAccumulator {
+  date: string;
+  expenseCents: bigint;
+  incomeCents: bigint;
+  transactions: DailyTransactionItem[];
+}
+
 // 一个分类的内部累计结果。
 interface CategoryAmountAccumulator {
   category: UserCategoryEntity;
@@ -666,7 +674,7 @@ export class TransactionsService {
     minAmount?: string,
     maxAmount?: string,
   ): Promise<DailyTransactionsResult> {
-    // 按“指定月份 + 当前筛选条件”查询流水和筛选合计
+    // 1. 按“指定月份 + 当前筛选条件”查询流水和筛选合计
     const {
       transactions: filteredTransactions,
       totalIncome: filterTotalIncome,
@@ -683,29 +691,49 @@ export class TransactionsService {
       month,
     );
 
-    // 获取指定月份的金额统计数据
+    // 2. 获取指定月份的金额统计数据
     const { startDate, endDate } = this.getMonthDateRange(month);
     const { totalIncome, totalExpense, balance } =
       await this.calculatePeriodAmount(userId, startDate, endDate);
 
-    // 组装数据
+    // 3. 组装按日期分组的流水和每日收支合计
+    const days = this.assembleDailyTransactions(filteredTransactions);
 
+    /*
+     * totals：整个月份的统计，不受业务筛选条件影响。
+     * filterTotals：应用筛选条件后的统计。
+     * days：只包含筛选后实际存在流水的日期。
+     */
+    return {
+      period: month,
+
+      totals: {
+        expense: totalExpense,
+        income: totalIncome,
+        balance,
+      },
+
+      filterTotals: {
+        expense: filterTotalExpense,
+        income: filterTotalIncome,
+      },
+
+      days,
+    };
+  }
+
+  /** 按日期组装筛选后的流水明细，并累计每日收支。 */
+  private assembleDailyTransactions(
+    transactions: TransactionEntity[],
+  ): DailyTransactionGroup[] {
     /*
      * Map 的 key 是日期。
      * 每遇到一条流水，就把它加入对应日期的分组，
      * 同时累加该日收入或支出。
      */
-    const dayMap = new Map<
-      string,
-      {
-        date: string;
-        expenseCents: bigint;
-        incomeCents: bigint;
-        transactions: DailyTransactionItem[];
-      }
-    >();
+    const dayMap = new Map<string, DailyTransactionAccumulator>();
 
-    for (const transaction of filteredTransactions) {
+    for (const transaction of transactions) {
       const date = toDateKey(transaction.occurredDate);
 
       /*
@@ -746,36 +774,12 @@ export class TransactionsService {
     }
 
     // 把内部使用的 Map 和 bigint 转换成最终接口结构
-    const days: DailyTransactionGroup[] = Array.from(dayMap.values()).map(
-      (day) => ({
-        date: day.date,
-        expenseTotal: centsToAmount(day.expenseCents),
-        incomeTotal: centsToAmount(day.incomeCents),
-        transactions: day.transactions,
-      }),
-    );
-
-    /*
-     * totals：整个月份的统计，不受业务筛选条件影响。
-     * filterTotals：应用筛选条件后的统计。
-     * days：只包含筛选后实际存在流水的日期。
-     */
-    return {
-      period: month,
-
-      totals: {
-        expense: totalExpense,
-        income: totalIncome,
-        balance,
-      },
-
-      filterTotals: {
-        expense: filterTotalExpense,
-        income: filterTotalIncome,
-      },
-
-      days,
-    };
+    return Array.from(dayMap.values()).map((day) => ({
+      date: day.date,
+      expenseTotal: centsToAmount(day.expenseCents),
+      incomeTotal: centsToAmount(day.incomeCents),
+      transactions: day.transactions,
+    }));
   }
 
   /**
@@ -796,7 +800,7 @@ export class TransactionsService {
     minAmount?: string,
     maxAmount?: string,
   ): Promise<MonthlySummaryResult> {
-    // 按“指定年份 + 当前筛选条件”查询流水和筛选合计，年周期不支持标签、标题、备注
+    // 1. 按“指定年份 + 当前筛选条件”查询流水和筛选合计，年周期不支持标签、标题、备注
     const {
       transactions: filteredTransactions,
       totalIncome: filterTotalIncome,
@@ -814,12 +818,12 @@ export class TransactionsService {
       year,
     );
 
-    // 获取指定年份的金额统计数据
+    // 2. 获取指定年份的金额统计数据
     const { startDate, endDate } = this.getYearDateRange(year);
     const { totalIncome, totalExpense, balance } =
       await this.calculatePeriodAmount(userId, startDate, endDate);
 
-    // 组装数据
+    // 3. 组装数据
     const months = this.assembleMonthlySummary(filteredTransactions);
 
     return {
@@ -1042,30 +1046,12 @@ export class TransactionsService {
   /** 将创建流水时的可选文本统一处理成非空字符串或 NULL。 */
   private normalizeTransactionText(
     value: string | null | undefined,
-    fieldName: string,
-    maxLength: number,
   ): string | null {
-    if (value === undefined || value === null) {
-      return null;
-    }
-
-    if (typeof value !== 'string') {
-      throw new BadRequestException(`${fieldName}必须是字符串`);
-    }
-
-    const text = value.trim();
-
-    // 按字符计数，避免将一个表情符号的两个 UTF-16 编码单元计为两个字符。
-    if (Array.from(text).length > maxLength) {
-      throw new BadRequestException(`${fieldName}不能超过${maxLength}个字符`);
-    }
-
-    return text === '' ? null : text;
+    return value?.trim() || null;
   }
 
   /**
-   * 校验并规范化创建参数，在开启数据库事务前拒绝无效输入。
-   * 保留服务层校验，确保非 HTTP 调用也遵守创建约束。
+   * 创建参数的格式和范围由 DTO 校验；这里只校验用户id并规范化入库数据。
    */
   private validateCreateTransactionParams(
     userId: number,
@@ -1081,70 +1067,15 @@ export class TransactionsService {
       throw new BadRequestException('用户id必须是正整数');
     }
 
-    if (type !== TransactionType.EXPENSE && type !== TransactionType.INCOME) {
-      throw new BadRequestException('流水类型不正确');
-    }
-
-    if (!Number.isSafeInteger(categoryId) || categoryId <= 0) {
-      throw new BadRequestException('分类id必须是正整数');
-    }
-
-    // 必须先检查格式再转换成分，不能让数据库截断或四舍五入多余的小数。
-    // DECIMAL(15,2) 最多容纳13位整数；金额计算全程使用 bigint，避免浮点误差。
-    if (
-      typeof amount !== 'string' ||
-      amount.trim() !== amount ||
-      !/^(?:0|[1-9]\d{0,12})(?:\.\d{1,2})?$/.test(amount)
-    ) {
-      throw new BadRequestException(
-        '金额必须是最多13位整数和2位小数的金额字符串',
-      );
-    }
-
-    const amountCents = amountToCents(amount);
-
-    if (amountCents <= 0n) {
-      throw new BadRequestException('金额必须大于0');
-    }
-
-    // MySQL DATE 支持1000至9999年；格式正确还不代表日期真实存在。
-    if (
-      typeof occurredDate !== 'string' ||
-      !/^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(occurredDate)
-    ) {
-      throw new BadRequestException('发生日期必须是 YYYY-MM-DD 格式的有效日期');
-    }
-
-    const date = new Date(`${occurredDate}T00:00:00.000Z`);
-
-    // Date 会把2月30日等日期自动顺延，必须与原始日期比较才能拒绝这种输入。
-    if (
-      Number.isNaN(date.getTime()) ||
-      date.toISOString().slice(0, 10) !== occurredDate
-    ) {
-      throw new BadRequestException('发生日期必须是有效的自然日期');
-    }
-
-    const normalizedTitle = this.normalizeTransactionText(title, '标题', 50);
-    const normalizedRemark = this.normalizeTransactionText(remark, '备注', 100);
-
-    if (
-      tagIds !== undefined &&
-      (!Array.isArray(tagIds) ||
-        tagIds.some((tagId) => !Number.isSafeInteger(tagId) || tagId <= 0))
-    ) {
-      throw new BadRequestException('标签id必须是正整数数组');
-    }
-
     // 关联表以“流水id + 标签id”为联合主键，先去重，避免重复绑定。
     return {
       ownerUserId: userId,
       type,
       categoryId,
-      amount: centsToAmount(amountCents),
+      amount: normalizeAmount(amount),
       occurredDate,
-      title: normalizedTitle,
-      remark: normalizedRemark,
+      title: this.normalizeTransactionText(title),
+      remark: this.normalizeTransactionText(remark),
       tagIds: [...new Set(tagIds ?? [])],
     };
   }

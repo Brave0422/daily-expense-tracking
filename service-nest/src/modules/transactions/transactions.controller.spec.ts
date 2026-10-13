@@ -103,22 +103,39 @@ describe('TransactionsController POST /transactions', () => {
     { categoryId: '12' },
     { categoryId: 0 },
     { categoryId: Number.MAX_SAFE_INTEGER + 1 },
-    { amount: 17.28 },
-    { amount: '0.00' },
-    { amount: '-1' },
-    { amount: '1.001' },
-    { amount: '10000000000000' },
-    { amount: ' 1.00 ' },
-    { occurredDate: '2026-02-30' },
-    { occurredDate: '2026-02-29' },
-    { occurredDate: '2026-10-12T00:00:00Z' },
-    { occurredDate: '0999-01-01' },
-    { tagIds: null },
-    { tagIds: '3' },
-    { tagIds: [0] },
-    { tagIds: ['3'] },
+    ...[
+      '0',
+      '0.00',
+      '-1.00',
+      '1.001',
+      '10000000000000',
+      '1e2',
+      'NaN',
+      '01.00',
+      ' 1.00 ',
+      '1.00\n',
+      '',
+      1,
+      null,
+    ].map((amount) => ({ amount })),
+    ...[
+      '2026-02-29',
+      '2026-02-30',
+      '2026-04-31',
+      '2026-13-01',
+      '2026-10-00',
+      '2026-1-01',
+      '2026-10-11T12:00:00Z',
+      '0000-01-01',
+      '0999-12-31',
+      '',
+      null,
+    ].map((occurredDate) => ({ occurredDate })),
+    ...[[0], [-1], [1.5], ['3'], null, '3'].map((tagIds) => ({ tagIds })),
     { title: '😀'.repeat(51) },
     { remark: '中'.repeat(101) },
+    { title: 123 },
+    { remark: 123 },
   ])('无效请求在进入业务层之前拒绝：%j', async (invalid) => {
     await request(app.getHttpServer())
       .post('/transactions')
@@ -151,7 +168,7 @@ describe('TransactionsController POST /transactions', () => {
     );
   });
 
-  it('空文本及 NULL 可选文本有效，Unicode 长度与服务层一致', async () => {
+  it('空文本及 NULL 可选文本有效，Unicode 长度按字符计算', async () => {
     await request(app.getHttpServer())
       .post('/transactions')
       .set('Authorization', 'Bearer test-user')

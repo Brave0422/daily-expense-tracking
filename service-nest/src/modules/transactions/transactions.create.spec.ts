@@ -208,59 +208,22 @@ describe('TransactionsService.createTransaction', () => {
     );
   });
 
-  it.each([
-    '0',
-    '0.00',
-    '-1.00',
-    '1.001',
-    '10000000000000',
-    '1e2',
-    'NaN',
-    '01.00',
-    ' 1.00 ',
-    '1.00\n',
-    '',
-    1,
-    null,
-  ])('拒绝非法金额 %j，且不开启事务', async (amount) => {
-    await expect(
-      service.createTransaction(
-        7,
-        TransactionType.EXPENSE,
-        12,
-        amount as string,
-        '2026-10-11',
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException);
+  it.each([0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1, undefined])(
+    '拒绝非法用户id %j，且不开启事务',
+    async (userId) => {
+      await expect(
+        service.createTransaction(
+          userId as number,
+          TransactionType.EXPENSE,
+          12,
+          '1.00',
+          '2026-10-11',
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
 
-    expect(runTransaction).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    '2026-02-29',
-    '2026-02-30',
-    '2026-04-31',
-    '2026-13-01',
-    '2026-10-00',
-    '2026-1-01',
-    '2026-10-11T12:00:00Z',
-    '0000-01-01',
-    '0999-12-31',
-    '',
-    null,
-  ])('拒绝非法发生日期 %j，且不保存流水', async (occurredDate) => {
-    await expect(
-      service.createTransaction(
-        7,
-        TransactionType.EXPENSE,
-        12,
-        '1.00',
-        occurredDate as string,
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException);
-
-    expect(transactionRepo.save).not.toHaveBeenCalled();
-  });
+      expect(runTransaction).not.toHaveBeenCalled();
+    },
+  );
 
   it.each([
     [TransactionType.EXPENSE, TransactionType.EXPENSE, 1],
@@ -313,47 +276,6 @@ describe('TransactionsService.createTransaction', () => {
 
     expect(transactionRepo.save).not.toHaveBeenCalled();
     expect(transactionTagRepo.save).not.toHaveBeenCalled();
-  });
-
-  it.each([[0], [-1], [1.5], ['3'], null, '3'])(
-    '拒绝非法标签id集合 %j',
-    async (tagIds) => {
-      await expect(
-        service.createTransaction(
-          7,
-          TransactionType.EXPENSE,
-          12,
-          '1.00',
-          '2026-10-11',
-          undefined,
-          tagIds as number[],
-        ),
-      ).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(runTransaction).not.toHaveBeenCalled();
-    },
-  );
-
-  it.each([
-    ['标'.repeat(51), undefined],
-    [undefined, '注'.repeat(101)],
-    [123, undefined],
-    [undefined, 123],
-  ])('拒绝超长或非字符串标题、备注', async (title, remark) => {
-    await expect(
-      service.createTransaction(
-        7,
-        TransactionType.EXPENSE,
-        12,
-        '1.00',
-        '2026-10-11',
-        title as string | undefined,
-        undefined,
-        remark as string | undefined,
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException);
-
-    expect(runTransaction).not.toHaveBeenCalled();
   });
 
   it.each(['category', 'transaction', 'transactionTag'])(
