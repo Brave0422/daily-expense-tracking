@@ -522,7 +522,7 @@ describe('TransactionFormDialog', () => {
     expect(mocks.createTransaction.mock.calls[1]?.[0]).not.toHaveProperty('tagNames')
   })
 
-  it('编辑已关联标签只更换当前流水草稿，提交新名称并移除原id', async () => {
+  it('编辑已关联标签保留原id，随流水提交改名且不创建新标签', async () => {
     const wrapper = mountForm(true, archivedTransaction)
     await flushPromises()
     await wrapper.get('.tag-list-item__content').trigger('click')
@@ -535,8 +535,49 @@ describe('TransactionFormDialog', () => {
     await flushPromises()
     expect(mocks.updateTransaction).toHaveBeenCalledWith(
       101,
-      expect.objectContaining({ tagIds: [], tagNames: ['新西兰旅行'] }),
+      expect.objectContaining({ tagIds: [8], tagUpdates: [{ id: 8, name: '新西兰旅行' }] }),
     )
+    expect(mocks.updateTransaction.mock.calls[0]?.[1]).not.toHaveProperty('tagNames')
+    expect(mocks.createTag).not.toHaveBeenCalled()
+    expect(mocks.updateTag).not.toHaveBeenCalled()
+  })
+
+  it('已有标签改名冲突时保留原标签，取消流水不会写入改名草稿', async () => {
+    const wrapper = mountForm(true, archivedTransaction)
+    await flushPromises()
+    await wrapper.get('.tag-list-item__content').trigger('click')
+    mocks.checkTagName.mockResolvedValueOnce({ id: 9, name: '已有名称' })
+    await wrapper.get('#tag-name').setValue('已有名称')
+    await wrapper.get('.tag-form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain('已经存在同名标签')
+    expect(wrapper.find('.tag-reuse-dialog').exists()).toBe(false)
+    await wrapper.get('#tag-name').setValue('新名称')
+    await wrapper.get('.tag-form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.get('.tag-list-item').text()).toContain('新名称')
+    await wrapper.get('.transaction-form__actions button:first-child').trigger('click')
+    expect(archivedTransaction.tags[0]?.name).toBe('旧标签')
+    expect(mocks.updateTransaction).not.toHaveBeenCalled()
+    expect(mocks.updateTag).not.toHaveBeenCalled()
+  })
+
+  it('已有标签连续改名保留原id，改回原名时省略改名字段', async () => {
+    const wrapper = mountForm(true, archivedTransaction)
+    await flushPromises()
+    for (const name of ['新名称', '另一个名称', '旧标签']) {
+      await wrapper.get('.tag-list-item__content').trigger('click')
+      await wrapper.get('#tag-name').setValue(name)
+      await wrapper.get('.tag-form').trigger('submit')
+      await flushPromises()
+    }
+    await wrapper.get('.transaction-form').trigger('submit')
+    await flushPromises()
+    expect(mocks.updateTransaction).toHaveBeenCalledWith(
+      101,
+      expect.objectContaining({ tagIds: [8] }),
+    )
+    expect(mocks.updateTransaction.mock.calls[0]?.[1]).not.toHaveProperty('tagUpdates')
   })
 
   it('原父分类已归档时仅允许保留原子分类，不允许选择同父类下其他子分类', async () => {

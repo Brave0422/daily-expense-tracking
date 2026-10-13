@@ -7,6 +7,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { loadIconfontSymbols } from '@/plugins/iconfont-symbol'
+import appSymbolSource from '@/assets/iconfont/app-symbol.js?raw'
 
 const APP_SYMBOL_SCRIPT_ID = 'expense-app-iconfont-symbol-script'
 const CATEGORY_SYMBOL_SPRITE_ID = 'expense-category-icon-symbol-sprite'
@@ -40,5 +41,22 @@ describe('loadIconfontSymbols', () => {
 
     expect(document.querySelectorAll(`#${APP_SYMBOL_SCRIPT_ID}`)).toHaveLength(1)
     expect(document.querySelectorAll(`#${CATEGORY_SYMBOL_SPRITE_ID}`)).toHaveLength(1)
+  })
+
+  it('删除图标主体继承按钮颜色，白色减号保留而非显示实心圆', () => {
+    const sprite = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    sprite.innerHTML =
+      appSymbolSource.match(/<symbol id="icon-shanchu1"[\s\S]*?<\/symbol>/)?.[0] ?? ''
+    document.body.append(sprite)
+    try {
+      loadIconfontSymbols()
+      loadIconfontSymbols()
+      const paths = sprite.querySelectorAll('path')
+      expect(paths).toHaveLength(2)
+      expect(paths[0]?.hasAttribute('fill')).toBe(false)
+      expect(paths[1]?.getAttribute('fill')).toBe('#FFFDFD')
+    } finally {
+      sprite.remove()
+    }
   })
 })

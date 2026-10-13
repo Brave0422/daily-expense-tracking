@@ -6,6 +6,12 @@
 
 import type { CategoryType } from './category.types'
 
+/** 随流水提交的已有标签改名，保留标签id及所有历史关联。 */
+export interface TransactionTagUpdate {
+  id: number
+  name: string
+}
+
 export type TransactionTypeFilter = 'all' | CategoryType
 export type TransactionDisplayMode = 'daily' | 'monthly'
 
@@ -23,6 +29,8 @@ export interface CreateTransactionBody {
   tagIds?: number[]
   /** 尚未保存的标签名称；随流水在同一事务中创建，不能静默复用同名标签。 */
   tagNames?: string[]
+  /** 对tagIds中的已有标签改名，与流水在同一事务中保存。 */
+  tagUpdates?: TransactionTagUpdate[]
   /** 去除首尾空格后最多 100 个字符。 */
   remark?: string | null
 }
@@ -41,6 +49,8 @@ export interface UpdateTransactionBody {
   tagIds: number[]
   /** 待创建的标签名称，与 tagIds 合起来表示编辑后的完整标签集合。 */
   tagNames?: string[]
+  /** 对tagIds中的已有标签改名，与流水在同一事务中保存。 */
+  tagUpdates?: TransactionTagUpdate[]
   /** 去除首尾空格后最多100个字符；null 表示清空。 */
   remark: string | null
 }

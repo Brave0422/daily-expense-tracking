@@ -3,7 +3,7 @@
  * @date 2026-10-12T22:36:17+08:00
  * @description 编辑流水的完整请求校验，支持随流水保存的新标签名称草稿。
  */
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   Equals,
   IsArray,
@@ -17,7 +17,9 @@ import {
   Min,
   MinLength,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
+import { TransactionTagUpdateDto } from './transaction-tag-update.dto';
 
 export class UpdateTransactionDto {
   // 全局 whitelist 会移除未知字段；显式校验 type，避免修改类型被静默忽略。
@@ -70,6 +72,13 @@ export class UpdateTransactionDto {
   @MinLength(1, { each: true, message: '标签名称不能为空' })
   @MaxLength(50, { each: true, message: '标签名称不能超过50个字符' })
   tagNames?: string[];
+
+  /** 已有标签的名称草稿，只能修改tagIds中的标签。 */
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsArray({ message: '标签改名必须是数组' })
+  @ValidateNested({ each: true })
+  @Type(() => TransactionTagUpdateDto)
+  tagUpdates?: TransactionTagUpdateDto[];
 
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,

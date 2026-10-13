@@ -5,6 +5,7 @@
  */
 import {
   BadRequestException,
+  ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { EntityManager, In, IsNull, Repository } from 'typeorm';
@@ -62,6 +63,7 @@ describe('TransactionsService.updateTransaction', () => {
     findOne: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
+    update: jest.Mock;
   };
   let transactionRepo: { findOne: jest.Mock; update: jest.Mock };
   let transactionTagRepo: {
@@ -106,6 +108,7 @@ describe('TransactionsService.updateTransaction', () => {
       save: jest.fn((data: DeepPartial<TagEntity>) =>
         Promise.resolve({ ...data, id: 10 }),
       ),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
     transactionRepo = {
       findOne: jest.fn().mockResolvedValue({
@@ -181,6 +184,70 @@ describe('TransactionsService.updateTransaction', () => {
     expect(transactionTagRepo.save).toHaveBeenCalledWith([
       { transactionId: 101, tagId: 9 },
     ]);
+  });
+
+  const renameTag = (tagUpdates = [{ id: 3, name: 'AAB' }]) =>
+    service.updateTransaction(
+      7,
+      101,
+      13,
+      '17.2',
+      '2024-02-29',
+      null,
+      [3, 9],
+      null,
+      [],
+      tagUpdates,
+    );
+
+  it('改名更新原标签id及所有历史引用，与流水共用事务，不创建替代标签', async () => {
+    await renameTag();
+    expect(tagRepo.update).toHaveBeenCalledWith(
+      { id: 3, ownerUserId: 7 },
+      { name: 'AAB' },
+    );
+    expect(tagRepo.create).not.toHaveBeenCalled();
+    expect(tagRepo.save).not.toHaveBeenCalled();
+    expect(transactionTagRepo.delete).toHaveBeenCalledWith({
+      transactionId: 101,
+      tagId: In([5]),
+    });
+    expect(transactionTagRepo.create).toHaveBeenCalledWith({
+      transactionId: 101,
+      tagId: 9,
+    });
+    expect(runTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('改名重名时拒绝整个提交，尚未修改流水及关联', async () => {
+    tagRepo.findOne.mockResolvedValueOnce({ id: 20 });
+    await expect(renameTag()).rejects.toThrow(ConflictException);
+    expect(tagRepo.update).not.toHaveBeenCalled();
+    expect(transactionRepo.update).not.toHaveBeenCalled();
+    expect(transactionTagRepo.delete).not.toHaveBeenCalled();
+  });
+
+  it('拒绝改名不在完整标签集合中的id或重复id', async () => {
+    await expect(renameTag([{ id: 99, name: 'AAB' }])).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(tagRepo.update).not.toHaveBeenCalled();
+    await expect(
+      renameTag([
+        { id: 3, name: 'AAB' },
+        { id: 3, name: 'AAC' },
+      ]),
+    ).rejects.toThrow(BadRequestException);
+    expect(transactionRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('标签改名未更新一行时拒绝提交；数据库流水写入失败向事务入口抛错', async () => {
+    tagRepo.update.mockResolvedValueOnce({ affected: 0 });
+    await expect(renameTag()).rejects.toThrow('编辑标签失败');
+    expect(transactionRepo.update).not.toHaveBeenCalled();
+    transactionRepo.update.mockRejectedValueOnce(new Error('数据库写入失败'));
+    await expect(renameTag()).rejects.toThrow(InternalServerErrorException);
+    expect(transactionTagRepo.delete).not.toHaveBeenCalled();
   });
 
   it('编辑流水时创建新名称标签，只绑定当前流水，完整操作共用同一事务', async () => {

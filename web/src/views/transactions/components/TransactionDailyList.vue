@@ -118,7 +118,7 @@ watch(visibleTransactionIds, (ids) => {
             :size="36"
           />
           <div class="transaction-row__description">
-            <BaseTooltip :content="getTransactionLabel(transaction)" block>
+            <BaseTooltip :content="getTransactionLabel(transaction)" block overflow-only>
               <p class="transaction-row__title" tabindex="0">
                 <span>{{ getCategoryPath(transaction) }}</span
                 ><template v-if="transaction.title"
@@ -169,25 +169,22 @@ watch(visibleTransactionIds, (ids) => {
               ></BaseTooltip>
               <template #content>
                 <div class="transaction-row__menu" aria-label="流水操作">
-                  <BaseTooltip content="编辑流水"
-                    ><button
-                      type="button"
-                      class="transaction-button"
-                      aria-label="编辑流水"
-                      @click.stop="handleEditTransaction(transaction)"
-                    >
-                      <BaseIcon name="transactionEdit" :size="20" /></button
-                  ></BaseTooltip>
-                  <BaseTooltip content="删除流水（暂不可用）"
-                    ><span
-                      ><button
-                        disabled
-                        type="button"
-                        class="transaction-button transaction-row__delete"
-                        aria-label="删除流水（暂不可用）"
-                      >
-                        <BaseIcon name="transactionDelete" :size="20" /></button></span
-                  ></BaseTooltip>
+                  <button
+                    type="button"
+                    class="transaction-button"
+                    aria-label="编辑流水"
+                    @click.stop="handleEditTransaction(transaction)"
+                  >
+                    <BaseIcon name="transactionEdit" :size="20" />
+                  </button>
+                  <button
+                    disabled
+                    type="button"
+                    class="transaction-button transaction-row__delete"
+                    aria-label="删除流水（暂不可用）"
+                  >
+                    <BaseIcon name="transactionDelete" :size="20" />
+                  </button>
                 </div>
               </template>
             </TPopup>
@@ -249,8 +246,8 @@ watch(visibleTransactionIds, (ids) => {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 5px 18px;
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 700;
 }
 .daily-group__records {
   margin: 0;
@@ -301,7 +298,7 @@ watch(visibleTransactionIds, (ids) => {
   display: inline-flex;
   flex: none;
   color: #9a7b08;
-  cursor: help;
+  cursor: default;
 }
 .transaction-row__actions {
   display: flex;
@@ -312,10 +309,10 @@ watch(visibleTransactionIds, (ids) => {
 .transaction-row__remark {
   display: inline-flex;
   color: var(--color-icon);
-  cursor: help;
+  cursor: default;
 }
 .transaction-row__amount {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -336,24 +333,22 @@ watch(visibleTransactionIds, (ids) => {
   height: 33px;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-primary);
   border-radius: 8px;
-  color: var(--color-icon);
-  background: var(--color-surface);
-  cursor: pointer;
-}
-.transaction-row__menu button:not(:disabled):is(:hover, :focus-visible) {
   color: var(--color-text);
   background: var(--color-primary-soft);
+  cursor: pointer;
+}
+.transaction-row__menu button:is(:hover, :focus-visible) {
+  background: var(--color-primary);
   border-color: var(--color-primary);
 }
-/* 浮层中的可用按钮保持正常显示，禁用外观只应用于带 disabled 属性的按钮。 */
+/* 禁用按钮保留图标颜色，仅以鼠标状态表示暂不可操作。 */
 .transaction-row__menu button:disabled {
-  opacity: 0.42;
   cursor: not-allowed;
 }
 .transaction-row__menu .transaction-row__delete {
-  color: var(--color-danger);
+  color: #ff2525;
 }
 @media (max-width: 1050px) {
   .transaction-row {
@@ -363,9 +358,6 @@ watch(visibleTransactionIds, (ids) => {
   }
   .transaction-row__actions {
     gap: 8px;
-  }
-  .transaction-row__amount {
-    font-size: 13px;
   }
 }
 </style>

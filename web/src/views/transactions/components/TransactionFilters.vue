@@ -455,11 +455,6 @@ onBeforeUnmount(() => {
     background 0.15s,
     border-color 0.15s;
 }
-.filter-type button:is(:hover, :focus-visible) {
-  color: var(--color-text);
-  background: var(--color-primary-soft);
-  border-color: var(--color-primary);
-}
 .filter-type .filter-type__active {
   color: var(--color-text);
   background: var(--color-primary);
@@ -477,6 +472,11 @@ onBeforeUnmount(() => {
 }
 .filter-input:focus-within {
   border-color: var(--color-primary);
+}
+/* 分类和标签的组件库输入容器与标题框保持相同尺寸。 */
+.transaction-filters :deep(.t-input) {
+  height: 38px;
+  border-radius: 8px;
 }
 .filter-input input {
   width: 100%;

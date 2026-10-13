@@ -103,7 +103,7 @@ async function handleSubmit(): Promise<void> {
         nameError.value = '当前流水已添加该标签'
         return
       }
-      // 原标签名称未变时保留其关联，包括历史归档标签；编辑草稿不改全局标签。
+      // 已保存标签始终保留原id，改名只修改草稿，随流水提交后才持久化。
       if (mode === 'edit' && editingTag && editingTag.id > 0 && editingTag.name === body.name) {
         completeDraft({
           name: body.name,
@@ -113,6 +113,14 @@ async function handleSubmit(): Promise<void> {
       }
       const existingTag = await checkTagName(body)
       if (!isActive || sequence !== requestSequence) return
+      if (mode === 'edit' && editingTag && editingTag.id > 0) {
+        if (existingTag && existingTag.id !== editingTag.id) {
+          nameError.value = '已经存在同名标签'
+          return
+        }
+        completeDraft({ name: body.name, existingTag: { ...editingTag, name: body.name } })
+        return
+      }
       if (existingTag && otherTags.some((tag) => tag.id === existingTag.id)) {
         nameError.value = '当前流水已添加该标签'
         return

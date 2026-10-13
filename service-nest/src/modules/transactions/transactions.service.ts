@@ -32,6 +32,7 @@ import { UserCategoryEntity } from '../categories/entities/user-category.entity'
 import { TagEntity } from '../tags/entities/tag.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { TransactionTagEntity } from './entities/transaction-tag.entity';
+import type { TransactionTagUpdateDto } from './dto/transaction-tag-update.dto';
 import {
   normalizeAmount,
   amountToCents,
@@ -1281,7 +1282,48 @@ export class TransactionsService {
   }
 
   /**
-   * 在同一事务中创建流水、新标签并建立关联；成功后由前端重新查询账单。
+   * 保留标签id，在流水事务内更新已有标签名称及其所有历史展示。
+   * @param manager 已锁定用户并校验标签归属的事务管理器
+   * @param userId 当前登录用户id
+   * @param updates 已有标签的改名草稿
+   * @param tagIds 已通过归属和归档状态校验的完整已有标签集合
+   * @returns 改名完成后结束；重复id、无效关联、重名或写入失败时回滚整个流水提交
+   */
+  private async updateDraftTags(
+    manager: EntityManager,
+    userId: number,
+    updates: TransactionTagUpdateDto[],
+    tagIds: number[],
+  ): Promise<void> {
+    const updatedIds = new Set<number>();
+    const tagRepo = manager.getRepository(TagEntity);
+    for (const { id, name } of updates) {
+      if (!tagIds.includes(id) || updatedIds.has(id)) {
+        throw new BadRequestException(
+          '标签改名必须使用当前流水中不重复的已有标签id',
+        );
+      }
+      updatedIds.add(id);
+      const existing = await tagRepo.findOne({
+        select: { id: true },
+        where: { ownerUserId: userId, name, archivedTime: IsNull() },
+        lock: { mode: 'pessimistic_read' },
+      });
+      if (existing && existing.id !== id) {
+        throw new ConflictException(`已经存在同名标签“${name}”`);
+      }
+      const result = await tagRepo.update(
+        { id, ownerUserId: userId },
+        { name },
+      );
+      if (result.affected !== 1) {
+        throw new InternalServerErrorException('编辑标签失败，请重新尝试');
+      }
+    }
+  }
+
+  /**
+   * 在同一事务中创建流水、创建和改名标签并建立关联；成功后由前端重新查询账单。
    *
    * @param userId 当前登录用户id，由认证上下文提供
    * @param type 流水类型，expense 表示支出，income 表示收入
@@ -1292,6 +1334,7 @@ export class TransactionsService {
    * @param tagIds 可选已有标签id，与tagNames生成的标签共同建立关联
    * @param remark 可选备注，空文本或未提供时保存为 NULL
    * @param tagNames 待创建的名称草稿，未确认的重名标签不能静默复用
+   * @param tagUpdates 已有标签的改名草稿，保留原id及关联
    * @returns 流水和全部标签关联提交成功后异步结束，无返回值；失败时回滚并抛出异常
    */
   async createTransaction(
@@ -1304,6 +1347,7 @@ export class TransactionsService {
     tagIds?: number[],
     remark?: string | null,
     tagNames: string[] = [],
+    tagUpdates: TransactionTagUpdateDto[] = [],
   ): Promise<void> {
     // 1. 校验并规范化参数。
     const data = this.validateCreateTransactionParams(
@@ -1320,8 +1364,11 @@ export class TransactionsService {
     try {
       // 关联校验和全部写入共用事务 manager，保证锁与事务边界一致。
       await this.transactionRepo.manager.transaction(async (manager) => {
-        if (tagNames.length) await this.lockTagNames(manager, userId);
+        if (tagNames.length || tagUpdates.length)
+          await this.lockTagNames(manager, userId);
         await this.validateCreateTransactionRelations(manager, data);
+        if (tagUpdates.length)
+          await this.updateDraftTags(manager, userId, tagUpdates, data.tagIds);
         const newTagIds = tagNames.length
           ? await this.createDraftTags(manager, userId, tagNames)
           : [];
@@ -1437,6 +1484,7 @@ export class TransactionsService {
    * @param tagIds 编辑后的完整标签id集合；空数组表示移除全部标签
    * @param remark 补充备注，空文本规范化为 NULL
    * @param tagNames 待创建的名称草稿，与已有标签合起来表示完整集合
+   * @param tagUpdates 已有标签的改名草稿，保留原id及关联
    * @returns 流水和标签差异更新提交成功后异步结束，无响应数据；失败时回滚并抛出异常
    */
   async updateTransaction(
@@ -1449,6 +1497,7 @@ export class TransactionsService {
     tagIds: number[],
     remark: string | null,
     tagNames: string[] = [],
+    tagUpdates: TransactionTagUpdateDto[] = [],
   ): Promise<void> {
     // 1. DTO 校验完整请求的格式；服务层校验认证用户和路径id。
     if (!Number.isSafeInteger(userId) || userId <= 0) {
@@ -1464,7 +1513,8 @@ export class TransactionsService {
     try {
       // 后续查询、锁和写入都使用当前事务 manager，确保任一步失败都能整体回滚。
       await this.transactionRepo.manager.transaction(async (manager) => {
-        if (tagNames.length) await this.lockTagNames(manager, userId);
+        if (tagNames.length || tagUpdates.length)
+          await this.lockTagNames(manager, userId);
         const transactionRepo = manager.getRepository(TransactionEntity);
         // 2. 查询并锁定原流水；其他请求修改或删除同一行时必须等待事务结束。
         const transaction = await transactionRepo.findOne({
@@ -1500,6 +1550,8 @@ export class TransactionsService {
           uniqueTagIds,
           originalTagIds,
         );
+        if (tagUpdates.length)
+          await this.updateDraftTags(manager, userId, tagUpdates, uniqueTagIds);
         const newTagIds = tagNames.length
           ? await this.createDraftTags(manager, userId, tagNames)
           : [];

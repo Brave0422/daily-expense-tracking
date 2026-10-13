@@ -60,14 +60,17 @@ const CURRENT_COLOR_SYMBOL_IDS = [
 ] as const
 
 /**
- * 移除图标库内写死的填充色，使指定单色图标跟随按钮的普通态与激活态颜色。
+ * 移除图标主体的固定填充色，保留删除图标白色减号，避免它变成实心圆。
  */
 function normalizeSymbolColors(): void {
   CURRENT_COLOR_SYMBOL_IDS.forEach((symbolId) => {
     document
       .getElementById(symbolId)
       ?.querySelectorAll('[fill]')
-      .forEach((element) => element.removeAttribute('fill'))
+      .forEach((element) => {
+        if (symbolId === 'icon-shanchu1' && element.getAttribute('fill') === '#FFFDFD') return
+        element.removeAttribute('fill')
+      })
   })
 }
 

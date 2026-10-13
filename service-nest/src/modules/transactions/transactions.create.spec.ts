@@ -62,6 +62,7 @@ describe('TransactionsService.createTransaction', () => {
     findOne: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
+    update: jest.Mock;
   };
   let userRepo: { findOne: jest.Mock };
   let transactionRepo: { create: jest.Mock; save: jest.Mock };
@@ -87,6 +88,7 @@ describe('TransactionsService.createTransaction', () => {
       save: jest.fn((data: DeepPartial<TagEntity>) =>
         Promise.resolve({ ...data, id: 9 }),
       ),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
     };
     userRepo = { findOne: jest.fn().mockResolvedValue({ id: 7 }) };
     transactionRepo = {
@@ -122,6 +124,30 @@ describe('TransactionsService.createTransaction', () => {
       {} as Repository<UserCategoryEntity>,
       {} as Repository<TagEntity>,
     );
+  });
+
+  it('新增流水中编辑复用标签保留id，在流水事务内改名', async () => {
+    await service.createTransaction(
+      7,
+      TransactionType.EXPENSE,
+      12,
+      '17.2',
+      '2026-10-11',
+      null,
+      [3, 5],
+      null,
+      [],
+      [{ id: 3, name: 'AAB' }],
+    );
+    expect(tagRepo.update).toHaveBeenCalledWith(
+      { id: 3, ownerUserId: 7 },
+      { name: 'AAB' },
+    );
+    expect(tagRepo.create).not.toHaveBeenCalled();
+    expect(transactionTagRepo.create).toHaveBeenCalledWith({
+      transactionId: 101,
+      tagId: 3,
+    });
   });
 
   it('在同一事务中保存流水和去重后的已有标签关联，不返回流水数据', async () => {

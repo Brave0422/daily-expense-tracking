@@ -239,8 +239,8 @@ function toggleCategory(month: number, categoryId: number): void {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 5px 18px;
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 700;
 }
 .monthly-group__content {
   padding: 4px 14px 14px;

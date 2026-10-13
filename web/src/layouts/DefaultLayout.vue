@@ -113,7 +113,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleDocumentClick)
         </div>
       </div>
 
-      <!-- Iconfont 导航：默认灰色，当前路由使用主题色 -->
+      <!-- Iconfont 导航：默认灰色，当前路由使用主题色背景 -->
       <nav class="default-layout__navigation">
         <TTooltip
           v-for="item in navigationItems"
@@ -237,7 +237,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleDocumentClick)
   color: var(--color-danger);
 }
 
-/* 业务导航图标默认灰色，激活态继承主题色 */
+/* 业务导航图标默认灰色，选中及悬停使用主题背景和深色图标。 */
 .default-layout__navigation {
   display: grid;
   gap: 14px;
@@ -259,15 +259,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleDocumentClick)
     border-color 0.2s;
 }
 
-.default-layout__nav-link:hover:not(.default-layout__nav-link--active) {
-  color: #696d73;
-  background: #f6f7f8;
+.default-layout__nav-link--active {
+  color: var(--color-text);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
-.default-layout__nav-link--active {
-  color: var(--color-primary);
-  background: #303238;
-  border-color: #303238;
+.default-layout__nav-link:is(:hover, :focus-visible) {
+  color: var(--color-text);
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-soft);
 }
 
 /* 主内容为固定侧栏预留宽度和页面边距 */

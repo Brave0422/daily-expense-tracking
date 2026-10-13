@@ -56,6 +56,7 @@ export class TransactionsController {
       tagIds,
       remark,
       tagNames,
+      tagUpdates,
     } = body;
     return this.transactionsService.createTransaction(
       userId,
@@ -67,6 +68,7 @@ export class TransactionsController {
       tagIds,
       remark,
       tagNames,
+      ...(tagUpdates ? [tagUpdates] : []),
     );
   }
 
@@ -93,6 +95,7 @@ export class TransactionsController {
       tagIds,
       remark,
       tagNames,
+      tagUpdates,
     } = body;
     return this.transactionsService.updateTransaction(
       userId,
@@ -104,6 +107,7 @@ export class TransactionsController {
       tagIds,
       remark,
       tagNames,
+      ...(tagUpdates ? [tagUpdates] : []),
     );
   }
 

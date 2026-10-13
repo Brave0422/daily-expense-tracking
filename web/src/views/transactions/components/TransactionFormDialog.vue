@@ -48,6 +48,7 @@ const amount = ref('')
 const occurredDate = ref('')
 const title = ref('')
 const selectedTags = ref<UserTag[]>([])
+const originalTagNames = ref(new Map<number, string>())
 const isTagFormVisible = ref(false)
 const editingTag = ref<UserTag | null>(null)
 let nextDraftTagId = -1
@@ -72,6 +73,11 @@ const originalCategoryId = computed(() =>
 const tagIds = computed(() => selectedTags.value.filter((tag) => tag.id > 0).map((tag) => tag.id))
 const tagNames = computed(() =>
   selectedTags.value.filter((tag) => tag.id < 0).map((tag) => tag.name),
+)
+const tagUpdates = computed(() =>
+  selectedTags.value
+    .filter((tag) => tag.id > 0 && originalTagNames.value.get(tag.id) !== tag.name)
+    .map(({ id, name }) => ({ id, name })),
 )
 const dialogVisible = computed({
   get: () => props.visible,
@@ -194,6 +200,7 @@ function resetForm(): void {
     `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   title.value = transaction?.title ?? ''
   selectedTags.value = transaction?.tags.map((tag) => ({ ...tag })) ?? []
+  originalTagNames.value = new Map(selectedTags.value.map((tag) => [tag.id, tag.name]))
   isTagFormVisible.value = false
   editingTag.value = null
   nextDraftTagId = -1
@@ -275,6 +282,9 @@ function handleDateChange(value: unknown): void {
  */
 function handleTagDraftSuccess(selection: TagDraftSelection): void {
   if (!props.visible || isSubmitting.value) return
+  if (selection.existingTag && !originalTagNames.value.has(selection.existingTag.id)) {
+    originalTagNames.value.set(selection.existingTag.id, selection.existingTag.name)
+  }
   const tag: UserTag = selection.existingTag
     ? { ...selection.existingTag }
     : {
@@ -355,9 +365,10 @@ async function handleSubmit(): Promise<void> {
       title: title.value.trim() || null,
       tagIds: [...tagIds.value],
       ...(tagNames.value.length ? { tagNames: [...tagNames.value] } : {}),
+      ...(tagUpdates.value.length ? { tagUpdates: [...tagUpdates.value] } : {}),
       remark: remark.value.trim() || null,
     }
-    // 显式构造六个可编辑字段，避免将只读类型或记录归属提交给 PATCH 接口。
+    // 标签新增及改名与流水共用事务，取消或提交失败时不产生独立标签写入。
     if (transaction) await updateTransaction(transaction.id, body)
     else await createTransaction({ type: type.value, ...body })
     isSubmitted = true
@@ -415,7 +426,6 @@ onBeforeUnmount(() => {
         <legend>类型</legend>
         <p v-if="isEditing" class="transaction-form__readonly-type">
           <strong>{{ type === 'expense' ? '支出' : '收入' }}</strong>
-          <span>创建后不可修改</span>
         </p>
         <div v-else class="transaction-form__segments" role="group" aria-label="流水类型">
           <button
@@ -461,18 +471,25 @@ onBeforeUnmount(() => {
             </span>
           </template>
         </TCascader>
-        <p v-if="errors.category" class="transaction-form__error" role="alert">
-          {{ errors.category }}
-        </p>
-        <p v-if="categoryError" class="transaction-form__error" role="alert">
-          {{ categoryError }}
-          <button type="button" :disabled="isSubmitting || isOptionsLoading" @click="loadOptions">
-            重试
-          </button>
-        </p>
-        <p v-else-if="!isOptionsLoading && !categoryOptions.length" class="transaction-form__hint">
-          暂无可用分类，请先在配置管理中添加{{ type === 'expense' ? '支出二级' : '收入一级' }}分类。
-        </p>
+        <div class="transaction-form__feedback">
+          <p v-if="categoryError" class="transaction-form__error" role="alert">
+            {{ categoryError }}
+            <button type="button" :disabled="isSubmitting || isOptionsLoading" @click="loadOptions">
+              重试
+            </button>
+          </p>
+          <p v-else-if="errors.category" class="transaction-form__error" role="alert">
+            {{ errors.category }}
+          </p>
+          <p
+            v-else-if="!isOptionsLoading && !categoryOptions.length"
+            class="transaction-form__hint"
+          >
+            暂无可用分类，请先在配置管理中添加{{
+              type === 'expense' ? '支出二级' : '收入一级'
+            }}分类。
+          </p>
+        </div>
       </div>
       <!-- 金额保持文本精度，发生日期使用单日选择器 -->
       <div class="transaction-form__row">
@@ -488,9 +505,11 @@ onBeforeUnmount(() => {
             :aria-invalid="Boolean(errors.amount)"
             @input="errors.amount = ''"
           />
-          <p v-if="errors.amount" class="transaction-form__error" role="alert">
-            {{ errors.amount }}
-          </p>
+          <div class="transaction-form__feedback transaction-form__feedback--multiline">
+            <p v-if="errors.amount" class="transaction-form__error" role="alert">
+              {{ errors.amount }}
+            </p>
+          </div>
         </div>
         <div class="transaction-form__field">
           <label id="transaction-form-date-label">发生日期 <span>*</span></label>
@@ -503,7 +522,9 @@ onBeforeUnmount(() => {
             aria-labelledby="transaction-form-date-label"
             @change="handleDateChange"
           />
-          <p v-if="errors.date" class="transaction-form__error" role="alert">{{ errors.date }}</p>
+          <div class="transaction-form__feedback transaction-form__feedback--multiline">
+            <p v-if="errors.date" class="transaction-form__error" role="alert">{{ errors.date }}</p>
+          </div>
         </div>
       </div>
       <div class="transaction-form__field">
@@ -517,7 +538,9 @@ onBeforeUnmount(() => {
           :aria-invalid="Boolean(errors.title)"
           @input="errors.title = ''"
         />
-        <p v-if="errors.title" class="transaction-form__error" role="alert">{{ errors.title }}</p>
+        <div class="transaction-form__feedback">
+          <p v-if="errors.title" class="transaction-form__error" role="alert">{{ errors.title }}</p>
+        </div>
       </div>
       <div class="transaction-form__field">
         <div class="transaction-form__tags-heading">
@@ -561,7 +584,11 @@ onBeforeUnmount(() => {
           :aria-invalid="Boolean(errors.remark)"
           @input="errors.remark = ''"
         />
-        <p v-if="errors.remark" class="transaction-form__error" role="alert">{{ errors.remark }}</p>
+        <div class="transaction-form__feedback">
+          <p v-if="errors.remark" class="transaction-form__error" role="alert">
+            {{ errors.remark }}
+          </p>
+        </div>
       </div>
       <p v-if="formMessage" class="transaction-form__error" role="alert">{{ formMessage }}</p>
       <div class="transaction-form__actions">
@@ -605,6 +632,7 @@ onBeforeUnmount(() => {
 .transaction-form__field {
   display: grid;
   min-width: 0;
+  align-content: start;
   gap: 8px;
 }
 .transaction-form__tags-heading {
@@ -706,10 +734,11 @@ onBeforeUnmount(() => {
 .transaction-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 16px;
 }
-.transaction-form__field input,
-.transaction-form__field textarea {
+.transaction-form__field > input,
+.transaction-form__field > textarea {
   width: 100%;
   padding: 10px 12px;
   color: var(--color-text);
@@ -718,15 +747,26 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   outline: none;
 }
-.transaction-form__field textarea {
+.transaction-form__field > input {
+  height: 44px;
+}
+/* 只调整组件库的输入容器，避免原生字段样式污染内部日期输入框。 */
+.transaction-form :deep(.t-input) {
+  height: 44px;
+  border-radius: 6px;
+}
+.transaction-form :deep(.t-date-picker) {
+  width: 100%;
+}
+.transaction-form__field > textarea {
   resize: vertical;
 }
-.transaction-form__field input:focus,
-.transaction-form__field textarea:focus {
+.transaction-form__field > input:focus,
+.transaction-form__field > textarea:focus {
   border-color: var(--color-primary-active);
 }
-.transaction-form__field input:disabled,
-.transaction-form__field textarea:disabled {
+.transaction-form__field > input:disabled,
+.transaction-form__field > textarea:disabled {
   background: #f4f5f7;
 }
 .transaction-form__category-option {
@@ -742,6 +782,14 @@ onBeforeUnmount(() => {
 }
 .transaction-form__error {
   color: var(--color-danger);
+}
+/* 提示容器始终占位；金额与日期预留两行，校验出现或消失不改变弹窗高度。 */
+.transaction-form__feedback {
+  min-height: 18px;
+  overflow-wrap: anywhere;
+}
+.transaction-form__feedback--multiline {
+  min-height: 36px;
 }
 .transaction-form__hint {
   color: var(--color-text-secondary);

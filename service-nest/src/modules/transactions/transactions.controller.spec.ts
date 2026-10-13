@@ -132,6 +132,48 @@ describe('TransactionsController', () => {
   );
 
   it.each(['create', 'update'])(
+    '%s转发规范化的标签改名并拒绝非法嵌套字段',
+    async (operation) => {
+      const send = (tagUpdates: unknown) => {
+        const req = request(app.getHttpServer());
+        return (
+          operation === 'create'
+            ? req.post('/transactions')
+            : req.patch('/transactions/101')
+        )
+          .set('Authorization', 'Bearer test-user')
+          .send({
+            ...body,
+            type: operation === 'update' ? undefined : body.type,
+            tagUpdates,
+          });
+      };
+      await send([{ id: 3, name: ' AAB ' }]).expect(200);
+      const calls =
+        operation === 'create'
+          ? createTransaction.mock.calls
+          : updateTransaction.mock.calls;
+      expect(calls[0]?.[9]).toEqual([{ id: 3, name: 'AAB' }]);
+      createTransaction.mockClear();
+      updateTransaction.mockClear();
+      for (const invalid of [
+        null,
+        {},
+        [null],
+        [{ id: 0, name: 'AAB' }],
+        [{ id: '3', name: 'AAB' }],
+        [{ id: 3, name: ' ' }],
+        [{ id: 3, name: '😀'.repeat(51) }],
+        [{ id: 3 }],
+      ]) {
+        await send(invalid).expect(400);
+      }
+      expect(createTransaction).not.toHaveBeenCalled();
+      expect(updateTransaction).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['create', 'update'])(
     '%s拒绝非法的新标签名称数组',
     async (operation) => {
       for (const tagNames of [

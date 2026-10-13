@@ -207,7 +207,7 @@ async function handleFormSuccess(): Promise<void> {
           </TPopup>
           <BaseTooltip content="新增流水"
             ><button
-              class="transaction-button transaction-overview__icon transaction-overview__add"
+              class="transaction-button transaction-overview__icon"
               type="button"
               aria-label="新增流水"
               @click="handleCreateTransaction"
@@ -344,10 +344,14 @@ async function handleFormSuccess(): Promise<void> {
 .transaction-overview__period {
   flex: none;
 }
-.transaction-overview__label,
-.transaction-overview dt {
+.transaction-overview__label {
   color: var(--color-text-secondary);
   font-size: 12px;
+}
+.transaction-overview dt {
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  font-weight: 700;
 }
 .transaction-overview h2 {
   margin: 7px 0 0;
@@ -391,10 +395,6 @@ async function handleFormSuccess(): Promise<void> {
   height: 38px;
   align-items: center;
   justify-content: center;
-}
-.transaction-overview__add {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
 }
 .transaction-card__list-heading {
   display: flex;
@@ -486,9 +486,10 @@ async function handleFormSuccess(): Promise<void> {
   color: var(--color-text-secondary);
 }
 .transactions-view :deep(.transaction-button) {
-  border: 1px solid var(--color-border);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
   border-radius: 9px;
-  color: var(--color-icon);
+  color: var(--color-text);
   cursor: pointer;
   transition:
     background 0.15s,
@@ -497,7 +498,7 @@ async function handleFormSuccess(): Promise<void> {
 }
 .transactions-view :deep(.transaction-button:not(:disabled):is(:hover, :focus-visible)) {
   color: var(--color-text);
-  background: var(--color-primary-soft);
+  background: var(--color-primary);
   border-color: var(--color-primary);
 }
 .transactions-view :deep(.transaction-button:disabled) {

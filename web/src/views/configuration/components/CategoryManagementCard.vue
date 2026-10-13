@@ -496,7 +496,7 @@ onMounted(() => loadCategories('expense'))
 .category-card__type-switch button[aria-pressed='true'] {
   color: var(--color-text);
   font-weight: 700;
-  background: var(--color-surface);
+  background: var(--color-primary);
   box-shadow: 0 2px 8px rgb(32 33 36 / 8%);
 }
 

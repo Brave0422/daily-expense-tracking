@@ -4,7 +4,7 @@
  * @description 创建流水的请求校验，金额与业务日期按字符串传输
  */
 
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
@@ -18,8 +18,10 @@ import {
   Min,
   MinLength,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { TransactionType } from '../enums/transaction-type-enum';
+import { TransactionTagUpdateDto } from './transaction-tag-update.dto';
 
 /**
  * 去除文本首尾空格，保留 NULL 和非字符串值供校验器检查。
@@ -76,6 +78,13 @@ export class CreateTransactionDto {
   @MinLength(1, { each: true, message: '标签名称不能为空' })
   @MaxLength(50, { each: true, message: '标签名称不能超过50个字符' })
   tagNames?: string[];
+
+  /** 已有标签的名称草稿，只能修改tagIds中的标签。 */
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsArray({ message: '标签改名必须是数组' })
+  @ValidateNested({ each: true })
+  @Type(() => TransactionTagUpdateDto)
+  tagUpdates?: TransactionTagUpdateDto[];
 
   @Transform(({ value }: { value: unknown }) => trimText(value))
   @IsOptional()
