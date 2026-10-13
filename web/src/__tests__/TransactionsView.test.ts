@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T21:05:20+08:00
- * @description 账单页面双模式交互测试，覆盖统计口径、周期选择、筛选禁用、分类折叠和空状态。
+ * @description 账单页面交互测试，覆盖统计口径、筛选、流水删除保护与刷新及双模式状态。
  */
 
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
@@ -12,12 +12,14 @@ import type { DailyTransactionsResult, MonthlySummaryResult } from '@/api/transa
 const apiMocks = vi.hoisted(() => ({
   getDailyTransactions: vi.fn<typeof import('@/api/transaction.api').getDailyTransactions>(),
   getMonthlySummary: vi.fn<typeof import('@/api/transaction.api').getMonthlySummary>(),
+  deleteTransaction: vi.fn<typeof import('@/api/transaction.api').deleteTransaction>(),
   getUserCategories: vi.fn<typeof import('@/api/category.api').getUserCategories>(),
   getUserTags: vi.fn<typeof import('@/api/tag.api').getUserTags>(),
 }))
 vi.mock('@/api/transaction.api', () => ({
   getDailyTransactions: apiMocks.getDailyTransactions,
   getMonthlySummary: apiMocks.getMonthlySummary,
+  deleteTransaction: apiMocks.deleteTransaction,
 }))
 vi.mock('@/api/category.api', () => ({ getUserCategories: apiMocks.getUserCategories }))
 vi.mock('@/api/tag.api', () => ({ getUserTags: apiMocks.getUserTags }))
@@ -25,6 +27,7 @@ import TransactionsView from '@/views/transactions/TransactionsView.vue'
 import TransactionFilters from '@/views/transactions/components/TransactionFilters.vue'
 import TransactionMonthlyList from '@/views/transactions/components/TransactionMonthlyList.vue'
 import TransactionFormDialog from '@/views/transactions/components/TransactionFormDialog.vue'
+import TransactionDeleteDialog from '@/views/transactions/components/TransactionDeleteDialog.vue'
 import CategoryIcon from '@/components/business/CategoryIcon.vue'
 
 const primary = {
@@ -121,6 +124,16 @@ const stubs = {
   TTooltip: { template: '<span><slot /></span>' },
   TPopup: { template: '<div><slot /><slot name="content" /></div>' },
   TLoading: true,
+  TDialog: {
+    name: 'TDialog',
+    props: ['visible', 'closeBtn', 'closeOnOverlayClick', 'closeOnEscKeydown'],
+    emits: ['update:visible'],
+    template: '<section v-if="visible"><slot /></section>',
+  },
+  TButton: {
+    props: ['disabled', 'loading'],
+    template: '<button :disabled="disabled || loading"><slot /></button>',
+  },
   TDatePickerPanel: {
     name: 'TDatePickerPanel',
     props: ['value', 'mode', 'format'],
@@ -158,6 +171,7 @@ describe('TransactionsView', () => {
     vi.setSystemTime(new Date('2026-10-10T12:00:00+08:00'))
     vi.clearAllMocks()
     apiMocks.getDailyTransactions.mockReset().mockResolvedValue(createResult())
+    apiMocks.deleteTransaction.mockReset().mockResolvedValue(undefined)
     apiMocks.getMonthlySummary
       .mockReset()
       .mockImplementation(async (query) => createMonthlyResult(query.year))
@@ -211,10 +225,148 @@ describe('TransactionsView', () => {
     ])
   })
 
+  it('无筛选时隐藏合计，有有效条件时展示，重置和切换年模式清除条件后隐藏', async () => {
+    const wrapper = mountPage()
+    await flushPromises()
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
+    await wrapper.get('#transaction-title').setValue('   ')
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
+    const filters = wrapper.getComponent(TransactionFilters)
+    const defaults = filters.props('filters')
+    for (const condition of [
+      { type: 'expense' },
+      { categoryIds: [2] },
+      { title: '显示器' },
+      { tagIds: [1] },
+      { remark: '优惠' },
+      { minAmount: '0' },
+      { maxAmount: '100' },
+    ]) {
+      filters.vm.$emit('update:filters', { ...defaults, ...condition })
+      await flushPromises()
+      expect(wrapper.find('.filter-totals').exists()).toBe(true)
+      await wrapper.get('.filter-reset').trigger('click')
+      await flushPromises()
+      expect(wrapper.find('.filter-totals').exists()).toBe(false)
+    }
+    await wrapper.get('#transaction-title').setValue('显示器')
+    await wrapper.get('button[aria-label="切换到月汇总"]').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
+    filters.vm.$emit('update:filters', { ...defaults, minAmount: '0' })
+    await flushPromises()
+    expect(wrapper.find('.filter-totals').exists()).toBe(true)
+    await wrapper.get('.filter-reset').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
+  })
+
+  it('删除先确认且取消不发请求，不影响日期折叠，无标题时显示分类路径', async () => {
+    const result = createResult()
+    const transaction = result.days[0]?.transactions[0]
+    if (!transaction) throw new Error('缺少测试流水')
+    transaction.title = null
+    apiMocks.getDailyTransactions.mockResolvedValue(result)
+    const wrapper = mountPage()
+    await flushPromises()
+    await wrapper.get('button[aria-label="删除流水"]').trigger('click')
+    expect(wrapper.text()).toContain('确定删除“数码产品 - 电脑（¥1,299.00）”吗？')
+    expect(wrapper.get('.daily-group__heading').attributes('aria-expanded')).toBe('true')
+    expect(apiMocks.deleteTransaction).not.toHaveBeenCalled()
+    await wrapper.get('.transaction-delete-dialog__actions button').trigger('click')
+    expect(wrapper.find('.transaction-delete-dialog').exists()).toBe(false)
+    expect(wrapper.getComponent(TransactionDeleteDialog).props('transaction')).toBeNull()
+    expect(apiMocks.deleteTransaction).not.toHaveBeenCalled()
+  })
+
+  it('删除期间阻止重复提交、取消、遮罩和Esc关闭，成功刷新原筛选及两种合计和标签', async () => {
+    let resolveDelete = (): void => {
+      throw new Error('请求未初始化')
+    }
+    apiMocks.deleteTransaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve
+        }),
+    )
+    const wrapper = mountPage()
+    await flushPromises()
+    const filters = wrapper.getComponent(TransactionFilters)
+    filters.getComponent({ name: 'TSelect' }).vm.$emit('change', [1])
+    await flushPromises()
+    await wrapper.get('#transaction-title').setValue('显示器')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    await wrapper.get('button[aria-label="删除流水"]').trigger('click')
+    expect(wrapper.text()).toContain('确定删除“显示器（¥1,299.00）”吗？')
+    const deleteDialog = wrapper.getComponent(TransactionDeleteDialog)
+    const buttons = deleteDialog.findAll('button')
+    await buttons[1]?.trigger('click')
+    await buttons[1]?.trigger('click')
+    expect(apiMocks.deleteTransaction).toHaveBeenCalledExactlyOnceWith(7)
+    expect(buttons.every((button) => button.attributes('disabled') !== undefined)).toBe(true)
+    const dialog = deleteDialog.getComponent({ name: 'TDialog' })
+    expect(dialog.props()).toMatchObject({
+      closeBtn: false,
+      closeOnOverlayClick: false,
+      closeOnEscKeydown: false,
+    })
+    dialog.vm.$emit('update:visible', false)
+    await flushPromises()
+    expect(deleteDialog.props('visible')).toBe(true)
+    apiMocks.getDailyTransactions.mockResolvedValueOnce({
+      ...createResult(),
+      totals: { expense: '0.00', income: '1299.00', balance: '1299.00' },
+      filterTotals: { expense: '0.00', income: '0.00' },
+      days: [],
+    })
+    apiMocks.getUserTags.mockResolvedValueOnce([{ id: 1, name: '办公设备', archived: true }])
+    resolveDelete()
+    await flushPromises()
+    expect(deleteDialog.props('visible')).toBe(false)
+    expect(deleteDialog.props('transaction')).toBeNull()
+    expect(apiMocks.getDailyTransactions).toHaveBeenLastCalledWith(
+      { month: '2026-10', title: '显示器', tagIds: [1] },
+      expect.any(AbortSignal),
+    )
+    expect(apiMocks.getUserTags).toHaveBeenCalledTimes(2)
+    expect(wrapper.get('[data-testid="period-expense"]').text()).toBe('¥ 0.00')
+    expect(wrapper.get('[data-testid="filter-expense"]').text()).toBe('¥ 0.00')
+    expect(wrapper.find('.transaction-row').exists()).toBe(false)
+  })
+
+  it('删除失败保留弹窗、列表和统计，可重试；成功后刷新失败不再重复删除', async () => {
+    apiMocks.deleteTransaction.mockRejectedValueOnce(new Error('删除失败'))
+    const wrapper = mountPage()
+    await flushPromises()
+    await wrapper.get('button[aria-label="删除流水"]').trigger('click')
+    const dialog = wrapper.getComponent(TransactionDeleteDialog)
+    await dialog.findAll('button')[1]?.trigger('click')
+    await flushPromises()
+    expect(dialog.get('[role="alert"]').text()).toBe('删除失败')
+    expect(wrapper.find('.transaction-row').exists()).toBe(true)
+    expect(wrapper.get('[data-testid="period-expense"]').text()).toBe('¥ 1,299.00')
+    expect(apiMocks.getDailyTransactions).toHaveBeenCalledTimes(1)
+    expect(apiMocks.getUserTags).toHaveBeenCalledTimes(1)
+    apiMocks.getDailyTransactions.mockRejectedValueOnce(new Error('刷新失败'))
+    await dialog.findAll('button')[1]?.trigger('click')
+    await flushPromises()
+    expect(apiMocks.deleteTransaction).toHaveBeenCalledTimes(2)
+    expect(dialog.props('visible')).toBe(false)
+    expect(wrapper.get('.transaction-status').text()).toContain('刷新失败')
+    await wrapper.get('.transaction-status button').trigger('click')
+    await flushPromises()
+    expect(apiMocks.deleteTransaction).toHaveBeenCalledTimes(2)
+  })
+
   it('两种合计使用各自接口数据，展示分类标题、标签、备注与正确星期', async () => {
     const wrapper = mountPage()
     await flushPromises()
     expect(wrapper.get('[data-testid="period-income"]').text()).toBe('¥ 1,299.00')
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
+    await wrapper.get('#transaction-title').setValue('显示器')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
     expect(wrapper.get('[data-testid="filter-income"]').text()).toBe('¥ 0.00')
     expect(wrapper.get('[data-testid="period-balance"]').text()).toBe('0.00')
     expect(wrapper.text()).toContain('10月10日，周六')
@@ -274,9 +426,7 @@ describe('TransactionsView', () => {
     )
     expect(wrapper.get('button[aria-label="新增流水"]').attributes()).not.toHaveProperty('disabled')
     expect(wrapper.get('button[aria-label="编辑流水"]').attributes()).not.toHaveProperty('disabled')
-    expect(wrapper.get('button[aria-label="删除流水（暂不可用）"]').attributes()).toHaveProperty(
-      'disabled',
-    )
+    expect(wrapper.get('button[aria-label="删除流水"]').attributes()).not.toHaveProperty('disabled')
   })
 
   it('有流水但筛选为空时，即使周期结余为零也显示未匹配且无新增入口', async () => {
@@ -301,7 +451,7 @@ describe('TransactionsView', () => {
     })
     const wrapper = mountPage()
     expect(wrapper.get('[data-testid="period-expense"]').text()).toBe('—')
-    expect(wrapper.get('[data-testid="filter-expense"]').text()).toBe('—')
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
     await flushPromises()
     expect(wrapper.text()).toContain('暂无账单记录')
     expect(wrapper.get('.transaction-empty button').attributes()).not.toHaveProperty('disabled')
@@ -439,7 +589,7 @@ describe('TransactionsView', () => {
     await flushPromises()
     expect(wrapper.text()).toContain('本年支出')
     expect(wrapper.get('[data-testid="period-expense"]').text()).toBe('¥ 2,000.00')
-    expect(wrapper.get('[data-testid="filter-expense"]').text()).toBe('¥ 1,300.00')
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
     expect(wrapper.get('[data-testid="period-balance"]').text()).toBe('+ ¥ 1,000.00')
     const headings = wrapper.findAll('.monthly-group__heading')
     expect(headings.map((heading) => heading.find('.monthly-group__month').text())).toEqual([
@@ -471,7 +621,7 @@ describe('TransactionsView', () => {
       wrapper.getComponent(TransactionMonthlyList).find('.monthly-group__content').exists(),
     ).toBe(false)
     expect(apiMocks.getMonthlySummary).toHaveBeenCalledTimes(1)
-    expect(wrapper.get('[data-testid="filter-expense"]').text()).toBe('¥ 1,300.00')
+    expect(wrapper.find('.filter-totals').exists()).toBe(false)
     await headings[1]?.trigger('click')
     expect(headings[1]?.attributes('aria-expanded')).toBe('true')
   })

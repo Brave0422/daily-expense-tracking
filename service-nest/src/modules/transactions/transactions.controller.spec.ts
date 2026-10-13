@@ -27,6 +27,7 @@ describe('TransactionsController', () => {
   let app: INestApplication<App>;
   const createTransaction = jest.fn<Promise<void>, unknown[]>();
   const updateTransaction = jest.fn<Promise<void>, unknown[]>();
+  const archive = jest.fn<Promise<void>, unknown[]>();
   const body = {
     type: 'expense',
     categoryId: 12,
@@ -43,7 +44,7 @@ describe('TransactionsController', () => {
       providers: [
         {
           provide: TransactionsService,
-          useValue: { createTransaction, updateTransaction },
+          useValue: { createTransaction, updateTransaction, archive },
         },
       ],
     }).compile();
@@ -69,9 +70,60 @@ describe('TransactionsController', () => {
   beforeEach(() => {
     createTransaction.mockReset().mockResolvedValue(undefined);
     updateTransaction.mockReset().mockResolvedValue(undefined);
+    archive.mockReset().mockResolvedValue(undefined);
   });
   afterAll(async () => {
     await app.close();
+  });
+
+  describe('DELETE /transactions/:id/archive', () => {
+    it('使用认证用户和路径id，返回删除成功且不返回流水数据', async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/transactions/101/archive?userId=999')
+        .set('Authorization', 'Bearer test-user')
+        .expect(200);
+      expect(archive).toHaveBeenCalledWith(7, 101);
+      expect(response.body).toMatchObject({
+        success: true,
+        code: 200,
+        msg: '删除流水成功',
+      });
+      expect(response.body).not.toHaveProperty('data');
+    });
+
+    it('未认证时拒绝删除', async () => {
+      await request(app.getHttpServer())
+        .delete('/transactions/101/archive')
+        .expect(401);
+      expect(archive).not.toHaveBeenCalled();
+    });
+
+    it.each(['0', '-1', '1.5', '1e2', 'abc', '9007199254740992'])(
+      '非法路径id %s 在业务层之前拒绝',
+      async (id) => {
+        await request(app.getHttpServer())
+          .delete(`/transactions/${id}/archive`)
+          .set('Authorization', 'Bearer test-user')
+          .expect(400);
+        expect(archive).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each([
+      [new BadRequestException('流水记录不存在'), 400, '流水记录不存在'],
+      [
+        new InternalServerErrorException('删除流水失败，请重新尝试'),
+        500,
+        '删除流水失败，请重新尝试',
+      ],
+    ] as const)('保留服务层删除错误：%s', async (error, status, message) => {
+      archive.mockRejectedValueOnce(error);
+      const response = await request(app.getHttpServer())
+        .delete('/transactions/101/archive')
+        .set('Authorization', 'Bearer test-user')
+        .expect(status);
+      expect(response.body).toHaveProperty('message', message);
+    });
   });
 
   it('使用认证用户，忽略伪造归属字段，转发完整参数并返回无流水数据的成功响应', async () => {

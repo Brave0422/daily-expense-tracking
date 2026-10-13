@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:51:49+08:00
- * @description 流水创建、编辑与查询接口，负责请求发送、查询参数序列化和响应解包。
+ * @description 流水创建、编辑、删除与查询接口，负责请求发送、查询参数序列化和响应解包。
  */
 
 import type { ApiResponse } from './common.types'
@@ -35,6 +35,15 @@ export async function updateTransaction(
   body: UpdateTransactionBody,
 ): Promise<void> {
   await apiClient.patch<ApiResponse<void>>(`/transactions/${transactionId}`, body)
+}
+
+/**
+ * DELETE /transactions/:id/archive：删除流水及独占标签，成功后调用方刷新账单。
+ * @param transactionId - 当前用户需要删除的流水id
+ * @returns 删除完成后无返回数据；失败时抛出接口错误
+ */
+export async function deleteTransaction(transactionId: number): Promise<void> {
+  await apiClient.delete<ApiResponse<void>>(`/transactions/${transactionId}/archive`)
 }
 
 /**

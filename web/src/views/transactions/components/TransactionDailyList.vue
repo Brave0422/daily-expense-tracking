@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-10-10T20:54:40+08:00
- * @description 日流水分组与记录展示，提供折叠、标签备注提示和编辑入口。
+ * @description 日流水分组与记录展示，提供折叠、标签备注提示和编辑删除入口。
  */
 
 import { computed, ref, watch } from 'vue'
@@ -22,7 +22,10 @@ const props = defineProps<{
   period: string
   type: TransactionTypeFilter
 }>()
-const emit = defineEmits<{ edit: [transaction: DailyTransactionItem] }>()
+const emit = defineEmits<{
+  edit: [transaction: DailyTransactionItem]
+  delete: [transaction: DailyTransactionItem]
+}>()
 const collapsedDates = ref(new Set<string>())
 const openTransactionId = ref<number | null>(null)
 const visibleTransactionIds = computed(
@@ -62,6 +65,11 @@ function handlePopupVisibleChange(id: number, isVisible: boolean): void {
 function handleEditTransaction(transaction: DailyTransactionItem): void {
   openTransactionId.value = null
   emit('edit', transaction)
+}
+/** 关闭操作浮层并交给页面确认删除，不触发日期分组折叠。 */
+function handleDeleteTransaction(transaction: DailyTransactionItem): void {
+  openTransactionId.value = null
+  emit('delete', transaction)
 }
 watch(
   () => props.period,
@@ -178,10 +186,10 @@ watch(visibleTransactionIds, (ids) => {
                     <BaseIcon name="transactionEdit" :size="20" />
                   </button>
                   <button
-                    disabled
                     type="button"
                     class="transaction-button transaction-row__delete"
-                    aria-label="删除流水（暂不可用）"
+                    aria-label="删除流水"
+                    @click.stop="handleDeleteTransaction(transaction)"
                   >
                     <BaseIcon name="transactionDelete" :size="20" />
                   </button>

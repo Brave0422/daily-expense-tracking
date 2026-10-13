@@ -356,8 +356,9 @@ onBeforeUnmount(() => {
           {{ props.amountError }}
         </p>
       </fieldset>
-      <!-- 合计只读，完全使用接口结果 -->
+      <!-- 有有效筛选条件时展示只读合计，完全使用接口结果 -->
       <section
+        v-if="props.hasFilters"
         class="filter-totals"
         aria-labelledby="filter-totals-heading"
         :aria-busy="props.isRefreshing"

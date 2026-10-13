@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:28:28+08:00
- * @description 账单列表页，新增编辑流水、切换日明细与月汇总，展示周期合计及完整请求状态。
+ * @description 账单列表页，新增编辑删除流水、切换日明细与月汇总，展示周期合计及完整请求状态。
  */
 
 import { computed, ref } from 'vue'
@@ -16,6 +16,7 @@ import BaseTooltip from '@/components/base/BaseTooltip.vue'
 import type { DailyTransactionItem } from '@/api/transaction.types'
 import { formatAmount, formatBalance, isZeroAmount } from '@/utils/money'
 import TransactionDailyList from './components/TransactionDailyList.vue'
+import TransactionDeleteDialog from './components/TransactionDeleteDialog.vue'
 import TransactionFormDialog from './components/TransactionFormDialog.vue'
 import TransactionFilters from './components/TransactionFilters.vue'
 import TransactionMonthlyList from './components/TransactionMonthlyList.vue'
@@ -46,6 +47,8 @@ const {
 const isDatePickerOpen = ref(false)
 const isFormDialogOpen = ref(false)
 const editingTransaction = ref<DailyTransactionItem | null>(null)
+const isDeleteDialogOpen = ref(false)
+const deletingTransaction = ref<DailyTransactionItem | null>(null)
 const tagsRevision = ref(0)
 
 function formatPeriod(period: string): string {
@@ -110,6 +113,16 @@ function handleEditTransaction(transaction: DailyTransactionItem): void {
   editingTransaction.value = transaction
   isFormDialogOpen.value = true
 }
+/** 打开所选流水的二次确认弹窗，确认前保留列表和统计。 */
+function handleDeleteTransaction(transaction: DailyTransactionItem): void {
+  deletingTransaction.value = transaction
+  isDeleteDialogOpen.value = true
+}
+/** 删除弹窗关闭后清理目标；请求期间由弹窗阻止关闭。 */
+function handleDeleteVisibleChange(visible: boolean): void {
+  isDeleteDialogOpen.value = visible
+  if (!visible) deletingTransaction.value = null
+}
 /**
  * 同步弹窗状态，关闭时清空编辑目标，下一次打开不保留旧草稿。
  * @param visible - 弹窗期望的显示状态；提交期间由表单阻止关闭
@@ -120,7 +133,7 @@ function handleFormVisibleChange(visible: boolean): void {
   if (!visible) editingTransaction.value = null
 }
 
-/** 流水提交成功后，刷新已保存的标签筛选选项及账单。 */
+/** 流水新增、编辑或删除成功后，刷新标签筛选选项及当前账单的两种合计。 */
 async function handleFormSuccess(): Promise<void> {
   tagsRevision.value += 1
   await refresh()
@@ -261,6 +274,7 @@ async function handleFormSuccess(): Promise<void> {
           :period="dailyResult.period"
           :type="resultType"
           @edit="handleEditTransaction"
+          @delete="handleDeleteTransaction"
         />
         <TransactionMonthlyList
           v-else-if="monthlyResult?.months.length"
@@ -303,6 +317,12 @@ async function handleFormSuccess(): Promise<void> {
       :visible="isFormDialogOpen"
       :transaction="editingTransaction"
       @update:visible="handleFormVisibleChange"
+      @submit-success="handleFormSuccess"
+    />
+    <TransactionDeleteDialog
+      :visible="isDeleteDialogOpen"
+      :transaction="deletingTransaction"
+      @update:visible="handleDeleteVisibleChange"
       @submit-success="handleFormSuccess"
     />
   </div>

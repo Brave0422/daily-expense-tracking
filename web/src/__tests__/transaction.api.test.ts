@@ -1,20 +1,22 @@
 /**
  * @author Brave
  * @date 2026-10-10T21:05:20+08:00
- * @description 流水接口测试，验证创建编辑请求、查询解包、取消信号及兼容 Nest 的数组参数编码。
+ * @description 流水接口测试，验证创建编辑删除请求、查询解包、取消信号及数组参数编码。
  */
 
 import axios, { type AxiosRequestConfig } from 'axios'
 import { describe, expect, it, vi } from 'vitest'
 const apiMock = vi.hoisted(() => ({
   get: vi.fn<(url: string, config?: AxiosRequestConfig) => Promise<{ data: { data: unknown } }>>(),
-  post: vi.fn(),
-  patch: vi.fn(),
+  post: vi.fn<(url: string, body: unknown) => Promise<unknown>>(),
+  patch: vi.fn<(url: string, body: unknown) => Promise<unknown>>(),
+  delete: vi.fn<(url: string) => Promise<unknown>>(),
 }))
 vi.mock('@/api/http', () => ({ apiClient: apiMock }))
 import {
   createTransaction,
   updateTransaction,
+  deleteTransaction,
   getDailyTransactions,
   getMonthlySummary,
 } from '@/api/transaction.api'
@@ -22,6 +24,14 @@ import { getUserCategories } from '@/api/category.api'
 import { getUserTags } from '@/api/tag.api'
 
 describe('transaction query api', () => {
+  it('删除使用归档路径、空请求体且不依赖响应数据，错误交给弹窗处理', async () => {
+    apiMock.delete.mockResolvedValue({ data: { code: 200, success: true } })
+    await expect(deleteTransaction(101)).resolves.toBeUndefined()
+    expect(apiMock.delete).toHaveBeenCalledWith('/transactions/101/archive')
+    const error = new Error('流水记录不存在')
+    apiMock.delete.mockRejectedValueOnce(error)
+    await expect(deleteTransaction(101)).rejects.toBe(error)
+  })
   it('创建请求使用约定路径并保留金额与日期字符串，不要求响应数据', async () => {
     const body = {
       type: 'expense' as const,

@@ -7,6 +7,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -33,6 +34,21 @@ export class TransactionsController {
    * @param transactionsService 处理流水查询及写入的业务服务
    */
   constructor(private readonly transactionsService: TransactionsService) {}
+
+  /**
+   * 删除当前用户的流水，并归档没有其他有效流水引用的标签。
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param params 已通过正整数校验的流水路径参数
+   * @returns 删除完成后无响应数据，由客户端重新查询账单
+   */
+  @Delete(':id/archive')
+  @ResponseMsg('删除流水成功')
+  archive(
+    @CurrentUserId() userId: number,
+    @Param() params: TransactionIdParamDto,
+  ): Promise<void> {
+    return this.transactionsService.archive(userId, params.id);
+  }
 
   /**
    * 创建当前用户的流水及标签关联，完成后由客户端重新查询账单。

@@ -126,6 +126,241 @@ export class TransactionsService {
   ) {}
 
   /**
+   * 在同一事务中逻辑删除流水及没有其他未删除流水引用的标签，保留历史关联。
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param transactionId 待删除的流水id
+   * @returns 删除成功后无返回数据；流水或标签写入失败时整体回滚
+   */
+  async archive(userId: number, transactionId: number): Promise<void> {
+    // 1. 在开启事务前校验用户和流水id，无效参数不进入数据库流程。
+    this.validateArchiveTransactionParams(userId, transactionId);
+
+    try {
+      // 全部步骤共用当前事务 manager；任一步失败都会回滚流水和标签的归档。
+      // READ COMMITTED 保证取得锁后，引用检查能看到其他事务刚提交的有效流水。
+      await this.transactionRepo.manager.transaction(
+        'READ COMMITTED',
+        async (manager) => {
+          // 2. 先锁用户，再校验并锁定未删除流水，与标签创建、改名保持一致锁顺序。
+          await this.lockTagNames(manager, userId);
+          await this.lockTransactionForArchive(manager, userId, transactionId);
+
+          // 3. 锁定本流水绑定的未归档标签，防止引用检查期间出现新的并发绑定。
+          const tagIds = await this.lockTransactionTagsForArchive(
+            manager,
+            userId,
+            transactionId,
+          );
+
+          // 4. 先归档流水，再检查标签引用，本次删除的流水因此不再计入有效引用。
+          // 流水和独占标签使用同一归档时间，历史标签关联继续保留。
+          const archivedTime = new Date();
+          await this.archiveTransactionRecord(
+            manager,
+            userId,
+            transactionId,
+            archivedTime,
+          );
+
+          // 5. 检查全部周期内的未删除流水，只找出没有其他有效引用的标签。
+          const unusedTagIds = await this.findUnusedTagIds(
+            manager,
+            userId,
+            tagIds,
+          );
+
+          // 6. 只归档独占标签；共享标签保留，空集合不执行写入。
+          await this.archiveUnusedTags(
+            manager,
+            userId,
+            unusedTagIds,
+            archivedTime,
+          );
+
+          // 回调正常结束后统一提交，由前端刷新账单和标签选项。
+        },
+      );
+    } catch (error) {
+      // 事务已回滚：保留明确的业务错误，将数据库异常转换为统一删除失败。
+      this.throwArchiveError(error);
+    }
+  }
+
+  /**
+   * 校验删除入口的身份和路径参数，避免无效id进入事务。
+   * @param userId 当前登录用户id
+   * @param transactionId 待删除流水id
+   * @returns 校验通过后结束；非正安全整数时抛出参数错误
+   */
+  private validateArchiveTransactionParams(
+    userId: number,
+    transactionId: number,
+  ): void {
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+      throw new BadRequestException('用户id必须是正整数');
+    }
+    if (!Number.isSafeInteger(transactionId) || transactionId <= 0) {
+      throw new BadRequestException('流水id必须是正整数');
+    }
+  }
+
+  /**
+   * 校验待删除流水的归属和未删除状态，并持有写锁直到事务结束。
+   * @param manager 已锁定当前用户的事务管理器
+   * @param userId 当前登录用户id
+   * @param transactionId 待删除流水id
+   * @returns 加锁成功后结束；不存在、越权或已删除时统一抛出“流水记录不存在”
+   */
+  private async lockTransactionForArchive(
+    manager: EntityManager,
+    userId: number,
+    transactionId: number,
+  ): Promise<void> {
+    const transaction = await manager.getRepository(TransactionEntity).findOne({
+      select: { id: true },
+      where: {
+        id: transactionId,
+        ownerUserId: userId,
+        archivedTime: IsNull(),
+      },
+      lock: { mode: 'pessimistic_write' },
+    });
+    if (!transaction) throw new BadRequestException('流水记录不存在');
+  }
+
+  /**
+   * 读取当前流水的标签关联，并按id顺序锁定属于当前用户的未归档标签。
+   * @param manager 已完成流水归属校验并持有流水写锁的事务管理器
+   * @param userId 当前登录用户id
+   * @param transactionId 已校验并锁定的流水id
+   * @returns 待检查引用的标签id；无关联或标签均已归档时返回空数组
+   */
+  private async lockTransactionTagsForArchive(
+    manager: EntityManager,
+    userId: number,
+    transactionId: number,
+  ): Promise<number[]> {
+    // 关联表没有用户字段，transactionId 的归属由前一步的流水校验保证。
+    const associations = await manager
+      .getRepository(TransactionTagEntity)
+      .find({
+        select: { tagId: true },
+        where: { transactionId },
+      });
+    if (!associations.length) return [];
+
+    const tags = await manager.getRepository(TagEntity).find({
+      select: { id: true },
+      where: {
+        id: In(associations.map((association) => association.tagId)),
+        ownerUserId: userId,
+        archivedTime: IsNull(),
+      },
+      order: { id: 'ASC' },
+      // 新增绑定需要标签读锁；归档持有写锁后，新绑定必须等待并检查归档状态。
+      lock: { mode: 'pessimistic_write' },
+    });
+    return tags.map((tag) => tag.id);
+  }
+
+  /**
+   * 设置流水归档时间并确认只更新一条当前用户的未删除记录。
+   * @param manager 持有流水及相关标签写锁的事务管理器
+   * @param userId 当前登录用户id
+   * @param transactionId 已校验并锁定的流水id
+   * @param archivedTime 本次删除共用的归档时间
+   * @returns 更新成功后结束；影响行数异常时抛错，由事务整体回滚
+   */
+  private async archiveTransactionRecord(
+    manager: EntityManager,
+    userId: number,
+    transactionId: number,
+    archivedTime: Date,
+  ): Promise<void> {
+    const result = await manager
+      .getRepository(TransactionEntity)
+      .update(
+        { id: transactionId, ownerUserId: userId, archivedTime: IsNull() },
+        { archivedTime },
+      );
+    if (result.affected !== 1) {
+      throw new InternalServerErrorException('删除流水失败，请重新尝试');
+    }
+  }
+
+  /**
+   * 从已锁定的标签中找出没有有效流水引用的标签，覆盖全部账单周期。
+   * @param manager 已归档本次流水且仍持有标签写锁的事务管理器
+   * @param userId 当前登录用户id
+   * @param tagIds 本流水绑定的当前用户未归档标签id
+   * @returns 无其他未删除流水引用的标签id；空输入不发起查询
+   */
+  private async findUnusedTagIds(
+    manager: EntityManager,
+    userId: number,
+    tagIds: number[],
+  ): Promise<number[]> {
+    if (!tagIds.length) return [];
+
+    // 已删除流水的历史关联继续保留，但只把未删除流水计入有效引用。
+    const references = await manager.getRepository(TransactionTagEntity).find({
+      select: { tagId: true },
+      where: {
+        tagId: In(tagIds),
+        transaction: { ownerUserId: userId, archivedTime: IsNull() },
+      },
+    });
+    const referencedTagIds = new Set(
+      references.map((reference) => reference.tagId),
+    );
+    return tagIds.filter((id) => !referencedTagIds.has(id));
+  }
+
+  /**
+   * 归档无有效引用的标签，保留标签实体及全部历史关联。
+   * @param manager 已完成引用检查且仍持有标签写锁的事务管理器
+   * @param userId 当前登录用户id
+   * @param tagIds 已确认无有效引用的未归档标签id
+   * @param archivedTime 与本次流水删除相同的归档时间
+   * @returns 归档成功后结束；空集合不写入，更新数量异常时抛错触发整体回滚
+   */
+  private async archiveUnusedTags(
+    manager: EntityManager,
+    userId: number,
+    tagIds: number[],
+    archivedTime: Date,
+  ): Promise<void> {
+    if (!tagIds.length) return;
+
+    const result = await manager
+      .getRepository(TagEntity)
+      .update(
+        { id: In(tagIds), ownerUserId: userId, archivedTime: IsNull() },
+        { archivedTime },
+      );
+    if (result.affected !== tagIds.length) {
+      throw new InternalServerErrorException('删除流水标签失败，请重新尝试');
+    }
+  }
+
+  /**
+   * 在删除事务回滚后统一处理异常，保留业务错误和数据库异常原因。
+   * @param error 删除过程中抛出的未知异常
+   * @returns 始终抛出异常，不返回
+   */
+  private throwArchiveError(error: unknown): never {
+    if (
+      error instanceof BadRequestException ||
+      error instanceof InternalServerErrorException
+    ) {
+      throw error;
+    }
+    throw new InternalServerErrorException('删除流水失败，请重新尝试', {
+      cause: error,
+    });
+  }
+
+  /**
    * 校验日明细、月汇总共用的筛选条件。
    *
    * @param userId 当前登录用户id，由认证上下文提供
@@ -1235,7 +1470,7 @@ export class TransactionsService {
     await transactionTagRepo.save(transactionTags);
   }
 
-  /** 锁定标签名称写入所属用户，与配置管理的创建、改名采用相同顺序。 */
+  /** 锁定标签写入所属用户，创建、改名及归档采用相同顺序，锁保持到事务结束。 */
   private async lockTagNames(
     manager: EntityManager,
     userId: number,
