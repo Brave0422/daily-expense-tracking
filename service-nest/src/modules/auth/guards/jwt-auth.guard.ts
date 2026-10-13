@@ -24,12 +24,25 @@ interface VerificationCodeRequestBody {
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
+  /**
+   * 初始化 JwtAuthGuard 的依赖。
+   *
+   * @param authTokenService 处理 token 签发、验证和会话存储的服务
+   * @param reflector 读取路由装饰器元数据的反射工具
+   * @param usersService 提供用户查询和持久化操作的服务
+   */
   constructor(
     private readonly authTokenService: AuthTokenService,
     private readonly reflector: Reflector,
     private readonly usersService: UsersService,
   ) {}
 
+  /**
+   * 校验 access token、有效会话和用户存在性，并将身份写入请求上下文。
+   *
+   * @param context 当前路由的执行上下文，用于读取公开标记和 HTTP 请求
+   * @returns 公开接口或认证成功时返回 true；认证失败时抛出异常
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // 获取路由中的元数据，如果是公共接口，不用鉴权
     const isPublic = this.reflector.getAllAndOverride(Public, [
@@ -103,9 +116,10 @@ export class JwtAuthGuard implements CanActivate {
   }
 
   /**
-   * 从请求体中提取jwt
-   * @param request 请求体
-   * @returns access token
+   * 从 Authorization 请求头提取 Bearer access token。
+   *
+   * @param request 包含 Authorization 请求头的 HTTP 请求对象
+   * @returns 有效格式的 token 字符串；没有 Bearer 凭证时返回 undefined
    */
   private extractBearerToken(request: Request): string | undefined {
     const authorization = request.headers.authorization;

@@ -31,6 +31,14 @@ const AUTHENTICATED_PURPOSES: readonly VerificationPurpose[] = [
 export class VerificationCodesService {
   private readonly logger = new Logger(VerificationCodesService.name);
 
+  /**
+   * 初始化 VerificationCodesService 的依赖。
+   *
+   * @param configService 读取运行环境及业务配置的配置服务
+   * @param verificationCodeRepo 验证码实体仓库
+   * @param mailService 发送验证码邮件的邮件服务
+   * @param usersService 提供用户查询和持久化操作的服务
+   */
   constructor(
     private readonly configService: ConfigService,
     // 注入验证码实体的仓库
@@ -103,9 +111,10 @@ export class VerificationCodesService {
 
   /**
    * 安全比较验证码
-   * @param storedHash 已经发送并存储的验证码
-   * @param submittedCodeHash 用户输入的验证码
-   * @returns 验证结果
+   *
+   * @param storedHash 数据库中已存储的验证码哈希
+   * @param submittedCodeHash 用户提交验证码经过相同规则生成的哈希
+   * @returns 两个哈希长度相同且内容一致时返回 true，否则返回 false
    */
   private compareCode(storedHash: string, submittedCodeHash: string): boolean {
     // 转为Buffer进行比较
@@ -122,8 +131,10 @@ export class VerificationCodesService {
 
   /**
    * 检查发送频率
-   * @param email 邮箱
-   * @param purpose 验证码用途
+   *
+   * @param email 验证码接收邮箱
+   * @param purpose 当前验证码的业务用途
+   * @returns 通过同用途冷却时间及邮箱小时次数限制后异步结束，无返回值；超限时抛出429异常
    */
   private async ensureCanSend(
     email: string,
@@ -188,9 +199,11 @@ export class VerificationCodesService {
 
   /**
    * 使之前未使用的验证码失效
-   * @param email 邮箱
-   * @param purpose 验证码用途
-   * @param currentCodeId 此次操作需要排除的验证码id
+   *
+   * @param email 验证码接收邮箱
+   * @param purpose 需要失效的验证码用途
+   * @param currentCodeId 本次新验证码id，用于排除当前记录
+   * @returns 同邮箱同用途的其他未使用验证码失效后异步结束，无返回值
    */
   private async invalidatePreviousCodes(
     email: string,
@@ -242,9 +255,11 @@ export class VerificationCodesService {
 
   /**
    * 生成、保存并发送验证码
-   * @param email 公共场景由客户端提交的邮箱
-   * @param purpose 验证码用途
-   * @param userId 用户id，注册时没有userId
+   *
+   * @param email 公共场景提交的接收邮箱；登录场景使用用户绑定邮箱
+   * @param purpose 验证码的业务用途
+   * @param userId 当前登录用户id；注册和重置密码场景可以不传
+   * @returns 验证码保存且邮件发送完成后异步结束，无返回值；开发固定验证码模式跳过发信
    */
   async sendCode(
     email: string | undefined,
@@ -314,9 +329,11 @@ export class VerificationCodesService {
 
   /**
    * 校验并核销验证码
-   * @param email 邮箱
-   * @param purpose 验证码用途
-   * @param code 验证码
+   *
+   * @param email 验证码关联的邮箱
+   * @param purpose 需要核验的验证码用途
+   * @param code 用户提交的六位数字验证码
+   * @returns 有效验证码核验并标记已使用后异步结束，无返回值；核验失败时抛出异常
    */
   async verifyAndConsume(
     email: string,

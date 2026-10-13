@@ -9,6 +9,12 @@ import { ConfigService } from '@nestjs/config';
 // 从 NestJS TypeORM 模块导入数据库配置类型
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
+/**
+ * 读取应用配置并构建 TypeORM 的 MySQL 连接选项。
+ *
+ * @param configService 用于读取数据库配置及运行环境的配置服务
+ * @returns MySQL 连接、实体加载、DECIMAL 处理及结构同步配置
+ */
 export const getDatabaseConfig = (
   // 注入配置服务用于读取环境变量
   configService: ConfigService,

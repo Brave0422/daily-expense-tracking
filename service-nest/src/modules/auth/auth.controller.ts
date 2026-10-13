@@ -41,6 +41,13 @@ interface AccessTokenResponse {
 
 @Controller('auth')
 export class AuthController {
+  /**
+   * 初始化 AuthController 的依赖。
+   *
+   * @param authService 处理注册、登录、会话刷新和注销的认证服务
+   * @param configService 读取运行环境及业务配置的配置服务
+   * @param passwordService 处理密码哈希、验证和修改的密码服务
+   */
   constructor(
     // 注入用户服务
     private readonly authService: AuthService,
@@ -70,7 +77,8 @@ export class AuthController {
 
   /**
    * 获取 refresh token Cookie 的完整配置
-   * @returns Cookie 的公共配置
+   *
+   * @returns 包含公共属性及有效期的完整 refresh token Cookie 配置
    */
   private getRefreshTokenCookieOptions(): CookieOptions {
     return {
@@ -192,9 +200,10 @@ export class AuthController {
 
   /**
    * 修改用户密码
-   * @param body 修改密码dto
-   * @param request 已认证修改的请求
-   * @returns 是否修改成功
+   *
+   * @param body 包含新密码和验证码的修改密码请求
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @returns 密码修改成功时返回 true；失败时抛出异常
    */
   @Post('changePassword')
   @ResponseMsg('修改密码成功')
@@ -239,8 +248,10 @@ export class AuthController {
 
   /**
    * 退出登录
-   * @param request
-   * @param response
+   *
+   * @param user 认证上下文中的用户id和当前会话id
+   * @param response 用于清除 refresh token Cookie 的 HTTP 响应对象
+   * @returns 当前会话注销并清除 Cookie 后异步结束，无响应数据
    */
   @Post('logout')
   @ResponseMsg('退出成功')

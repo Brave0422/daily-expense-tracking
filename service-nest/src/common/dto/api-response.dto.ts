@@ -58,8 +58,8 @@ export class ApiResponseDto<T> {
   /**
    * 创建错误响应
    * @param msg - 错误消息，默认为"操作失败"
-   * @param code - 业务错误码，默认为500
    * @param data - 错误数据，默认为null
+   * @param code - 业务错误码，默认为500
    * @returns 错误响应DTO
    */
   static error<T>(

@@ -22,6 +22,13 @@ type LoggingRequest = RequestWithOptionalUser & {
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
 
+  /**
+   * 记录 HTTP 请求完成或失败时的状态、耗时及用户信息。
+   *
+   * @param context 当前请求的执行上下文
+   * @param next 后续处理器，用于继续执行请求并监听响应
+   * @returns 保持原响应内容的 Observable；在完成或失败时记录日志
+   */
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     // 避免以后使用 WebSocket 等上下文时发生错误
     if (context.getType() !== 'http') {

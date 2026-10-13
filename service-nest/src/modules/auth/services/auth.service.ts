@@ -29,6 +29,16 @@ export interface dualToken {
 
 @Injectable()
 export class AuthService {
+  /**
+   * 初始化 AuthService 的依赖。
+   *
+   * @param usersService 提供用户查询和持久化操作的服务
+   * @param verificationCodesService 处理验证码发送、核验和核销的服务
+   * @param authTokenService 处理 token 签发、验证和会话存储的服务
+   * @param authSessionRepo 登录会话实体仓库
+   * @param passwordService 处理密码哈希、验证和修改的密码服务
+   * @param categoriesService 处理用户分类查询、初始化及修改的服务
+   */
   constructor(
     // 注入用户服务
     private readonly usersService: UsersService,
@@ -43,10 +53,11 @@ export class AuthService {
 
   /**
    * 用户注册
-   * @param email - 邮箱
-   * @param password - 明文密码
-   * @param code - 注册验证码
-   * @returns 注册成功消息
+   *
+   * @param email 注册邮箱
+   * @param password 用户提交的明文密码
+   * @param code 注册验证码
+   * @returns 用户创建并初始化分类成功时返回 true；失败时抛出异常
    */
   async register(
     email: string,
@@ -121,8 +132,9 @@ export class AuthService {
 
   /**
    * 刷新token
-   * @param refreshToken
-   * @returns 双token
+   *
+   * @param refreshToken 来自 Cookie 的旧 refresh token
+   * @returns 轮换后的 access token 和 refresh token
    */
   async refresh(refreshToken: string): Promise<dualToken> {
     // 1.先验证token
@@ -170,8 +182,10 @@ export class AuthService {
 
   /**
    * 退出登录
-   * @param userId 用户id
-   * @param sid sessionId
+   *
+   * @param userId 当前会话所属用户id
+   * @param sid 需要注销的会话id
+   * @returns 匹配用户的当前会话删除后异步结束，无返回值
    */
   async logout(userId: number, sid: string): Promise<void> {
     // 销毁对应的session

@@ -15,6 +15,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersService {
+  /**
+   * 初始化 UsersService 的依赖。
+   *
+   * @param userRepo 用户实体仓库
+   */
   constructor(
     // 注入用户实体的仓库
     @InjectRepository(UserEntity)
@@ -23,6 +28,9 @@ export class UsersService {
 
   /**
    * 根据邮箱查找用户。
+   *
+   * @param email 需要查询的用户邮箱
+   * @returns 匹配邮箱的用户实体；不存在时返回 null
    */
   findOneByEmail(email: string): Promise<UserEntity | null> {
     return this.userRepo.findOneBy({ email });
@@ -54,6 +62,10 @@ export class UsersService {
 
   /**
    * 创建用户实体，但不立即持久化。
+   *
+   * @param email 用户邮箱
+   * @param passwordHash 已经完成哈希处理的密码
+   * @returns 尚未持久化的用户实体
    */
   create(email: string, passwordHash: string): UserEntity {
     return this.userRepo.create({
@@ -64,6 +76,9 @@ export class UsersService {
 
   /**
    * 保存用户实体。
+   *
+   * @param user 需要新增或更新的用户实体
+   * @returns 数据库保存后的用户实体，包含生成或更新的字段
    */
   save(user: UserEntity): Promise<UserEntity> {
     return this.userRepo.save(user);
@@ -71,8 +86,10 @@ export class UsersService {
 
   /**
    * 修改用户密码
-   * @param userId 用户id
-   * @param passwordHash 新密码哈希
+   *
+   * @param userId 需要修改密码的用户id
+   * @param passwordHash 待保存的新密码哈希
+   * @returns 恰好一个用户的密码更新成功后异步结束，无返回值；更新失败时抛出异常
    */
   async updatePassword(userId: number, passwordHash: string): Promise<void> {
     const result = await this.userRepo.update(userId, {

@@ -26,13 +26,18 @@ import type { TagFilterListItem } from './types/tag.types';
 
 @Controller('tags')
 export class TagsController {
+  /**
+   * 初始化 TagsController 的依赖。
+   *
+   * @param tagsService 处理当前用户标签的业务服务
+   */
   constructor(private readonly tagsService: TagsService) {}
 
   /**
    * 获取当前用户的标签列表
    * @param userId 当前用户id
-   * @param query 标签列表查询参数
-   * @returns 按更新时间倒序排列的标签列表
+   * @param query 标签列表查询参数，指定是否包含已归档标签
+   * @returns 按归档状态、更新时间和id排列的标签列表
    */
   @Get()
   findAll(

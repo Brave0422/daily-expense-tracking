@@ -23,6 +23,11 @@ export class ResponseInterceptor<T> implements NestInterceptor<
   ApiResponseDto<T>
 > {
   // 注入Reflector
+  /**
+   * 初始化 ResponseInterceptor 的依赖。
+   *
+   * @param reflector 读取路由装饰器元数据的反射工具
+   */
   constructor(private readonly reflector: Reflector) {}
 
   /**

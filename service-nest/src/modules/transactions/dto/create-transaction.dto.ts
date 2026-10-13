@@ -20,7 +20,12 @@ import {
 } from 'class-validator';
 import { TransactionType } from '../enums/transaction-type-enum';
 
-/** 保留 NULL 和非字符串值，让校验器拒绝错误类型。 */
+/**
+ * 去除文本首尾空格，保留 NULL 和非字符串值供校验器检查。
+ *
+ * @param value 请求中原始的标题或备注值
+ * @returns 去除首尾空格后的字符串；非字符串原样返回
+ */
 function trimText(value: unknown): unknown {
   return typeof value === 'string' ? value.trim() : value;
 }

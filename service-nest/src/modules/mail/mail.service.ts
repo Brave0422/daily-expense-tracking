@@ -65,9 +65,11 @@ export class MailService {
 
   /**
    * 发送邮件
+   *
    * @param to 收件人邮箱
-   * @param subject 邮件标题
-   * @param html 右键 HTML 正文
+   * @param subject 邮件主题
+   * @param html 邮件的 HTML 正文
+   * @returns 邮件发送完成后异步结束，无返回值；发送失败时抛出异常
    */
   async sendMail(to: string, subject: string, html: string): Promise<void> {
     // 获取当前可用的邮件发送器
@@ -104,9 +106,11 @@ export class MailService {
 
   /**
    * 发送验证码邮件
-   * @param to - 收件人邮箱
-   * @param code - 6位验证码
-   * @param purpose - 验证码用途标识（如 'register' / 'change_password'）
+   *
+   * @param to 收件人邮箱
+   * @param code 六位数字验证码
+   * @param purpose 验证码的业务用途，用于选择邮件主题和文案
+   * @returns 验证码邮件发送完成后异步结束，无返回值
    */
   async sendVerificationCode(
     to: string,

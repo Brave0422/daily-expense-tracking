@@ -9,6 +9,9 @@
  *
  * MySQL 的 DATE 字段有时返回字符串，有时会被驱动转换成 Date，
  * 所以这里同时处理两种情况。
+ *
+ * @param value 数据库返回的 DATE 字符串或 Date 对象；Date 按本地年月日读取
+ * @returns YYYY-MM-DD 格式的业务日期字符串
  */
 export function toDateKey(value: Date | string): string {
   if (typeof value === 'string') {

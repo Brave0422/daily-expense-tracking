@@ -12,14 +12,21 @@ import { OptionalCurrentUserId } from '../auth/decorators/current-user.decorator
 
 @Controller('verification-codes')
 export class VerificationCodesController {
+  /**
+   * 初始化 VerificationCodesController 的依赖。
+   *
+   * @param verificationCodesService 处理验证码发送、核验和核销的服务
+   */
   constructor(
     private readonly verificationCodesService: VerificationCodesService,
   ) {}
 
   /**
    * 发送验证码
-   * @param body 发送验证码dto
-   * @param request 已认证修改的请求
+   *
+   * @param body 包含验证码用途及可选邮箱的发送请求
+   * @param userId 当前登录用户id；注册和重置密码场景可以不传
+   * @returns 验证码生成、保存并发送后异步结束，无响应数据
    */
   @Post('send')
   @ResponseMsg('验证码已发送')

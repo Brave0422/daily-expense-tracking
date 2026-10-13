@@ -7,8 +7,9 @@ import { ConfigService } from '@nestjs/config';
 // import { HttpExceptionFilter } from "./common/filters/http-exception-filter";
 
 /**
- * 应用启动函数
- * @description: 创建NestJS应用实例并配置全局组件
+ * 创建 NestJS 应用并配置全局组件，随后启动 HTTP 监听。
+ *
+ * @returns 启动完成后异步结束，无返回值；启动失败时抛出异常
  */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

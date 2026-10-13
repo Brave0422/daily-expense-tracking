@@ -20,16 +20,22 @@ import {
 
 @Injectable()
 export class TagsService {
+  /**
+   * 初始化 TagsService 的依赖。
+   *
+   * @param tagRepo 标签实体仓库
+   */
   constructor(
     @InjectRepository(TagEntity)
     private readonly tagRepo: Repository<TagEntity>,
   ) {}
 
   /**
-   * 通过id判断标签是否存在
-   * @param id 标签id
-   * @param userId 用户id
-   * @returns
+   * 校验当前用户的未归档标签是否存在。
+   *
+   * @param id 需要校验的标签id
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @returns 标签存在时异步结束，无返回值；标签不可用时抛出异常
    */
   private async assertExistsById(id: number, userId: number): Promise<void> {
     const result = await this.tagRepo.existsBy({
@@ -44,9 +50,11 @@ export class TagsService {
 
   /**
    * 判断是否存在同名标签
-   * @param name 标签名称
-   * @param userId 用户id
-   * @param excludedId 编辑时需要排除的标签id
+   *
+   * @param name 待使用的标签名称
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param excludedId 编辑时排除的当前标签id；创建时不传
+   * @returns 没有同名未归档标签时异步结束，无返回值；名称重复时抛出异常
    */
   private async checkSameName(
     name: string,
@@ -122,8 +130,10 @@ export class TagsService {
 
   /**
    * 创建标签
-   * @param userId 用户id
-   * @param name 标签名称
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param name 新的标签名称
+   * @returns 标签创建完成后异步结束，无返回值
    */
   async create(userId: number, name: string): Promise<void> {
     await this.checkSameName(name, userId);
@@ -145,9 +155,11 @@ export class TagsService {
 
   /**
    * 编辑标签
-   * @param id 标签id
-   * @param userId 用户id
-   * @param name 标签名称
+   *
+   * @param id 需要编辑的标签id
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param name 新的标签名称
+   * @returns 标签名称更新完成后异步结束，无返回值
    */
   async update(id: number, userId: number, name: string): Promise<void> {
     await this.assertExistsById(id, userId);
@@ -174,9 +186,11 @@ export class TagsService {
   }
 
   /**
-   * 删除标签
-   * @param id 标签id
-   * @param userId 用户id
+   * 逻辑归档标签，保留其历史流水关联。
+   *
+   * @param id 需要归档的标签id
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @returns 标签归档完成后异步结束，无返回值
    */
   async archive(id: number, userId: number): Promise<void> {
     await this.assertExistsById(id, userId);

@@ -17,6 +17,12 @@ import { UserEntity } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class PasswordService {
+  /**
+   * 初始化 PasswordService 的依赖。
+   *
+   * @param usersService 提供用户查询和持久化操作的服务
+   * @param verificationCodesService 处理验证码发送、核验和核销的服务
+   */
   constructor(
     private readonly usersService: UsersService,
     private readonly verificationCodesService: VerificationCodesService,
@@ -68,10 +74,12 @@ export class PasswordService {
 
   /**
    * 修改密码
-   * @param email 邮箱
-   * @param newPassword 新密码
-   * @param code 验证码
-   * @param purpose 验证码用途
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param newPassword 待设置的明文新密码
+   * @param code 修改密码验证码
+   * @param purpose 当前验证码的业务用途
+   * @returns 验证码核销并保存新密码成功时返回 true；失败时抛出异常
    */
   async changePassword(
     userId: number,
@@ -112,10 +120,12 @@ export class PasswordService {
 
   /**
    * 更新密码
-   * @param user 用户实体
-   * @param purpose 验证码用途
-   * @param code 验证码
-   * @param password 密码
+   *
+   * @param user 需要修改密码的用户实体
+   * @param purpose 当前验证码的业务用途
+   * @param code 用户提交的验证码
+   * @param password 待哈希并保存的明文新密码
+   * @returns 验证码核销并保存密码哈希后异步结束，无返回值
    */
   async updatePassword(
     user: UserEntity,

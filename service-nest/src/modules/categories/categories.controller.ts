@@ -27,6 +27,11 @@ import { ResponseMsg } from 'src/common/decorators/response-message.decorator';
 
 @Controller('categories')
 export class CategoriesController {
+  /**
+   * 初始化 CategoriesController 的依赖。
+   *
+   * @param categoriesService 处理用户分类查询、初始化及修改的服务
+   */
   constructor(private readonly categoriesService: CategoriesService) {}
 
   /**
@@ -58,8 +63,10 @@ export class CategoriesController {
 
   /**
    * 创建分类
-   * @param userId 用户id
-   * @param body dto
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param body 包含类型、名称、图标及可选父分类的创建请求
+   * @returns 分类创建完成后异步结束，无响应数据
    */
   @Post('create')
   @ResponseMsg('创建成功')
@@ -73,8 +80,10 @@ export class CategoriesController {
 
   /**
    * 编辑分类
-   * @param userId 用户id
-   * @param body dto
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param body 包含分类id、新名称和图标的编辑请求
+   * @returns 分类编辑完成后异步结束，无响应数据
    */
   @Post('update')
   @ResponseMsg('编辑成功')
@@ -88,9 +97,10 @@ export class CategoriesController {
 
   /**
    * 归档分类
-   * @param userId 用户id
-   * @param id 分类id
-   * @returns
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param id 需要归档的分类id
+   * @returns 分类及需要联动的二级分类归档后异步结束，无响应数据
    */
   @Delete(':id/archive')
   @ResponseMsg('删除成功')

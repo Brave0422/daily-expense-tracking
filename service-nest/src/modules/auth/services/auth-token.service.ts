@@ -35,6 +35,13 @@ type JwtExpiresIn = NonNullable<JwtSignOptions['expiresIn']>;
 
 @Injectable()
 export class AuthTokenService {
+  /**
+   * 初始化 AuthTokenService 的依赖。
+   *
+   * @param jwtService 用于 JWT 签发、解码和验证的服务
+   * @param configService 读取运行环境及业务配置的配置服务
+   * @param authSessionRepo 登录会话实体仓库
+   */
   constructor(
     // 注入JwtService
     private readonly jwtService: JwtService,
@@ -106,9 +113,10 @@ export class AuthTokenService {
   }
 
   /**
-   * 构建token
-   * @param token refresh token
-   * @returns sessions部分值
+   * 将 refresh token 转换为需要保存的会话状态。
+   *
+   * @param token 待保存的 refresh token
+   * @returns refresh token 的哈希及过期时间
    */
   private async buildTokenState(
     token: string,
@@ -128,9 +136,11 @@ export class AuthTokenService {
 
   /**
    * 哈希refresh token并保存至数据库
-   * @param token refresh token
-   * @param userId 用户id
-   * @param sid 会话id
+   *
+   * @param userId 会话所属用户id
+   * @param sid 新会话id
+   * @param token 待哈希并保存的 refresh token
+   * @returns 会话保存完成后异步结束，无返回值
    */
   async saveToken(userId: number, sid: string, token: string): Promise<void> {
     const tokenState = await this.buildTokenState(token);
@@ -146,8 +156,10 @@ export class AuthTokenService {
 
   /**
    * 更新数据库的refresh token
-   * @param sid 会话id
-   * @param token refresh token
+   *
+   * @param sid 需要更新的会话id
+   * @param token 轮换后的 refresh token
+   * @returns 会话的 token 哈希及过期时间更新后异步结束，无返回值
    */
   async updateToken(sid: string, token: string): Promise<void> {
     const tokenState = await this.buildTokenState(token);
@@ -219,9 +231,10 @@ export class AuthTokenService {
 
   /**
    * 根据 access token 中的 sid 查询有效会话
-   * @param payload access token的payload
-   * @param userId 用户id
-   * @returns session实体
+   *
+   * @param payload 已验证的 access token 载荷，包含会话id
+   * @param userId 需要匹配的用户id
+   * @returns 匹配用户且未过期的会话实体；没有有效会话时返回 null
    */
   async findSessionBySid(
     payload: AccessTokenPayload,

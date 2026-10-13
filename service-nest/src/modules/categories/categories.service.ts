@@ -33,6 +33,13 @@ export interface UserCategoryTreeItem extends UserCategoryListItem {
 
 @Injectable()
 export class CategoriesService {
+  /**
+   * 初始化 CategoriesService 的依赖。
+   *
+   * @param categoryTemplateRepo 默认分类模板实体仓库
+   * @param userCategoryRepo 用户分类实体仓库
+   * @param categoryIconRepo 分类图标实体仓库
+   */
   constructor(
     @InjectRepository(CategoryTemplateEntity)
     private readonly categoryTemplateRepo: Repository<CategoryTemplateEntity>,
@@ -44,9 +51,11 @@ export class CategoriesService {
 
   /**
    * 获取用户所有分类
-   * @param userId 用户id
-   * @param type 流水类型
-   * @param includeArchived 是否包含已归档分类
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param type 需要查询的收支类型
+   * @param includeArchived 是否包含已归档分类，默认 false
+   * @returns 按归档状态和展示顺序排列的分类树，包含二级分类及背景色
    */
   async findAllForUser(
     userId: number,
@@ -68,6 +77,13 @@ export class CategoriesService {
     // 组装数据，按顺序排列一级分类，并把二级分类按照顺序放到对应的一级分类下面
 
     // 查询历史分类时未归档项优先；组内仍按sortOrder、id稳定排序
+    /**
+     * 比较同级分类，按归档状态、排序值和id稳定排序。
+     *
+     * @param firstCategory 参与比较的第一个分类
+     * @param secondCategory 参与比较的第二个分类
+     * @returns 负数表示第一个分类在前，0表示顺序相同，正数表示第二个分类在前
+     */
     const compareBySortOrder = (
       firstCategory: UserCategoryEntity,
       secondCategory: UserCategoryEntity,
@@ -167,7 +183,9 @@ export class CategoriesService {
 
   /**
    * 初始化用户分类表
-   * @param userId 用户id
+   *
+   * @param userId 需要初始化默认分类的新用户id
+   * @returns 用户一级和二级默认分类保存完成后异步结束，无返回值
    */
   async initUserCategory(userId: number) {
     try {
@@ -268,11 +286,13 @@ export class CategoriesService {
 
   /**
    * 创建分类
-   * @param userId 用户id
-   * @param type 分类类型
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param type 分类的收支类型
    * @param name 分类名称
-   * @param iconKey 分类iconKey
-   * @param parentId 父级分类id
+   * @param iconKey 分类关联的图标键
+   * @param parentId 父分类id；null 或不传时创建一级分类
+   * @returns 分类创建完成后异步结束，无返回值
    */
   async create(
     userId: number,
@@ -352,11 +372,13 @@ export class CategoriesService {
 
   /**
    * 检查同一归属有没有同名分类
-   * @param ownerUserId 用户id
-   * @param name 分类名称
-   * @param parentIdCondition 父级分类动态条件
-   * @param type 分类类型
-   * @param id 分类id，编辑时需要传递用来排除当前分类
+   *
+   * @param ownerUserId 需要检查的用户id
+   * @param name 待使用的分类名称
+   * @param parentId 父分类id；null 表示在一级分类中检查
+   * @param type 分类的收支类型
+   * @param id 编辑时排除的当前分类id；创建时不传
+   * @returns 没有同名未归档分类时异步结束，无返回值；名称重复时抛出异常
    */
   async checkSameName(
     ownerUserId: number,
@@ -388,10 +410,12 @@ export class CategoriesService {
 
   /**
    * 编辑分类
-   * @param userId 用户id
-   * @param id 分类id
-   * @param name 分类新名称
-   * @param iconKey 分类新图标
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param id 需要编辑的分类id
+   * @param name 新的分类名称
+   * @param iconKey 新的分类图标键
+   * @returns 分类名称和图标更新完成后异步结束，无返回值
    */
   async update(
     userId: number,
@@ -417,9 +441,11 @@ export class CategoriesService {
 
   /**
    * 通过分类id查询分类
-   * @param ownerUserId 用户id
-   * @param id 分类id
-   * @param msg 异常信息
+   *
+   * @param ownerUserId 分类所属用户id
+   * @param id 需要查询的分类id
+   * @param msg 分类不可用时使用的错误消息
+   * @returns 属于该用户且未归档的分类实体；不存在时抛出异常
    */
   private async findCategoryById(
     ownerUserId: number,
@@ -440,8 +466,10 @@ export class CategoriesService {
 
   /**
    * 归档分类
-   * @param userId 用户id
-   * @param id 分类id
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param id 需要归档的分类id
+   * @returns 目标分类及需要联动的二级分类归档完成后异步结束，无返回值
    */
   async archive(userId: number, id: number): Promise<void> {
     // 查询对应分类

@@ -11,6 +11,9 @@
  * "12.34" -> 1234n
  * "12"    -> 1200n
  * "-1.50" -> -150n
+ *
+ * @param amount 已通过格式校验的金额字符串，最多两位小数，支持负数
+ * @returns 以分为单位的 bigint，不使用浮点数计算
  */
 export function amountToCents(amount: string): bigint {
   // 记录金额是否为负数
@@ -39,6 +42,9 @@ export function amountToCents(amount: string): bigint {
  * 1234n  -> "12.34"
  * 1200n  -> "12.00"
  * -150n  -> "-1.50"
+ *
+ * @param cents 以分为单位的整数金额，支持负数
+ * @returns 固定保留两位小数的十进制金额字符串
  */
 export function centsToAmount(cents: bigint): string {
   // 记录金额是否为负数
@@ -61,6 +67,9 @@ export function centsToAmount(cents: bigint): string {
  * 将数据库返回的金额统一格式化成两位小数字符串。
  *
  * undefined、null 和空字符串都按照 0 处理。
+ *
+ * @param amount 待格式化的金额字符串；undefined、null 和空字符串视为0
+ * @returns 固定保留两位小数的金额字符串
  */
 export function normalizeAmount(amount: string | null | undefined): string {
   return centsToAmount(amountToCents(amount || '0'));

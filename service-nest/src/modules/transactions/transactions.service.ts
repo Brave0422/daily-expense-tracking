@@ -106,6 +106,13 @@ interface CreateTransactionData {
 
 @Injectable()
 export class TransactionsService {
+  /**
+   * 初始化 TransactionsService 的依赖。
+   *
+   * @param transactionRepo 流水实体仓库，提供查询及事务入口
+   * @param userCategoryRepo 用户分类实体仓库
+   * @param tagRepo 标签实体仓库
+   */
   constructor(
     @InjectRepository(TransactionEntity)
     private readonly transactionRepo: Repository<TransactionEntity>,
@@ -117,14 +124,16 @@ export class TransactionsService {
 
   /**
    * 校验日明细、月汇总共用的筛选条件。
-   * @param userId 用户id
-   * @param type 流水类型
-   * @param categoryIds 流水分类id集合
-   * @param tagIds 流水标签id集合
-   * @param minAmount 金额最小值
-   * @param maxAmount 金额最大值
-   * @param month 流水月份
-   * @param year 流水年份
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param type 可选收支类型；不传时同时查询支出和收入
+   * @param categoryIds 可选分类id数组；支出一级分类匹配其下全部二级分类
+   * @param tagIds 可选标签id数组；包含任一所选标签即匹配，仅日明细支持
+   * @param minAmount 可选最小金额字符串，包含边界值
+   * @param maxAmount 可选最大金额字符串，包含边界值
+   * @param month 查询月份，格式为 YYYY-MM；与 year 互斥
+   * @param year 查询年份，格式为 YYYY；与 month 互斥
+   * @returns 筛选条件合法时异步结束，无返回值；参数或关联不合法时抛出异常
    */
   private async validateQueryFilters(
     userId: number,
@@ -194,9 +203,10 @@ export class TransactionsService {
   }
 
   /**
-   * 给月份添加日期，满足SQL日期的筛选格式
-   * @param month 月份 YYYY-MM
-   * @returns 符合SQL日期筛选的格式 YYYY-MM-DD
+   * 将月份转换为查询使用的左闭右开日期范围。
+   *
+   * @param month 查询月份，格式为 YYYY-MM
+   * @returns 当月1日 startDate 和下月1日 endDate，均为 YYYY-MM-DD 字符串
    */
   private getMonthDateRange(month: string): {
     startDate: string;
@@ -214,9 +224,10 @@ export class TransactionsService {
   }
 
   /**
-   * 给年份添加日期，满足SQL日期的筛选格式
-   * @param year 年份 YYYY
-   * @returns 符合SQL日期筛选的格式 YYYY-MM-DD
+   * 将年份转换为查询使用的左闭右开日期范围。
+   *
+   * @param year 查询年份，格式为 YYYY
+   * @returns 当年1月1日 startDate 和次年1月1日 endDate，均为 YYYY-MM-DD 字符串
    */
   private getYearDateRange(year: string): {
     startDate: string;
@@ -230,17 +241,18 @@ export class TransactionsService {
 
   /**
    * 根据条件查询流水
-   * @param userId 用户id
-   * @param type 流水类型
-   * @param categoryIds 流水分类id集合
-   * @param tagIds 流水标签id集合
-   * @param title 流水标题
-   * @param remark 流水备注
-   * @param minAmount 金额最小值
-   * @param maxAmount 金额最大值
-   * @param month 流水月份
-   * @param year 流水年份
-   * @returns 符合条件的流水列表
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param type 可选收支类型；不传时同时查询支出和收入
+   * @param categoryIds 可选分类id数组；支出一级分类匹配其下全部二级分类
+   * @param tagIds 可选标签id数组；包含任一所选标签即匹配，仅日明细支持
+   * @param title 可选标题包含搜索，仅日明细支持
+   * @param remark 可选备注包含搜索，仅日明细支持
+   * @param minAmount 可选最小金额字符串，包含边界值
+   * @param maxAmount 可选最大金额字符串，包含边界值
+   * @param month 查询月份，格式为 YYYY-MM；与 year 互斥
+   * @param year 查询年份，格式为 YYYY；与 month 互斥
+   * @returns 符合条件的流水实体列表及相同筛选口径的收入、支出合计
    */
   async findTransactions(
     userId: number,
@@ -590,11 +602,12 @@ export class TransactionsService {
   }
 
   /**
-   * 统计指定日期范围内的收支
-   * @param userId 用户id
-   * @param month 月份
-   * @param month 月份
-   * @returns 指定月份的金额统计
+   * 统计当前用户在指定日期范围内的完整收支，不应用列表筛选条件。
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param startDate 周期开始日期，包含当天，格式为 YYYY-MM-DD
+   * @param endDate 周期结束日期，不包含当天，格式为 YYYY-MM-DD
+   * @returns 固定两位小数的收入合计、支出合计及收入减支出的结余
    */
   private async calculatePeriodAmount(
     userId: number,
@@ -651,17 +664,18 @@ export class TransactionsService {
   }
 
   /**
-   * 以月为周期查询流水
-   * @param userId 用户id
-   * @param month 流水月份
-   * @param type 流水类型
-   * @param categoryIds 流水分类id集合
-   * @param tagIds 流水标签id集合
-   * @param title 流水标题
-   * @param remark 流水备注
-   * @param minAmount 金额最小值
-   * @param maxAmount 金额最大值
-   * @returns 每月流水列表
+   * 以一个自然月为周期查询日明细及两种统计口径。
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param month 查询月份，格式为 YYYY-MM
+   * @param type 可选收支类型；不传时同时查询支出和收入
+   * @param categoryIds 可选分类id数组；支出一级分类匹配其下全部二级分类
+   * @param tagIds 可选标签id数组；包含任一所选标签即匹配，仅日明细支持
+   * @param title 可选标题包含搜索，仅日明细支持
+   * @param remark 可选备注包含搜索，仅日明细支持
+   * @param minAmount 可选最小金额字符串，包含边界值
+   * @param maxAmount 可选最大金额字符串，包含边界值
+   * @returns 月份、完整周期总览、筛选合计及按日期倒序排列的流水明细
    */
   async findDailyTransactions(
     userId: number,
@@ -722,7 +736,12 @@ export class TransactionsService {
     };
   }
 
-  /** 按日期组装筛选后的流水明细，并累计每日收支。 */
+  /**
+   * 按日期组装筛选后的流水明细，并累计每日收支。
+   *
+   * @param transactions 完整且已去重的筛选流水实体列表，包含分类、图标及全部标签
+   * @returns 按日期倒序排列的分组，每组包含每日收支合计和流水明细
+   */
   private assembleDailyTransactions(
     transactions: TransactionEntity[],
   ): DailyTransactionGroup[] {
@@ -783,14 +802,15 @@ export class TransactionsService {
   }
 
   /**
-   * 以年为周期查询流水
-   * @param userId 用户id
-   * @param year 流水月份
-   * @param type 流水类型
-   * @param categoryIds 流水分类id集合
-   * @param minAmount 金额最小值
-   * @param maxAmount 金额最大值
-   * @returns 每年流水列表
+   * 以一个自然年为周期查询月份分类汇总及两种统计口径。
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param year 查询年份，格式为 YYYY
+   * @param type 可选收支类型；不传时同时查询支出和收入
+   * @param categoryIds 可选分类id数组；支出一级分类匹配其下全部二级分类
+   * @param minAmount 可选最小金额字符串，包含边界值
+   * @param maxAmount 可选最大金额字符串，包含边界值
+   * @returns 年份、完整周期总览、筛选合计及按月份倒序排列的分类汇总
    */
   async findMonthlySummary(
     userId: number,
@@ -845,12 +865,12 @@ export class TransactionsService {
   }
 
   /**
-   * 把分类实体和累计金额转换成分类汇总响应。
-   * colorSource 表示最终背景色来自哪个分类，默认使用当前分类。
-   * @param category 用户分类
-   * @param amountCents 改分类下的金额
-   * @param colorSource 分类背景色来源
-   * @returns 一个分类的数据结构
+   * 把分类实体和以分累计的金额转换成分类汇总响应。
+   *
+   * @param category 需要展示的分类实体
+   * @param amountCents 当前分类下累计的金额，以分为单位的 bigint
+   * @param colorSource 背景色来源分类，默认使用当前分类；支出二级分类传入父分类
+   * @returns 包含分类名称、图标、背景色及两位小数金额的分类汇总项
    */
   private assembleCategorySummary(
     category: UserCategoryEntity,
@@ -876,7 +896,12 @@ export class TransactionsService {
     };
   }
 
-  /** 按“月份 → 一级分类 → 二级分类”组装筛选后的汇总。 */
+  /**
+   * 按月份、一级分类和二级分类组装筛选后的汇总。
+   *
+   * @param transactions 完整且已去重的筛选流水实体列表，包含分类及父分类图标
+   * @returns 按月份倒序排列的分组，包含收支合计和按展示顺序排列的分类汇总
+   */
   private assembleMonthlySummary(
     transactions: TransactionEntity[],
   ): MonthlySummaryGroup[] {
@@ -991,6 +1016,13 @@ export class TransactionsService {
 
     // 分类按照用户设置的 sortOrder、id 排序。
     // Map 的插入顺序来自流水，不能直接作为分类展示顺序。
+    /**
+     * 按分类的展示顺序排序，相同排序值时按id稳定排序。
+     *
+     * @param left 参与比较的第一个分类累计项
+     * @param right 参与比较的第二个分类累计项
+     * @returns 负数表示 left 在前，0表示顺序相同，正数表示 right 在前
+     */
     const compareCategories = (
       left: CategoryAmountAccumulator,
       right: CategoryAmountAccumulator,
@@ -1043,7 +1075,12 @@ export class TransactionsService {
     );
   }
 
-  /** 将创建流水时的可选文本统一处理成非空字符串或 NULL。 */
+  /**
+   * 将流水文本统一处理成非空字符串或 NULL。
+   *
+   * @param value 原始标题或备注；支持字符串、null 和 undefined
+   * @returns 去除首尾空格后的非空字符串；空文本或未提供时返回 null
+   */
   private normalizeTransactionText(
     value: string | null | undefined,
   ): string | null {
@@ -1051,7 +1088,17 @@ export class TransactionsService {
   }
 
   /**
-   * 创建参数的格式和范围由 DTO 校验；这里只校验用户id并规范化入库数据。
+   * 校验用户id并规范化创建数据，字段格式和范围由 DTO 校验。
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param type 流水类型，expense 表示支出，income 表示收入
+   * @param categoryId 支出二级分类id或收入一级分类id
+   * @param amount 大于0的金额字符串，最多13位整数和2位小数
+   * @param occurredDate 实际发生日期，格式为 YYYY-MM-DD
+   * @param title 流水标题，空文本规范化为 NULL
+   * @param tagIds 已有标签id数组，去重后建立关联
+   * @param remark 补充备注，空文本规范化为 NULL
+   * @returns 金额及文本已标准化、标签id已去重的创建数据
    */
   private validateCreateTransactionParams(
     userId: number,
@@ -1080,7 +1127,13 @@ export class TransactionsService {
     };
   }
 
-  /** 在当前事务中校验分类、标签的归属、归档状态和分类收支规则。 */
+  /**
+   * 在当前事务中校验分类和标签的归属、归档状态及分类收支规则。
+   *
+   * @param manager 当前数据库事务的实体管理器，关联查询及锁共用该事务
+   * @param data 已规范化的创建数据，包含用户、类型、分类和标签id
+   * @returns 全部关联合法时异步结束，无返回值；不可用时抛出异常
+   */
   private async validateCreateTransactionRelations(
     manager: EntityManager,
     data: CreateTransactionData,
@@ -1130,7 +1183,13 @@ export class TransactionsService {
     }
   }
 
-  /** 将规范化后的数据映射为流水实体。 */
+  /**
+   * 将规范化后的创建数据映射为尚未保存的流水实体。
+   *
+   * @param transactionRepo 当前事务中的流水仓库
+   * @param data 金额、文本和日期已规范化的创建数据
+   * @returns 尚未持久化的流水实体，不包含标签关联记录
+   */
   private buildTransactionEntity(
     transactionRepo: Repository<TransactionEntity>,
     data: CreateTransactionData,
@@ -1148,7 +1207,14 @@ export class TransactionsService {
     });
   }
 
-  /** 在当前事务中绑定已有标签，只新增关联记录。 */
+  /**
+   * 在当前事务中绑定已有标签，只新增指定的关联记录。
+   *
+   * @param manager 当前数据库事务的实体管理器
+   * @param transactionId 已创建或已锁定的当前用户流水id
+   * @param tagIds 已去重且通过可用性校验的待新增标签id；空数组不执行写入
+   * @returns 新增标签关联保存完成后异步结束，无返回值
+   */
   private async bindTransactionTags(
     manager: EntityManager,
     transactionId: number,
@@ -1168,14 +1234,16 @@ export class TransactionsService {
 
   /**
    * 创建流水并绑定已有标签；成功后由前端重新查询账单，不返回流水数据。
+   *
    * @param userId 当前登录用户id，由认证上下文提供
-   * @param type 流水类型：支出或收入
+   * @param type 流水类型，expense 表示支出，income 表示收入
    * @param categoryId 支出二级分类id或收入一级分类id
    * @param amount 大于0的金额字符串，最多13位整数和2位小数
    * @param occurredDate 实际发生日期，格式为 YYYY-MM-DD
-   * @param title 流水标题
-   * @param tagIds 已有标签id，不传或空数组表示不绑定标签
-   * @param remark 补充备注
+   * @param title 可选流水标题，空文本或未提供时保存为 NULL
+   * @param tagIds 可选已有标签id；不传或空数组表示不绑定标签
+   * @param remark 可选备注，空文本或未提供时保存为 NULL
+   * @returns 流水和全部标签关联提交成功后异步结束，无返回值；失败时回滚并抛出异常
    */
   async createTransaction(
     userId: number,
@@ -1227,6 +1295,200 @@ export class TransactionsService {
       }
 
       throw new InternalServerErrorException('创建流水失败，请重新尝试', {
+        cause: error,
+      });
+    }
+  }
+
+  /**
+   * 校验编辑后的分类和标签，允许保留原有已归档关联。
+   *
+   * @param manager 当前数据库事务的实体管理器
+   * @param transaction 已校验归属和未删除状态并加锁的原流水实体
+   * @param categoryId 编辑后的分类id，必须符合原流水类型和分类层级
+   * @param tagIds 去重后的完整标签id集合
+   * @param originalTagIds 原流水已绑定的标签id集合，用于区分保留项和新增项
+   * @returns 全部关联合法时异步结束，无返回值；越权、类型不符或新绑定归档项时抛出异常
+   */
+  private async validateUpdateTransactionRelations(
+    manager: EntityManager,
+    transaction: TransactionEntity,
+    categoryId: number,
+    tagIds: number[],
+    originalTagIds: Set<number>,
+  ): Promise<void> {
+    // 原分类未变时允许它已经归档；更换分类时才要求 archivedTime 为 NULL。
+    // 两种情况都检查用户归属，防止把其他用户的分类关联到这条流水。
+    const category = await manager.getRepository(UserCategoryEntity).findOne({
+      where: {
+        id: categoryId,
+        ownerUserId: transaction.ownerUserId,
+        ...(categoryId === transaction.categoryId
+          ? {}
+          : { archivedTime: IsNull() }),
+      },
+      lock: { mode: 'pessimistic_read' },
+    });
+
+    if (!category) {
+      throw new BadRequestException('分类不存在或已归档');
+    }
+
+    // 收支方向始终取数据库中的原类型，客户端不能通过更换分类改变流水类型。
+    const requiredLevel = transaction.type === TransactionType.EXPENSE ? 2 : 1;
+    if (
+      category.type !== transaction.type ||
+      category.level !== requiredLevel
+    ) {
+      throw new BadRequestException(
+        '支出必须绑定支出二级分类，收入必须绑定收入一级分类',
+      );
+    }
+
+    if (tagIds.length === 0) {
+      return;
+    }
+
+    // 查询完整的新标签集合，不提前排除归档项，才能识别允许保留的历史标签。
+    const tags = await manager.getRepository(TagEntity).find({
+      select: { id: true, archivedTime: true },
+      where: { id: In(tagIds), ownerUserId: transaction.ownerUserId },
+      order: { id: 'ASC' },
+      // 与创建流水一样，保持共享锁到事务结束，避免校验后标签被并发归档。
+      lock: { mode: 'pessimistic_read' },
+    });
+
+    // 数量不一致表示存在无效或越权标签；归档标签只有在旧集合中才允许保留。
+    if (
+      tags.length !== tagIds.length ||
+      tags.some(
+        (tag) => tag.archivedTime !== null && !originalTagIds.has(tag.id),
+      )
+    ) {
+      throw new BadRequestException('标签不存在或已归档');
+    }
+  }
+
+  /**
+   * 更新当前用户的未删除流水及标签关联，流水类型不可修改。
+   *
+   * @param userId 当前登录用户id，由认证上下文提供
+   * @param transactionId 需要编辑的流水id
+   * @param categoryId 支出二级分类id或收入一级分类id
+   * @param amount 大于0的金额字符串，最多13位整数和2位小数
+   * @param occurredDate 实际发生日期，格式为 YYYY-MM-DD
+   * @param title 流水标题，空文本规范化为 NULL
+   * @param tagIds 编辑后的完整标签id集合；空数组表示移除全部标签
+   * @param remark 补充备注，空文本规范化为 NULL
+   * @returns 流水和标签差异更新提交成功后异步结束，无响应数据；失败时回滚并抛出异常
+   */
+  async updateTransaction(
+    userId: number,
+    transactionId: number,
+    categoryId: number,
+    amount: string,
+    occurredDate: string,
+    title: string | null,
+    tagIds: number[],
+    remark: string | null,
+  ): Promise<void> {
+    // 1. DTO 校验完整请求的格式；服务层校验认证用户和路径id。
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+      throw new BadRequestException('用户id必须是正整数');
+    }
+    if (!Number.isSafeInteger(transactionId) || transactionId <= 0) {
+      throw new BadRequestException('流水id必须是正整数');
+    }
+
+    // 标签关联使用联合主键，先去重，避免同一标签被重复绑定。
+    const uniqueTagIds = [...new Set(tagIds)];
+
+    try {
+      // 后续查询、锁和写入都使用当前事务 manager，确保任一步失败都能整体回滚。
+      await this.transactionRepo.manager.transaction(async (manager) => {
+        const transactionRepo = manager.getRepository(TransactionEntity);
+        // 2. 查询并锁定原流水；其他请求修改或删除同一行时必须等待事务结束。
+        const transaction = await transactionRepo.findOne({
+          where: {
+            id: transactionId,
+            ownerUserId: userId,
+            archivedTime: IsNull(),
+          },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        // 不区分不存在、其他用户的记录和已删除记录，避免泄露归属信息。
+        if (!transaction) {
+          throw new BadRequestException('流水记录不存在');
+        }
+
+        // 读取旧标签作为差异计算的基准，并用于判断归档标签是否原本已经绑定。
+        // 关联表没有用户字段，这里的流水id已在上一步完成归属校验并加锁。
+        const transactionTagRepo = manager.getRepository(TransactionTagEntity);
+        const originalTags = await transactionTagRepo.find({
+          select: { tagId: true },
+          where: { transactionId },
+          order: { tagId: 'ASC' },
+          lock: { mode: 'pessimistic_write' },
+        });
+        const originalTagIds = new Set(originalTags.map((tag) => tag.tagId));
+
+        // 3. 先校验新分类和完整标签集合，通过后才允许执行写入。
+        await this.validateUpdateTransactionRelations(
+          manager,
+          transaction,
+          categoryId,
+          uniqueTagIds,
+          originalTagIds,
+        );
+
+        // 4. UPDATE 再次限定流水id、用户归属和未删除状态，只更新可编辑字段。
+        // 金额经整数分转换为两位小数字符串；空标题和备注统一保存为 NULL。
+        const result = await transactionRepo.update(
+          { id: transactionId, ownerUserId: userId, archivedTime: IsNull() },
+          {
+            categoryId,
+            amount: normalizeAmount(amount),
+            occurredDate,
+            title: this.normalizeTransactionText(title),
+            remark: this.normalizeTransactionText(remark),
+          },
+        );
+
+        // 参数合法不代表写入成功；必须确认只更新了一行，否则抛错触发回滚。
+        if (result.affected !== 1) {
+          throw new InternalServerErrorException('编辑流水失败，请重新尝试');
+        }
+
+        // 5. 计算标签差异：旧 [3, 5]、新 [3, 9] 时，只删除5、新增9，保留3。
+        // 保留项不重新插入，原有已归档标签的历史关联因此也不会被改写。
+        const nextTagIds = new Set(uniqueTagIds);
+        const removedTagIds = [...originalTagIds].filter(
+          (tagId) => !nextTagIds.has(tagId),
+        );
+        const addedTagIds = uniqueTagIds.filter(
+          (tagId) => !originalTagIds.has(tagId),
+        );
+
+        if (removedTagIds.length > 0) {
+          await transactionTagRepo.delete({
+            transactionId,
+            tagId: In(removedTagIds),
+          });
+        }
+        await this.bindTransactionTags(manager, transactionId, addedTagIds);
+
+        // 6. 回调正常结束时 TypeORM 提交事务；流水或标签任一步抛错时整体回滚。
+      });
+    } catch (error) {
+      // 事务回滚后再处理响应：保留明确的业务错误，数据库异常转为统一编辑失败。
+      if (
+        error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('编辑流水失败，请重新尝试', {
         cause: error,
       });
     }
