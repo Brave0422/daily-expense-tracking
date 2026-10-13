@@ -11,13 +11,19 @@ import type { DailyTransactionItem } from '@/api/transaction.types'
 
 const mocks = vi.hoisted(() => ({
   getUserCategories: vi.fn<typeof import('@/api/category.api').getUserCategories>(),
-  getUserTags: vi.fn<typeof import('@/api/tag.api').getUserTags>(),
+  checkTagName: vi.fn<typeof import('@/api/tag.api').checkTagName>(),
+  createTag: vi.fn<typeof import('@/api/tag.api').createTag>(),
+  updateTag: vi.fn<typeof import('@/api/tag.api').updateTag>(),
   createTransaction: vi.fn<typeof import('@/api/transaction.api').createTransaction>(),
   updateTransaction: vi.fn<typeof import('@/api/transaction.api').updateTransaction>(),
-  success: vi.fn().mockResolvedValue(undefined),
+  success: vi.fn<(message: string) => Promise<void>>().mockResolvedValue(undefined),
 }))
 vi.mock('@/api/category.api', () => ({ getUserCategories: mocks.getUserCategories }))
-vi.mock('@/api/tag.api', () => ({ getUserTags: mocks.getUserTags }))
+vi.mock('@/api/tag.api', () => ({
+  checkTagName: mocks.checkTagName,
+  createTag: mocks.createTag,
+  updateTag: mocks.updateTag,
+}))
 vi.mock('@/api/transaction.api', () => ({
   createTransaction: mocks.createTransaction,
   updateTransaction: mocks.updateTransaction,
@@ -104,14 +110,6 @@ function mountForm(
               emits: ['change'],
               template: '<div />',
             },
-        TSelect: useRealControls
-          ? false
-          : {
-              name: 'TSelect',
-              props: ['value', 'options', 'disabled'],
-              emits: ['change'],
-              template: '<div />',
-            },
         TDatePicker: {
           name: 'TDatePicker',
           props: ['value', 'disabled'],
@@ -133,6 +131,12 @@ async function fillRequired(wrapper: VueWrapper, amount = '17.28') {
   wrapper.getComponent({ name: 'TCascader' }).vm.$emit('change', 2)
   await wrapper.get('#transaction-form-amount').setValue(amount)
 }
+async function addTag(wrapper: VueWrapper, name = '工作') {
+  await wrapper.get('.transaction-form__add-tag').trigger('click')
+  await wrapper.get('#tag-name').setValue(name)
+  await wrapper.get('.tag-form').trigger('submit')
+  await flushPromises()
+}
 
 describe('TransactionFormDialog', () => {
   beforeEach(() => {
@@ -142,10 +146,7 @@ describe('TransactionFormDialog', () => {
     mocks.getUserCategories
       .mockReset()
       .mockImplementation(async (type) => (type === 'expense' ? [expense] : [income]))
-    mocks.getUserTags.mockReset().mockResolvedValue([
-      { id: 7, name: '工作' },
-      { id: 8, name: '旧标签', archived: true },
-    ])
+    mocks.checkTagName.mockReset().mockResolvedValue(null)
     mocks.createTransaction.mockReset().mockResolvedValue(undefined)
     mocks.updateTransaction.mockReset().mockResolvedValue(undefined)
   })
@@ -158,16 +159,14 @@ describe('TransactionFormDialog', () => {
     const wrapper = mountForm()
     await flushPromises()
     expect(mocks.getUserCategories).toHaveBeenCalledWith('expense')
-    expect(mocks.getUserTags).toHaveBeenCalledWith()
     expect(wrapper.getComponent({ name: 'TDatePicker' }).props('value')).toBe('2026-10-12')
     expect(wrapper.get('.transaction-form__segments button').attributes('aria-pressed')).toBe(
       'true',
     )
     const cascader = wrapper.getComponent({ name: 'TCascader' })
     expect(JSON.stringify(cascader.props('options'))).not.toContain('旧分类')
-    expect(wrapper.getComponent({ name: 'TSelect' }).props('options')).toEqual([
-      { value: 7, label: '工作' },
-    ])
+    expect(wrapper.findComponent({ name: 'TSelect' }).exists()).toBe(false)
+    expect(wrapper.text()).toContain('添加标签')
     cascader.vm.$emit('change', 2)
     await wrapper.findAll('.transaction-form__segments button')[1]?.trigger('click')
     expect(cascader.props('value')).toBeUndefined()
@@ -179,7 +178,12 @@ describe('TransactionFormDialog', () => {
     await fillRequired(wrapper, '9999999999999.99')
     await wrapper.get('#transaction-form-title').setValue(' 午餐 ')
     await wrapper.get('#transaction-form-remark').setValue(' 折扣 ')
-    wrapper.getComponent({ name: 'TSelect' }).vm.$emit('change', [7, 7])
+    await addTag(wrapper, ' 去新西兰旅游 ')
+    await addTag(wrapper, '去新西兰旅游')
+    expect(wrapper.text()).toContain('当前流水已添加该标签')
+    await wrapper.get('.tag-form__actions button').trigger('click')
+    expect(mocks.checkTagName).toHaveBeenCalledWith({ name: '去新西兰旅游' })
+    expect(wrapper.findAll('.tag-list-item')).toHaveLength(1)
     wrapper.getComponent({ name: 'TDatePicker' }).vm.$emit('change', '2024-02-29')
     await wrapper.get('form').trigger('submit')
     await flushPromises()
@@ -189,7 +193,8 @@ describe('TransactionFormDialog', () => {
       amount: '9999999999999.99',
       occurredDate: '2024-02-29',
       title: '午餐',
-      tagIds: [7],
+      tagIds: [],
+      tagNames: ['去新西兰旅游'],
       remark: '折扣',
     })
     expect(wrapper.emitted('submit-success')).toHaveLength(1)
@@ -213,6 +218,82 @@ describe('TransactionFormDialog', () => {
       tagIds: [],
       remark: null,
     })
+  })
+
+  it('自由输入名称校验空白和超长字符，允许50个Unicode字符', async () => {
+    const wrapper = mountForm()
+    await flushPromises()
+    await wrapper.get('.transaction-form__add-tag').trigger('click')
+    await wrapper.get('#tag-name').setValue('   ')
+    await wrapper.get('.tag-form').trigger('submit')
+    expect(wrapper.text()).toContain('请输入标签名称')
+    await wrapper.get('#tag-name').setValue('😀'.repeat(51))
+    await wrapper.get('.tag-form').trigger('submit')
+    expect(wrapper.text()).toContain('标签名称不能超过50个字符')
+    expect(mocks.checkTagName).not.toHaveBeenCalled()
+    await wrapper.get('#tag-name').setValue('😀'.repeat(50))
+    await wrapper.get('.tag-form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.findAll('.tag-list-item')).toHaveLength(1)
+  })
+
+  it('添加标签失败保留名称和流水草稿，提交期间阻止重复和关闭底层弹窗', async () => {
+    let rejectRequest = (_error: Error): void => {
+      throw new Error('请求未初始化')
+    }
+    mocks.checkTagName.mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectRequest = reject
+        }),
+    )
+    const wrapper = mountForm()
+    await fillRequired(wrapper)
+    await wrapper.get('.transaction-form__add-tag').trigger('click')
+    await wrapper.get('#tag-name').setValue('去新西兰旅游')
+    await wrapper.get('.tag-form').trigger('submit')
+    await wrapper.get('.tag-form').trigger('submit')
+    await wrapper.get('.transaction-form').trigger('submit')
+    expect(mocks.checkTagName).toHaveBeenCalledTimes(1)
+    expect(mocks.createTransaction).not.toHaveBeenCalled()
+    const dialogs = wrapper
+      .findAllComponents({ name: 'TDialog' })
+      .filter((dialog) => dialog.props('visible'))
+    for (const dialog of dialogs) {
+      expect(dialog.props('closeOnEscKeydown')).toBe(false)
+      dialog.vm.$emit('update:visible', false)
+    }
+    expect(wrapper.emitted('update:visible')).toBeUndefined()
+    rejectRequest(new Error('添加标签失败'))
+    await flushPromises()
+    expect(wrapper.text()).toContain('添加标签失败')
+    expect(wrapper.get<HTMLInputElement>('#tag-name').element.value).toBe('去新西兰旅游')
+    expect(wrapper.get<HTMLInputElement>('#transaction-form-amount').element.value).toBe('17.28')
+    await wrapper.get('.tag-form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.get('.tag-list-item').text()).toContain('去新西兰旅游')
+  })
+
+  it('切换编辑记录后迟到的标签响应不会加入新记录', async () => {
+    let resolveRequest = (_tag: import('@/api/tag.types').UserTag): void => {
+      throw new Error('请求未初始化')
+    }
+    mocks.checkTagName.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve
+        }),
+    )
+    const wrapper = mountForm(true, archivedTransaction)
+    await flushPromises()
+    await wrapper.get('.transaction-form__add-tag').trigger('click')
+    await wrapper.get('#tag-name').setValue('旅行')
+    await wrapper.get('.tag-form').trigger('submit')
+    await wrapper.setProps({ transaction: { ...archivedTransaction, id: 102, tags: [] } })
+    resolveRequest({ id: 7, name: '旅行', archived: false })
+    await flushPromises()
+    expect(wrapper.find('.tag-list-item').exists()).toBe(false)
+    expect(wrapper.find('.tag-form').exists()).toBe(false)
   })
 
   it.each(['0', '0.00', '-1', '1.001', '1e3', '10000000000000'])(
@@ -309,7 +390,6 @@ describe('TransactionFormDialog', () => {
     expect(wrapper.get('.transaction-form__readonly-type').text()).toContain('支出')
     expect(mocks.getUserCategories).toHaveBeenCalledWith('expense', true)
     expect(mocks.getUserCategories).toHaveBeenCalledTimes(1)
-    expect(mocks.getUserTags).toHaveBeenCalledWith(true)
     expect(wrapper.getComponent({ name: 'TCascader' }).props('value')).toBe(4)
     expect(JSON.stringify(wrapper.getComponent({ name: 'TCascader' }).props('options'))).toContain(
       '旧分类（已归档）',
@@ -320,7 +400,7 @@ describe('TransactionFormDialog', () => {
       '原备注',
     )
     expect(wrapper.getComponent({ name: 'TDatePicker' }).props('value')).toBe('2026-10-11')
-    expect(wrapper.getComponent({ name: 'TSelect' }).props('value')).toEqual([8])
+    expect(wrapper.get('.tag-list-item').text()).toContain('旧标签（已归档）')
     await wrapper.get('form').trigger('submit')
     await flushPromises()
     expect(mocks.updateTransaction).toHaveBeenCalledWith(101, {
@@ -341,7 +421,7 @@ describe('TransactionFormDialog', () => {
     const wrapper = mountForm(true, original)
     await flushPromises()
     wrapper.getComponent({ name: 'TCascader' }).vm.$emit('change', 2)
-    wrapper.getComponent({ name: 'TSelect' }).vm.$emit('change', [])
+    await wrapper.get('.tag-list-item__delete').trigger('click')
     await wrapper.get('#transaction-form-title').setValue('  ')
     await wrapper.get('#transaction-form-remark').setValue('')
     await wrapper.get('#transaction-form-amount').setValue('9999999999999.99')
@@ -359,26 +439,104 @@ describe('TransactionFormDialog', () => {
     expect(original).toEqual(archivedTransaction)
   })
 
-  it('归档标签可移除但不能重新新增，也不显示其他未绑定的归档标签', async () => {
-    mocks.getUserTags.mockResolvedValue([
-      { id: 7, name: '工作' },
-      { id: 8, name: '旧标签', archived: true },
-      { id: 9, name: '其他旧标签', archived: true },
-    ])
+  it('归档标签可移除，同名未归档标签须确认复用后才能加入草稿', async () => {
+    mocks.checkTagName.mockResolvedValue({ id: 7, name: '旧标签', archived: false })
     const wrapper = mountForm(true, archivedTransaction)
     await flushPromises()
-    const select = wrapper.getComponent({ name: 'TSelect' })
-    expect(JSON.stringify(select.props('options'))).not.toContain('其他旧标签')
-    select.vm.$emit('change', [7])
+    await wrapper.get('.tag-list-item__delete').trigger('click')
+    await addTag(wrapper, '旧标签')
+    expect(wrapper.text()).toContain('确认继续使用吗')
+    expect(wrapper.find('.tag-list-item').exists()).toBe(false)
+    await wrapper.get('.tag-reuse-dialog__actions button:last-child').trigger('click')
+    expect(wrapper.get('.tag-list-item').text()).toContain('旧标签')
+    expect(wrapper.text()).not.toContain('已归档')
+    await wrapper.get('.transaction-form').trigger('submit')
     await flushPromises()
-    expect(select.props('options')).toContainEqual({
-      value: 8,
-      label: '旧标签（已归档）',
-      disabled: true,
-    })
-    select.vm.$emit('change', [7, 8, 9])
+    expect(mocks.updateTransaction).toHaveBeenCalledWith(
+      101,
+      expect.objectContaining({ tagIds: [7] }),
+    )
+  })
+
+  it('同名确认可以取消，保留输入；确认继续使用后不展示保存成功提示', async () => {
+    mocks.checkTagName.mockResolvedValue({ id: 7, name: '去新西兰旅游', archived: false })
+    const wrapper = mountForm()
+    await fillRequired(wrapper)
+    await addTag(wrapper, '去新西兰旅游')
+    expect(wrapper.text()).toContain('已经存在同名标签')
+    await wrapper.get('.tag-reuse-dialog__actions button:first-child').trigger('click')
+    expect(wrapper.get<HTMLInputElement>('#tag-name').element.value).toBe('去新西兰旅游')
+    expect(wrapper.find('.tag-list-item').exists()).toBe(false)
+    await wrapper.get('.tag-form').trigger('submit')
     await flushPromises()
-    expect(select.props('value')).toEqual([7])
+    await wrapper.get('.tag-reuse-dialog__actions button:last-child').trigger('click')
+    expect(wrapper.findAll('.tag-list-item')).toHaveLength(1)
+    expect(mocks.success).not.toHaveBeenCalled()
+    expect(mocks.createTransaction).not.toHaveBeenCalled()
+    await wrapper.get('.transaction-form').trigger('submit')
+    await flushPromises()
+    expect(mocks.createTransaction).toHaveBeenCalledWith(expect.objectContaining({ tagIds: [7] }))
+  })
+
+  it('点击新标签编辑草稿，支持200px宽度，取消流水不触发数据库写入', async () => {
+    const wrapper = mountForm()
+    await fillRequired(wrapper)
+    await addTag(wrapper, '旅行')
+    expect(wrapper.get('.tag-list-item').attributes('style')).toContain('max-width: 200px')
+    await wrapper.get('.tag-list-item__content').trigger('click')
+    expect(wrapper.get<HTMLInputElement>('#tag-name').element.value).toBe('旅行')
+    await wrapper.get('#tag-name').setValue('新西兰旅行')
+    await wrapper.get('.tag-form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.findAll('.tag-list-item')).toHaveLength(1)
+    expect(wrapper.get('.tag-list-item').text()).toContain('新西兰旅行')
+    expect(mocks.success).not.toHaveBeenCalled()
+    await wrapper.get('.transaction-form__actions button:first-child').trigger('click')
+    expect(mocks.createTransaction).not.toHaveBeenCalled()
+    expect(mocks.updateTransaction).not.toHaveBeenCalled()
+    expect(mocks.createTag).not.toHaveBeenCalled()
+    expect(mocks.updateTag).not.toHaveBeenCalled()
+  })
+
+  it('新草稿保存遇到并发重名后，编辑原名称仍然重新查重并询问复用', async () => {
+    const wrapper = mountForm()
+    await fillRequired(wrapper)
+    await addTag(wrapper, '新西兰旅行')
+    mocks.createTransaction.mockRejectedValueOnce(
+      new Error('标签已存在，请重新编辑该标签并确认是否继续使用'),
+    )
+    await wrapper.get('.transaction-form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.get('.tag-list-item').text()).toContain('新西兰旅行')
+    mocks.checkTagName.mockResolvedValueOnce({ id: 7, name: '新西兰旅行', archived: false })
+    await wrapper.get('.tag-list-item__content').trigger('click')
+    await wrapper.get('.tag-form').trigger('submit')
+    await flushPromises()
+    expect(wrapper.text()).toContain('已经存在同名标签')
+    await wrapper.get('.tag-reuse-dialog__actions button:last-child').trigger('click')
+    await wrapper.get('.transaction-form').trigger('submit')
+    await flushPromises()
+    expect(mocks.createTransaction).toHaveBeenLastCalledWith(
+      expect.objectContaining({ tagIds: [7] }),
+    )
+    expect(mocks.createTransaction.mock.calls[1]?.[0]).not.toHaveProperty('tagNames')
+  })
+
+  it('编辑已关联标签只更换当前流水草稿，提交新名称并移除原id', async () => {
+    const wrapper = mountForm(true, archivedTransaction)
+    await flushPromises()
+    await wrapper.get('.tag-list-item__content').trigger('click')
+    await wrapper.get('#tag-name').setValue('新西兰旅行')
+    await wrapper.get('.tag-form').trigger('submit')
+    await flushPromises()
+    expect(archivedTransaction.tags[0]?.name).toBe('旧标签')
+    expect(mocks.updateTransaction).not.toHaveBeenCalled()
+    await wrapper.get('.transaction-form').trigger('submit')
+    await flushPromises()
+    expect(mocks.updateTransaction).toHaveBeenCalledWith(
+      101,
+      expect.objectContaining({ tagIds: [], tagNames: ['新西兰旅行'] }),
+    )
   })
 
   it('原父分类已归档时仅允许保留原子分类，不允许选择同父类下其他子分类', async () => {
@@ -486,7 +644,7 @@ describe('TransactionFormDialog', () => {
     await flushPromises()
     expect(wrapper.getComponent({ name: 'TDialog' }).props('header')).toBe('新增流水')
     expect(wrapper.find('.transaction-form__readonly-type').exists()).toBe(false)
-    expect(wrapper.getComponent({ name: 'TSelect' }).props('value')).toEqual([])
+    expect(wrapper.find('.tag-list-item').exists()).toBe(false)
     expect(wrapper.getComponent({ name: 'TCascader' }).props('value')).toBeUndefined()
     expect(wrapper.get<HTMLInputElement>('#transaction-form-amount').element.value).toBe('')
     expect(wrapper.getComponent({ name: 'TDatePicker' }).props('value')).toBe('2026-10-12')
@@ -497,16 +655,10 @@ describe('TransactionFormDialog', () => {
     await flushPromises()
     const cascader = wrapper.getComponent({ name: 'TCascader' })
     expect(cascader.get<HTMLInputElement>('input').element.value).toContain('旧分类（已归档）')
-    const select = wrapper.getComponent({ name: 'TSelect' })
-    expect(select.get('.t-tag').text()).toContain('旧标签（已归档）')
-    await select.get('.t-tag__icon-close').trigger('click')
+    expect(wrapper.get('.tag-list-item').text()).toContain('旧标签（已归档）')
+    await wrapper.get('.tag-list-item__delete').trigger('click')
     await flushPromises()
-    expect(select.props('value')).toEqual([])
-    expect(select.props('options')).toContainEqual({
-      value: 8,
-      label: '旧标签（已归档）',
-      disabled: true,
-    })
+    expect(wrapper.find('.tag-list-item').exists()).toBe(false)
     await wrapper.get('form').trigger('submit')
     await flushPromises()
     expect(mocks.updateTransaction).toHaveBeenCalledWith(
@@ -552,7 +704,7 @@ describe('TransactionFormDialog', () => {
     expect(wrapper.getComponent({ name: 'TCascader' }).props('options')).toEqual([
       { value: 3, label: '工资' },
     ])
-    expect(wrapper.getComponent({ name: 'TSelect' }).props('value')).toEqual([])
+    expect(wrapper.find('.tag-list-item').exists()).toBe(false)
     await wrapper.get('form').trigger('submit')
     await flushPromises()
     expect(mocks.updateTransaction).toHaveBeenCalledWith(

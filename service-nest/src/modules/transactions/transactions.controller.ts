@@ -47,8 +47,16 @@ export class TransactionsController {
     @CurrentUserId() userId: number,
     @Body() body: CreateTransactionDto,
   ): Promise<void> {
-    const { type, categoryId, amount, occurredDate, title, tagIds, remark } =
-      body;
+    const {
+      type,
+      categoryId,
+      amount,
+      occurredDate,
+      title,
+      tagIds,
+      remark,
+      tagNames,
+    } = body;
     return this.transactionsService.createTransaction(
       userId,
       type,
@@ -58,6 +66,7 @@ export class TransactionsController {
       title,
       tagIds,
       remark,
+      tagNames,
     );
   }
 
@@ -76,7 +85,15 @@ export class TransactionsController {
     @Param() params: TransactionIdParamDto,
     @Body() body: UpdateTransactionDto,
   ): Promise<void> {
-    const { categoryId, amount, occurredDate, title, tagIds, remark } = body;
+    const {
+      categoryId,
+      amount,
+      occurredDate,
+      title,
+      tagIds,
+      remark,
+      tagNames,
+    } = body;
     return this.transactionsService.updateTransaction(
       userId,
       params.id,
@@ -86,6 +103,7 @@ export class TransactionsController {
       title,
       tagIds,
       remark,
+      tagNames,
     );
   }
 

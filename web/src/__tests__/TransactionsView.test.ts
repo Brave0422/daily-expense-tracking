@@ -186,6 +186,31 @@ describe('TransactionsView', () => {
     vi.useRealTimers()
   })
 
+  it('流水提交成功后更新筛选选项，迟到的旧标签请求不覆盖新列表', async () => {
+    let resolveOldTags = (_tags: import('@/api/tag.types').UserTag[]): void => {
+      throw new Error('请求未初始化')
+    }
+    apiMocks.getUserTags.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveOldTags = resolve
+        }),
+    )
+    const wrapper = mountPage()
+    await flushPromises()
+    apiMocks.getUserTags.mockResolvedValueOnce([{ id: 7, name: '去新西兰旅游', archived: false }])
+    wrapper.getComponent(TransactionFormDialog).vm.$emit('submit-success')
+    await flushPromises()
+    expect(wrapper.getComponent({ name: 'TSelect' }).props('options')).toEqual([
+      { value: 7, label: '去新西兰旅游' },
+    ])
+    resolveOldTags([{ id: 1, name: '办公设备', archived: true }])
+    await flushPromises()
+    expect(wrapper.getComponent({ name: 'TSelect' }).props('options')).toEqual([
+      { value: 7, label: '去新西兰旅游' },
+    ])
+  })
+
   it('两种合计使用各自接口数据，展示分类标题、标签、备注与正确星期', async () => {
     const wrapper = mountPage()
     await flushPromises()

@@ -6,6 +6,7 @@
 
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -29,6 +30,7 @@ import {
 } from '../../common/util/escapeLikePattern';
 import { UserCategoryEntity } from '../categories/entities/user-category.entity';
 import { TagEntity } from '../tags/entities/tag.entity';
+import { UserEntity } from '../users/entities/user.entity';
 import { TransactionTagEntity } from './entities/transaction-tag.entity';
 import {
   normalizeAmount,
@@ -1232,8 +1234,54 @@ export class TransactionsService {
     await transactionTagRepo.save(transactionTags);
   }
 
+  /** 锁定标签名称写入所属用户，与配置管理的创建、改名采用相同顺序。 */
+  private async lockTagNames(
+    manager: EntityManager,
+    userId: number,
+  ): Promise<void> {
+    const user = await manager.getRepository(UserEntity).findOne({
+      select: { id: true },
+      where: { id: userId },
+      lock: { mode: 'pessimistic_write' },
+    });
+    if (!user) throw new BadRequestException('用户不存在');
+  }
+
   /**
-   * 创建流水并绑定已有标签；成功后由前端重新查询账单，不返回流水数据。
+   * 在保存流水的同一事务中创建草稿标签；未经用户确认的同名项不能静默复用。
+   * @param manager 已锁定当前用户的事务管理器
+   * @param userId 当前登录用户id
+   * @param names 待创建的标签名称，DTO已校验长度和非空
+   * @returns 新标签id；重名时拒绝整个保存并要求用户返回编辑标签确认复用
+   */
+  private async createDraftTags(
+    manager: EntityManager,
+    userId: number,
+    names: string[],
+  ): Promise<number[]> {
+    const tagRepo = manager.getRepository(TagEntity);
+    const ids: number[] = [];
+    for (const name of new Set(names.map((name) => name.trim()))) {
+      const existing = await tagRepo.findOne({
+        select: { id: true },
+        where: { ownerUserId: userId, name, archivedTime: IsNull() },
+        lock: { mode: 'pessimistic_read' },
+      });
+      if (existing) {
+        throw new ConflictException(
+          `标签“${name}”已存在，请重新编辑该标签并确认是否继续使用`,
+        );
+      }
+      const tag = await tagRepo.save(
+        tagRepo.create({ ownerUserId: userId, name }),
+      );
+      ids.push(tag.id);
+    }
+    return ids;
+  }
+
+  /**
+   * 在同一事务中创建流水、新标签并建立关联；成功后由前端重新查询账单。
    *
    * @param userId 当前登录用户id，由认证上下文提供
    * @param type 流水类型，expense 表示支出，income 表示收入
@@ -1241,8 +1289,9 @@ export class TransactionsService {
    * @param amount 大于0的金额字符串，最多13位整数和2位小数
    * @param occurredDate 实际发生日期，格式为 YYYY-MM-DD
    * @param title 可选流水标题，空文本或未提供时保存为 NULL
-   * @param tagIds 可选已有标签id；不传或空数组表示不绑定标签
+   * @param tagIds 可选已有标签id，与tagNames生成的标签共同建立关联
    * @param remark 可选备注，空文本或未提供时保存为 NULL
+   * @param tagNames 待创建的名称草稿，未确认的重名标签不能静默复用
    * @returns 流水和全部标签关联提交成功后异步结束，无返回值；失败时回滚并抛出异常
    */
   async createTransaction(
@@ -1254,6 +1303,7 @@ export class TransactionsService {
     title?: string | null,
     tagIds?: number[],
     remark?: string | null,
+    tagNames: string[] = [],
   ): Promise<void> {
     // 1. 校验并规范化参数。
     const data = this.validateCreateTransactionParams(
@@ -1270,7 +1320,11 @@ export class TransactionsService {
     try {
       // 关联校验和全部写入共用事务 manager，保证锁与事务边界一致。
       await this.transactionRepo.manager.transaction(async (manager) => {
+        if (tagNames.length) await this.lockTagNames(manager, userId);
         await this.validateCreateTransactionRelations(manager, data);
+        const newTagIds = tagNames.length
+          ? await this.createDraftTags(manager, userId, tagNames)
+          : [];
 
         // 2. 创建实体。
         const transactionRepo = manager.getRepository(TransactionEntity);
@@ -1280,17 +1334,19 @@ export class TransactionsService {
         const savedTransaction = await transactionRepo.save(transaction);
 
         // 4. 关联流水与标签。
-        await this.bindTransactionTags(
-          manager,
-          savedTransaction.id,
-          data.tagIds,
-        );
+        await this.bindTransactionTags(manager, savedTransaction.id, [
+          ...data.tagIds,
+          ...newTagIds,
+        ]);
 
         // 回调正常结束时自动提交；任一步抛出异常时自动回滚流水和全部关联。
       });
     } catch (error) {
-      // 保留业务校验的400错误，数据库异常才统一转换成创建失败。
-      if (error instanceof BadRequestException) {
+      // 保留字段校验和重名冲突，数据库异常才统一转换成创建失败。
+      if (
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
         throw error;
       }
 
@@ -1380,6 +1436,7 @@ export class TransactionsService {
    * @param title 流水标题，空文本规范化为 NULL
    * @param tagIds 编辑后的完整标签id集合；空数组表示移除全部标签
    * @param remark 补充备注，空文本规范化为 NULL
+   * @param tagNames 待创建的名称草稿，与已有标签合起来表示完整集合
    * @returns 流水和标签差异更新提交成功后异步结束，无响应数据；失败时回滚并抛出异常
    */
   async updateTransaction(
@@ -1391,6 +1448,7 @@ export class TransactionsService {
     title: string | null,
     tagIds: number[],
     remark: string | null,
+    tagNames: string[] = [],
   ): Promise<void> {
     // 1. DTO 校验完整请求的格式；服务层校验认证用户和路径id。
     if (!Number.isSafeInteger(userId) || userId <= 0) {
@@ -1406,6 +1464,7 @@ export class TransactionsService {
     try {
       // 后续查询、锁和写入都使用当前事务 manager，确保任一步失败都能整体回滚。
       await this.transactionRepo.manager.transaction(async (manager) => {
+        if (tagNames.length) await this.lockTagNames(manager, userId);
         const transactionRepo = manager.getRepository(TransactionEntity);
         // 2. 查询并锁定原流水；其他请求修改或删除同一行时必须等待事务结束。
         const transaction = await transactionRepo.findOne({
@@ -1441,6 +1500,10 @@ export class TransactionsService {
           uniqueTagIds,
           originalTagIds,
         );
+        const newTagIds = tagNames.length
+          ? await this.createDraftTags(manager, userId, tagNames)
+          : [];
+        const allTagIds = [...uniqueTagIds, ...newTagIds];
 
         // 4. UPDATE 再次限定流水id、用户归属和未删除状态，只更新可编辑字段。
         // 金额经整数分转换为两位小数字符串；空标题和备注统一保存为 NULL。
@@ -1462,11 +1525,11 @@ export class TransactionsService {
 
         // 5. 计算标签差异：旧 [3, 5]、新 [3, 9] 时，只删除5、新增9，保留3。
         // 保留项不重新插入，原有已归档标签的历史关联因此也不会被改写。
-        const nextTagIds = new Set(uniqueTagIds);
+        const nextTagIds = new Set(allTagIds);
         const removedTagIds = [...originalTagIds].filter(
           (tagId) => !nextTagIds.has(tagId),
         );
-        const addedTagIds = uniqueTagIds.filter(
+        const addedTagIds = allTagIds.filter(
           (tagId) => !originalTagIds.has(tagId),
         );
 
@@ -1484,6 +1547,7 @@ export class TransactionsService {
       // 事务回滚后再处理响应：保留明确的业务错误，数据库异常转为统一编辑失败。
       if (
         error instanceof BadRequestException ||
+        error instanceof ConflictException ||
         error instanceof InternalServerErrorException
       ) {
         throw error;

@@ -89,6 +89,7 @@ describe('TransactionsController', () => {
       '午餐',
       [3, 5],
       '优惠',
+      undefined,
     );
     expect(response.body).toMatchObject({
       success: true,
@@ -105,6 +106,59 @@ describe('TransactionsController', () => {
       .expect(401);
     expect(createTransaction).not.toHaveBeenCalled();
   });
+
+  it.each(['create', 'update'])(
+    '%s转发规范化的新标签草稿名称',
+    async (operation) => {
+      const req = request(app.getHttpServer());
+      await (
+        operation === 'create'
+          ? req.post('/transactions')
+          : req.patch('/transactions/101')
+      )
+        .set('Authorization', 'Bearer test-user')
+        .send({
+          ...body,
+          type: operation === 'update' ? undefined : body.type,
+          tagNames: [' 新西兰旅行 '],
+        })
+        .expect(200);
+      const calls =
+        operation === 'create'
+          ? createTransaction.mock.calls
+          : updateTransaction.mock.calls;
+      expect(calls[0]?.[8]).toEqual(['新西兰旅行']);
+    },
+  );
+
+  it.each(['create', 'update'])(
+    '%s拒绝非法的新标签名称数组',
+    async (operation) => {
+      for (const tagNames of [
+        null,
+        '旅行',
+        [123],
+        ['   '],
+        ['😀'.repeat(51)],
+      ]) {
+        const req = request(app.getHttpServer());
+        await (
+          operation === 'create'
+            ? req.post('/transactions')
+            : req.patch('/transactions/101')
+        )
+          .set('Authorization', 'Bearer test-user')
+          .send({
+            ...body,
+            type: operation === 'update' ? undefined : body.type,
+            tagNames,
+          })
+          .expect(400);
+      }
+      expect(createTransaction).not.toHaveBeenCalled();
+      expect(updateTransaction).not.toHaveBeenCalled();
+    },
+  );
 
   it.each([
     { type: 'all' },
@@ -173,6 +227,7 @@ describe('TransactionsController', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
     );
   });
 
@@ -196,6 +251,7 @@ describe('TransactionsController', () => {
       '😀'.repeat(50),
       [],
       null,
+      undefined,
     );
   });
 
@@ -237,6 +293,7 @@ describe('TransactionsController', () => {
         '午餐',
         [3, 5],
         '优惠',
+        undefined,
       );
       expect(response.body).toMatchObject({
         success: true,
@@ -359,6 +416,7 @@ describe('TransactionsController', () => {
         null,
         [],
         '',
+        undefined,
       );
     });
 
@@ -377,6 +435,7 @@ describe('TransactionsController', () => {
         '😀'.repeat(50),
         [3, 5],
         null,
+        undefined,
       );
     });
 

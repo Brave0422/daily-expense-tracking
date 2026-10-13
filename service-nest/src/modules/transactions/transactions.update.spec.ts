@@ -1,4 +1,8 @@
-/** 编辑流水的归属、归档关联、标签差异更新和事务失败测试。 */
+/**
+ * @author Brave
+ * @date 2026-10-13T15:41:08+08:00
+ * @description 编辑流水的归属、标签草稿持久化、归档关联与事务失败测试。
+ */
 import {
   BadRequestException,
   InternalServerErrorException,
@@ -7,6 +11,7 @@ import { EntityManager, In, IsNull, Repository } from 'typeorm';
 import type { DeepPartial } from 'typeorm';
 import { UserCategoryEntity } from '../categories/entities/user-category.entity';
 import { TagEntity } from '../tags/entities/tag.entity';
+import { UserEntity } from '../users/entities/user.entity';
 import { TransactionTagEntity } from './entities/transaction-tag.entity';
 import { TransactionEntity } from './entities/transaction.entity';
 import { TransactionType } from './enums/transaction-type-enum';
@@ -52,7 +57,12 @@ jest.mock(
 
 describe('TransactionsService.updateTransaction', () => {
   let categoryRepo: { findOne: jest.Mock };
-  let tagRepo: { find: jest.Mock };
+  let tagRepo: {
+    find: jest.Mock;
+    findOne: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+  };
   let transactionRepo: { findOne: jest.Mock; update: jest.Mock };
   let transactionTagRepo: {
     find: jest.Mock;
@@ -91,6 +101,11 @@ describe('TransactionsService.updateTransaction', () => {
         { id: 3, archivedTime },
         { id: 9, archivedTime: null },
       ]),
+      findOne: jest.fn().mockResolvedValue(null),
+      create: jest.fn((data: DeepPartial<TagEntity>) => data),
+      save: jest.fn((data: DeepPartial<TagEntity>) =>
+        Promise.resolve({ ...data, id: 10 }),
+      ),
     };
     transactionRepo = {
       findOne: jest.fn().mockResolvedValue({
@@ -109,6 +124,7 @@ describe('TransactionsService.updateTransaction', () => {
     };
     const repositories = new Map<unknown, unknown>([
       [UserCategoryEntity, categoryRepo],
+      [UserEntity, { findOne: jest.fn().mockResolvedValue({ id: 7 }) }],
       [TagEntity, tagRepo],
       [TransactionEntity, transactionRepo],
       [TransactionTagEntity, transactionTagRepo],
@@ -165,6 +181,54 @@ describe('TransactionsService.updateTransaction', () => {
     expect(transactionTagRepo.save).toHaveBeenCalledWith([
       { transactionId: 101, tagId: 9 },
     ]);
+  });
+
+  it('编辑流水时创建新名称标签，只绑定当前流水，完整操作共用同一事务', async () => {
+    tagRepo.find.mockResolvedValue([{ id: 3, archivedTime }]);
+    await service.updateTransaction(
+      7,
+      101,
+      13,
+      '17.28',
+      '2026-10-13',
+      null,
+      [3],
+      null,
+      ['新西兰旅行'],
+    );
+    expect(tagRepo.save).toHaveBeenCalledTimes(1);
+    expect(tagRepo.create).toHaveBeenCalledWith({
+      ownerUserId: 7,
+      name: '新西兰旅行',
+    });
+    expect(transactionTagRepo.save).toHaveBeenCalledWith([
+      { transactionId: 101, tagId: 10 },
+    ]);
+    expect(transactionTagRepo.delete).toHaveBeenCalledWith({
+      transactionId: 101,
+      tagId: In([5]),
+    });
+    expect(runTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('保存发现新名称重名时拒绝，不修改流水或标签关联', async () => {
+    tagRepo.findOne.mockResolvedValue({ id: 10 });
+    await expect(
+      service.updateTransaction(
+        7,
+        101,
+        13,
+        '17.28',
+        '2026-10-13',
+        null,
+        [],
+        null,
+        ['新西兰旅行'],
+      ),
+    ).rejects.toThrow('请重新编辑该标签并确认是否继续使用');
+    expect(transactionRepo.update).not.toHaveBeenCalled();
+    expect(transactionTagRepo.delete).not.toHaveBeenCalled();
+    expect(tagRepo.save).not.toHaveBeenCalled();
   });
 
   it('允许保留原已归档分类和标签，标签集合不变时不重写关联', async () => {

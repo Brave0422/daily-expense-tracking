@@ -5,7 +5,7 @@
  * @description 账单筛选卡片，按展示模式启用条件，加载历史分类标签并展示只读筛选合计。
  */
 
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Cascader as TCascader, Checkbox as TCheckbox, Select as TSelect } from 'tdesign-vue-next'
 import { getUserCategories } from '@/api/category.api'
 import type { UserCategory, UserCategoryTreeItem } from '@/api/category.types'
@@ -36,6 +36,7 @@ const props = defineProps<{
   isStale: boolean
   hasFailed: boolean
   hasFilters: boolean
+  tagsRevision?: number
 }>()
 const emit = defineEmits<{
   'update:filters': [filters: TransactionFilters]
@@ -55,6 +56,7 @@ const isTagsLoading = ref(false)
 const categoryError = ref('')
 const tagError = ref('')
 let isActive = true
+let tagsSequence = 0
 
 const isDailyFiltersDisabled = computed(() => props.mode === 'monthly')
 const categoryById = computed(
@@ -160,20 +162,22 @@ async function loadCategories(): Promise<void> {
     if (isActive) isCategoriesLoading.value = false
   }
 }
-/** 首次启用时加载全部历史标签，保留接口顺序。 */
+/** 首次启用和流水添加标签后加载全部历史标签，较旧响应不能覆盖新选项。 */
 async function loadTags(): Promise<void> {
-  if (isTagsLoading.value) return
+  const sequence = ++tagsSequence
   isTagsLoading.value = true
   tagError.value = ''
   try {
     const data = await getUserTags(true)
-    if (isActive) tags.value = data
+    if (isActive && sequence === tagsSequence) tags.value = data
   } catch (error) {
-    if (isActive) tagError.value = normalizeApiError(error, '标签加载失败').message
+    if (isActive && sequence === tagsSequence)
+      tagError.value = normalizeApiError(error, '标签加载失败').message
   } finally {
-    if (isActive) isTagsLoading.value = false
+    if (isActive && sequence === tagsSequence) isTagsLoading.value = false
   }
 }
+watch(() => props.tagsRevision, loadTags)
 onMounted(() => {
   void loadCategories()
   void loadTags()

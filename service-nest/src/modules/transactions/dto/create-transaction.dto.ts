@@ -16,6 +16,7 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
   ValidateIf,
 } from 'class-validator';
 import { TransactionType } from '../enums/transaction-type-enum';
@@ -64,6 +65,17 @@ export class CreateTransactionDto {
   @Min(1, { each: true })
   @Max(Number.MAX_SAFE_INTEGER, { each: true })
   tagIds?: number[];
+
+  /** 标签草稿名称，只在流水提交事务中创建。 */
+  @Transform(({ value }: { value: unknown }) =>
+    Array.isArray(value) ? value.map((name: unknown) => trimText(name)) : value,
+  )
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsArray({ message: '新标签名称必须是数组' })
+  @IsString({ each: true, message: '标签名称必须是字符串' })
+  @MinLength(1, { each: true, message: '标签名称不能为空' })
+  @MaxLength(50, { each: true, message: '标签名称不能超过50个字符' })
+  tagNames?: string[];
 
   @Transform(({ value }: { value: unknown }) => trimText(value))
   @IsOptional()

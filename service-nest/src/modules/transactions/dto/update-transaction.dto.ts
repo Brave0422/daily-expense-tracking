@@ -1,4 +1,8 @@
-/** 编辑流水必须完整提交可编辑字段，空文本使用 NULL 或空字符串。 */
+/**
+ * @author Brave
+ * @date 2026-10-12T22:36:17+08:00
+ * @description 编辑流水的完整请求校验，支持随流水保存的新标签名称草稿。
+ */
 import { Transform } from 'class-transformer';
 import {
   Equals,
@@ -11,6 +15,7 @@ import {
   Max,
   MaxLength,
   Min,
+  MinLength,
   ValidateIf,
 } from 'class-validator';
 
@@ -50,6 +55,21 @@ export class UpdateTransactionDto {
   @Min(1, { each: true })
   @Max(Number.MAX_SAFE_INTEGER, { each: true })
   tagIds!: number[];
+
+  /** 待创建的草稿名称，与tagIds合起来构成保存后的完整标签集合。 */
+  @Transform(({ value }: { value: unknown }) =>
+    Array.isArray(value)
+      ? value.map((name: unknown) =>
+          typeof name === 'string' ? name.trim() : name,
+        )
+      : value,
+  )
+  @ValidateIf((_object, value: unknown) => value !== undefined)
+  @IsArray({ message: '新标签名称必须是数组' })
+  @IsString({ each: true, message: '标签名称必须是字符串' })
+  @MinLength(1, { each: true, message: '标签名称不能为空' })
+  @MaxLength(50, { each: true, message: '标签名称不能超过50个字符' })
+  tagNames?: string[];
 
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,

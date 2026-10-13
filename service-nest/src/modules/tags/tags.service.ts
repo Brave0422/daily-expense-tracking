@@ -11,8 +11,16 @@ import {
 } from '@nestjs/common';
 import { TagEntity } from './entities/tag.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, IsNull, Not, Repository, Raw } from 'typeorm';
+import {
+  EntityManager,
+  FindOptionsWhere,
+  IsNull,
+  Not,
+  Repository,
+  Raw,
+} from 'typeorm';
 import type { TagFilterListItem, TagListItem } from './types/tag.types';
+import { UserEntity } from '../users/entities/user.entity';
 import {
   LIKE_ESCAPE_CHARACTER,
   escapeLikePattern,
@@ -37,8 +45,12 @@ export class TagsService {
    * @param userId 当前登录用户id，由认证上下文提供
    * @returns 标签存在时异步结束，无返回值；标签不可用时抛出异常
    */
-  private async assertExistsById(id: number, userId: number): Promise<void> {
-    const result = await this.tagRepo.existsBy({
+  private async assertExistsById(
+    id: number,
+    userId: number,
+    tagRepo = this.tagRepo,
+  ): Promise<void> {
+    const result = await tagRepo.existsBy({
       id,
       ownerUserId: userId,
       archivedTime: IsNull(),
@@ -60,8 +72,9 @@ export class TagsService {
     name: string,
     userId: number,
     excludedId?: number,
+    tagRepo = this.tagRepo,
   ): Promise<void> {
-    const result = await this.tagRepo.existsBy({
+    const result = await tagRepo.existsBy({
       name,
       ownerUserId: userId,
       archivedTime: IsNull(),
@@ -70,6 +83,30 @@ export class TagsService {
     if (result) {
       throw new BadRequestException('已经存在同名标签');
     }
+  }
+
+  /**
+   * 在事务内锁定当前用户，串行执行标签名称写入，避免并发创建或改名产生重名。
+   * @param userId 当前登录用户id
+   * @param action 获得锁后使用同一事务标签仓库执行的操作
+   * @returns 操作结果；异常时回滚事务并释放锁
+   */
+  private async withUserTagLock<T>(
+    userId: number,
+    action: (tagRepo: Repository<TagEntity>) => Promise<T>,
+  ): Promise<T> {
+    return this.tagRepo.manager.transaction(
+      'READ COMMITTED',
+      async (manager: EntityManager) => {
+        const user = await manager.getRepository(UserEntity).findOne({
+          select: { id: true },
+          where: { id: userId },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!user) throw new BadRequestException('用户不存在');
+        return action(manager.getRepository(TagEntity));
+      },
+    );
   }
 
   /**
@@ -136,18 +173,39 @@ export class TagsService {
    * @returns 标签创建完成后异步结束，无返回值
    */
   async create(userId: number, name: string): Promise<void> {
-    await this.checkSameName(name, userId);
-
     try {
-      // 创建标签数据
-      const entity = this.tagRepo.create({
-        ownerUserId: userId,
-        name,
+      await this.withUserTagLock(userId, async (tagRepo) => {
+        await this.checkSameName(name, userId, undefined, tagRepo);
+        const entity = tagRepo.create({ ownerUserId: userId, name });
+        await tagRepo.save(entity);
       });
-
-      await this.tagRepo.save(entity);
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       throw new InternalServerErrorException('创建标签失败，请重新尝试', {
+        cause: error,
+      });
+    }
+  }
+
+  /**
+   * 为流水草稿查询同名标签，不执行任何写入。
+   * @param userId 当前登录用户id
+   * @param name 已由DTO去除首尾空格并校验的标签名称
+   * @returns 同名未归档标签的公开字段；不存在时返回null
+   */
+  async checkName(
+    userId: number,
+    name: string,
+  ): Promise<TagFilterListItem | null> {
+    try {
+      const tag = await this.tagRepo.findOne({
+        select: { id: true, name: true },
+        where: { ownerUserId: userId, name, archivedTime: IsNull() },
+      });
+      return tag ? { id: tag.id, name: tag.name, archived: false } : null;
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new InternalServerErrorException('检查标签名称失败，请重新尝试', {
         cause: error,
       });
     }
@@ -162,21 +220,24 @@ export class TagsService {
    * @returns 标签名称更新完成后异步结束，无返回值
    */
   async update(id: number, userId: number, name: string): Promise<void> {
-    await this.assertExistsById(id, userId);
-    await this.checkSameName(name, userId, id);
-
     try {
-      // 更新标签时再次限定所属用户和归档状态，避免并发状态变化导致越界更新。
-      const result = await this.tagRepo.update(
-        { id, ownerUserId: userId, archivedTime: IsNull() },
-        { name },
-      );
-
-      if (result.affected !== 1) {
-        throw new InternalServerErrorException('编辑标签失败，请重新尝试');
-      }
+      await this.withUserTagLock(userId, async (tagRepo) => {
+        await this.assertExistsById(id, userId, tagRepo);
+        await this.checkSameName(name, userId, id, tagRepo);
+        // 更新时再次限定归属和归档状态，避免并发归档后仍然修改名称。
+        const result = await tagRepo.update(
+          { id, ownerUserId: userId, archivedTime: IsNull() },
+          { name },
+        );
+        if (result.affected !== 1) {
+          throw new InternalServerErrorException('编辑标签失败，请重新尝试');
+        }
+      });
     } catch (error) {
-      if (error instanceof InternalServerErrorException) {
+      if (
+        error instanceof InternalServerErrorException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       throw new InternalServerErrorException('编辑标签失败，请重新尝试', {

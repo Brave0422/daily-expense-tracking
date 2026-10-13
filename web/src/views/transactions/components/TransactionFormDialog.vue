@@ -2,7 +2,7 @@
 /**
  * @author Brave
  * @date 2026-10-12T22:10:43+08:00
- * @description 新增与编辑流水共用弹窗，校验草稿、处理归档关联并提交，成功后通知页面刷新。
+ * @description 新增与编辑流水共用弹窗，处理自由输入标签、归档关联和草稿校验，成功后通知页面刷新。
  */
 
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
@@ -12,13 +12,11 @@ import {
   DatePicker as TDatePicker,
   Dialog as TDialog,
   MessagePlugin,
-  Select as TSelect,
 } from 'tdesign-vue-next'
 import { getUserCategories } from '@/api/category.api'
 import type { CategoryType, UserCategory, UserCategoryTreeItem } from '@/api/category.types'
 import { normalizeApiError } from '@/api/http'
-import { getUserTags } from '@/api/tag.api'
-import type { UserTag } from '@/api/tag.types'
+import type { TagDraftSelection, UserTag } from '@/api/tag.types'
 import { createTransaction, updateTransaction } from '@/api/transaction.api'
 import type {
   DailyTransactionItem,
@@ -26,6 +24,9 @@ import type {
   UpdateTransactionBody,
 } from '@/api/transaction.types'
 import CategoryIcon from '@/components/business/CategoryIcon.vue'
+import BaseIcon from '@/components/base/BaseIcon.vue'
+import TagFormDialog from '@/components/business/TagFormDialog.vue'
+import TagListItem from '@/components/business/TagListItem.vue'
 import { isValidFilterAmount, isZeroAmount } from '@/utils/money'
 
 interface TransactionCategoryOption {
@@ -46,7 +47,10 @@ const categoryId = ref<number>()
 const amount = ref('')
 const occurredDate = ref('')
 const title = ref('')
-const tagIds = ref<number[]>([])
+const selectedTags = ref<UserTag[]>([])
+const isTagFormVisible = ref(false)
+const editingTag = ref<UserTag | null>(null)
+let nextDraftTagId = -1
 const remark = ref('')
 const errors = ref<Partial<Record<'category' | 'amount' | 'date' | 'title' | 'remark', string>>>({})
 const formMessage = ref('')
@@ -54,10 +58,8 @@ const isSubmitting = ref(false)
 const isOptionsLoading = ref(false)
 const expenseCategories = ref<UserCategoryTreeItem[]>([])
 const incomeCategories = ref<UserCategoryTreeItem[]>([])
-const tags = ref<UserTag[]>([])
 const expenseError = ref('')
 const incomeError = ref('')
-const tagError = ref('')
 let optionsSequence = 0
 let isActive = true
 
@@ -67,11 +69,14 @@ const originalCategoryId = computed(() =>
     ? (props.transaction.category.secondary ?? props.transaction.category.primary).id
     : undefined,
 )
-const originalTagIds = computed(() => new Set(props.transaction?.tags.map((tag) => tag.id) ?? []))
+const tagIds = computed(() => selectedTags.value.filter((tag) => tag.id > 0).map((tag) => tag.id))
+const tagNames = computed(() =>
+  selectedTags.value.filter((tag) => tag.id < 0).map((tag) => tag.name),
+)
 const dialogVisible = computed({
   get: () => props.visible,
   set: (visible: boolean) => {
-    if (!isSubmitting.value) emit('update:visible', visible)
+    if (!isSubmitting.value && !isTagFormVisible.value) emit('update:visible', visible)
   },
 })
 const categoryError = computed(() =>
@@ -162,19 +167,6 @@ const categoryById = computed(
         .map((category): [number, UserCategory] => [category.id, category]),
     ]),
 )
-const availableTags = computed(() => {
-  const byId = new Map<number, UserTag>(props.transaction?.tags.map((tag) => [tag.id, tag]) ?? [])
-  for (const tag of tags.value) byId.set(tag.id, tag)
-  return [...byId.values()].filter((tag) => !tag.archived || originalTagIds.value.has(tag.id))
-})
-const tagOptions = computed(() =>
-  availableTags.value.map((tag) => ({
-    value: tag.id,
-    label: `${tag.name}${tag.archived ? '（已归档）' : ''}`,
-    // 已选归档标签保持可移除；移除后禁用，避免被重新添加。
-    ...(tag.archived && !tagIds.value.includes(tag.id) ? { disabled: true } : {}),
-  })),
-)
 
 /**
  * 生成分类名称，归档项明确标记，便于识别历史关联。
@@ -201,7 +193,10 @@ function resetForm(): void {
     transaction?.occurredDate ??
     `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   title.value = transaction?.title ?? ''
-  tagIds.value = transaction?.tags.map((tag) => tag.id) ?? []
+  selectedTags.value = transaction?.tags.map((tag) => ({ ...tag })) ?? []
+  isTagFormVisible.value = false
+  editingTag.value = null
+  nextDraftTagId = -1
   remark.value = transaction?.remark ?? ''
   errors.value = {}
   formMessage.value = ''
@@ -216,8 +211,7 @@ async function loadOptions(): Promise<void> {
   isOptionsLoading.value = true
   expenseError.value = ''
   incomeError.value = ''
-  tagError.value = ''
-  const [expense, income, tagResult] = await Promise.allSettled([
+  const [expense, income] = await Promise.allSettled([
     isEditing.value
       ? type.value === 'expense'
         ? getUserCategories('expense', true)
@@ -228,15 +222,12 @@ async function loadOptions(): Promise<void> {
         ? getUserCategories('income', true)
         : Promise.resolve([])
       : getUserCategories('income'),
-    isEditing.value ? getUserTags(true) : getUserTags(),
   ])
   if (!isActive || sequence !== optionsSequence) return
   if (expense.status === 'fulfilled') expenseCategories.value = expense.value
   else expenseError.value = normalizeApiError(expense.reason, '支出分类加载失败').message
   if (income.status === 'fulfilled') incomeCategories.value = income.value
   else incomeError.value = normalizeApiError(income.reason, '收入分类加载失败').message
-  if (tagResult.status === 'fulfilled') tags.value = tagResult.value
-  else tagError.value = normalizeApiError(tagResult.reason, '标签加载失败').message
   isOptionsLoading.value = false
 }
 
@@ -278,25 +269,39 @@ function handleDateChange(value: unknown): void {
   errors.value.date = ''
 }
 /**
- * 去重标签集合，只接受可用标签或当前仍保留的原归档标签。
- * @param value - 多选控件返回的标签id数组或清空值
+ * 更新或添加标签草稿；新名称用局部负数id展示，流水提交时才写入数据库。
+ * @param selection - 自由输入的名称，或用户确认复用/保留的原标签
  * @returns 无返回值
  */
-function handleTagChange(value: unknown): void {
+function handleTagDraftSuccess(selection: TagDraftSelection): void {
+  if (!props.visible || isSubmitting.value) return
+  const tag: UserTag = selection.existingTag
+    ? { ...selection.existingTag }
+    : {
+        id:
+          editingTag.value?.id && editingTag.value.id < 0 ? editingTag.value.id : nextDraftTagId--,
+        name: selection.name,
+      }
+  if (editingTag.value) {
+    selectedTags.value = selectedTags.value.map((item) =>
+      item.id === editingTag.value?.id ? tag : item,
+    )
+  } else {
+    selectedTags.value.push(tag)
+  }
+}
+
+/** 添加和编辑共用名称弹窗，编辑不会立即修改标签表。 */
+function handleOpenTagForm(tag: UserTag | null = null): void {
   if (isSubmitting.value) return
-  tagIds.value = Array.isArray(value)
-    ? [
-        ...new Set(
-          value.filter(
-            (id): id is number =>
-              typeof id === 'number' &&
-              availableTags.value.some(
-                (tag) => tag.id === id && (!tag.archived || tagIds.value.includes(id)),
-              ),
-          ),
-        ),
-      ]
-    : []
+  editingTag.value = tag
+  isTagFormVisible.value = true
+}
+
+/** 仅移除当前流水草稿中的标签，保存流水时更新关联，不归档全局标签。 */
+function handleTagRemoved(tag: UserTag): void {
+  if (isSubmitting.value) return
+  selectedTags.value = selectedTags.value.filter((selectedTag) => selectedTag.id !== tag.id)
 }
 
 /**
@@ -335,7 +340,7 @@ function validateForm(): boolean {
  * @returns 成功时关闭并通知页面刷新；失败保留草稿，提交期间阻止重复操作
  */
 async function handleSubmit(): Promise<void> {
-  if (isSubmitting.value || isOptionsLoading.value) return
+  if (isSubmitting.value || isOptionsLoading.value || isTagFormVisible.value) return
   formMessage.value = ''
   if (!validateForm() || categoryId.value === undefined || categoryError.value) return
   isSubmitting.value = true
@@ -349,6 +354,7 @@ async function handleSubmit(): Promise<void> {
       occurredDate: occurredDate.value,
       title: title.value.trim() || null,
       tagIds: [...tagIds.value],
+      ...(tagNames.value.length ? { tagNames: [...tagNames.value] } : {}),
       remark: remark.value.trim() || null,
     }
     // 显式构造六个可编辑字段，避免将只读类型或记录归属提交给 PATCH 接口。
@@ -379,7 +385,6 @@ watch(
       resetForm()
       expenseCategories.value = []
       incomeCategories.value = []
-      tags.value = []
       void loadOptions()
     } else if (!isSubmitting.value) {
       resetForm()
@@ -400,9 +405,9 @@ onBeforeUnmount(() => {
     placement="center"
     width="560px"
     :footer="false"
-    :close-btn="!isSubmitting"
-    :close-on-overlay-click="!isSubmitting"
-    :close-on-esc-keydown="!isSubmitting"
+    :close-btn="!isSubmitting && !isTagFormVisible"
+    :close-on-overlay-click="!isSubmitting && !isTagFormVisible"
+    :close-on-esc-keydown="!isSubmitting && !isTagFormVisible"
   >
     <form class="transaction-form" novalidate @submit.prevent="handleSubmit">
       <!-- 收支类型与分类严格对应，支出父分类仅供展开 -->
@@ -515,26 +520,35 @@ onBeforeUnmount(() => {
         <p v-if="errors.title" class="transaction-form__error" role="alert">{{ errors.title }}</p>
       </div>
       <div class="transaction-form__field">
-        <label id="transaction-form-tags-label">标签</label>
-        <TSelect
-          :value="tagIds"
-          :options="tagOptions"
-          multiple
-          clearable
-          filterable
-          :loading="isOptionsLoading"
-          :disabled="isSubmitting || isOptionsLoading || Boolean(tagError)"
-          aria-labelledby="transaction-form-tags-label"
-          placeholder="选填，搜索并选择标签"
-          empty="暂无可选标签"
-          @change="handleTagChange"
-        />
-        <p v-if="tagError" class="transaction-form__error" role="alert">
-          {{ tagError }}
-          <button type="button" :disabled="isSubmitting || isOptionsLoading" @click="loadOptions">
-            重试
+        <div class="transaction-form__tags-heading">
+          <label id="transaction-form-tags-label">标签</label>
+          <button
+            class="transaction-form__add-tag"
+            type="button"
+            :disabled="isSubmitting"
+            @click="handleOpenTagForm()"
+          >
+            <BaseIcon name="add" :size="18" />
+            添加标签
           </button>
-        </p>
+        </div>
+        <ul
+          v-if="selectedTags.length"
+          class="transaction-form__tags"
+          aria-labelledby="transaction-form-tags-label"
+          tabindex="0"
+        >
+          <TagListItem
+            v-for="tag in selectedTags"
+            :key="tag.id"
+            :tag="tag"
+            :disabled="isSubmitting"
+            :max-width="200"
+            @delete="handleTagRemoved"
+            @edit="handleOpenTagForm"
+          />
+        </ul>
+        <p v-else class="transaction-form__hint">选填，添加标签以统计同一事件的收支。</p>
       </div>
       <div class="transaction-form__field">
         <label for="transaction-form-remark">备注</label>
@@ -569,12 +583,21 @@ onBeforeUnmount(() => {
       </div>
     </form>
   </TDialog>
+  <TagFormDialog
+    v-model:visible="isTagFormVisible"
+    :mode="editingTag ? 'edit' : 'create'"
+    :tag="editingTag"
+    draft
+    :selected-tags="selectedTags"
+    @draft-success="handleTagDraftSuccess"
+  />
 </template>
 
 <style scoped>
 .transaction-form {
   display: grid;
-  max-height: calc(100dvh - 160px);
+  /* 预留弹窗标题、内边距和上下间距，标签多时仍完整显示弹窗边界。 */
+  max-height: calc(100dvh - 200px);
   overflow-y: auto;
   gap: 18px;
   padding-right: 4px;
@@ -583,6 +606,47 @@ onBeforeUnmount(() => {
   display: grid;
   min-width: 0;
   gap: 8px;
+}
+.transaction-form__tags-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.transaction-form__add-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  color: #514700;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.transaction-form__add-tag:hover:not(:disabled),
+.transaction-form__add-tag:focus-visible {
+  background: var(--color-primary);
+  border-color: var(--color-primary-active);
+}
+.transaction-form__add-tag:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+/* 标签过多时只滚动标签区域，名称提示沿用配置管理的共享展示项。 */
+.transaction-form__tags {
+  display: flex;
+  max-height: 200px;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
 }
 .transaction-form__field label,
 .transaction-form__type legend {

@@ -13,8 +13,8 @@ import type { UserTag } from '@/api/tag.types'
 import { normalizeApiError } from '@/api/http'
 import BaseIcon from '@/components/base/BaseIcon.vue'
 
-import TagFormDialog from './TagFormDialog.vue'
-import TagListItem from './TagListItem.vue'
+import TagFormDialog from '@/components/business/TagFormDialog.vue'
+import TagListItem from '@/components/business/TagListItem.vue'
 
 const SEARCH_DEBOUNCE_MS = 300
 

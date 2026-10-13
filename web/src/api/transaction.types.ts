@@ -19,8 +19,10 @@ export interface CreateTransactionBody {
   occurredDate: string
   /** 去除首尾空格后最多 50 个字符；空值由后端保存为 NULL。 */
   title?: string | null
-  /** 当前用户未归档标签；省略或空数组表示不绑定标签。 */
+  /** 当前用户未归档的已有标签；与tagNames合起来构成完整标签集合。 */
   tagIds?: number[]
+  /** 尚未保存的标签名称；随流水在同一事务中创建，不能静默复用同名标签。 */
+  tagNames?: string[]
   /** 去除首尾空格后最多 100 个字符。 */
   remark?: string | null
 }
@@ -37,6 +39,8 @@ export interface UpdateTransactionBody {
   title: string | null
   /** 编辑后的完整标签集合；空数组清空，原有归档标签可保留或移除。 */
   tagIds: number[]
+  /** 待创建的标签名称，与 tagIds 合起来表示编辑后的完整标签集合。 */
+  tagNames?: string[]
   /** 去除首尾空格后最多100个字符；null 表示清空。 */
   remark: string | null
 }

@@ -8,13 +8,16 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import type { Repository } from 'typeorm';
+import { EntityManager, IsNull, Repository } from 'typeorm';
 import { TagEntity } from './entities/tag.entity';
 import { TagsService } from './tags.service';
+import { UserEntity } from '../users/entities/user.entity';
 
 jest.mock('@nestjs/typeorm', () => ({
   InjectRepository: () => () => undefined,
 }));
+// 服务测试只需要仓库标识，不加载带有 src/* 关联导入的实体依赖链。
+jest.mock('./entities/tag.entity', () => ({ TagEntity: class TagEntity {} }));
 
 describe('TagsService', () => {
   const tag: TagEntity = {
@@ -28,18 +31,35 @@ describe('TagsService', () => {
   let tagRepo: jest.Mocked<
     Pick<
       Repository<TagEntity>,
-      'existsBy' | 'find' | 'create' | 'save' | 'update'
+      'existsBy' | 'find' | 'findOne' | 'create' | 'save' | 'update'
     >
-  >;
+  > & { manager: { transaction: jest.Mock } };
+  let userRepo: { findOne: jest.Mock };
+  let manager: { getRepository: jest.Mock };
   let service: TagsService;
 
   beforeEach(() => {
     tagRepo = {
       existsBy: jest.fn().mockResolvedValue(false),
       find: jest.fn().mockResolvedValue([]),
+      findOne: jest.fn().mockResolvedValue(null),
       create: jest.fn().mockReturnValue(tag),
       save: jest.fn().mockResolvedValue(tag),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
+      manager: {
+        transaction: jest.fn(
+          async (
+            _isolation: string,
+            action: (manager: EntityManager) => Promise<unknown>,
+          ) => action(manager as unknown as EntityManager),
+        ),
+      },
+    };
+    userRepo = { findOne: jest.fn().mockResolvedValue({ id: 7 }) };
+    manager = {
+      getRepository: jest.fn((entity: unknown) =>
+        entity === UserEntity ? userRepo : tagRepo,
+      ),
     };
     service = new TagsService(tagRepo as unknown as Repository<TagEntity>);
   });
@@ -128,6 +148,70 @@ describe('TagsService', () => {
       BadRequestException,
     );
     expect(tagRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('配置管理创建同名标签仍然拒绝，并且不执行写入', async () => {
+    tagRepo.existsBy.mockResolvedValue(true);
+    await expect(service.create(7, '出差')).rejects.toThrow('已经存在同名标签');
+    expect(tagRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('流水草稿检查同名标签只返回原id，不执行任何写入', async () => {
+    tagRepo.findOne.mockResolvedValue(tag);
+    await expect(service.checkName(7, '出差')).resolves.toEqual({
+      id: 1,
+      name: '出差',
+      archived: false,
+    });
+    expect(tagRepo.findOne).toHaveBeenCalledWith({
+      select: { id: true, name: true },
+      where: { ownerUserId: 7, name: '出差', archivedTime: IsNull() },
+    });
+    expect(tagRepo.save).not.toHaveBeenCalled();
+    expect(tagRepo.manager.transaction).not.toHaveBeenCalled();
+  });
+
+  it('流水草稿检查新名称返回null，不创建未保存的标签', async () => {
+    await expect(service.checkName(7, '出差')).resolves.toBeNull();
+    expect(tagRepo.create).not.toHaveBeenCalled();
+    expect(tagRepo.save).not.toHaveBeenCalled();
+  });
+
+  it.each(['create', 'update'] as const)(
+    '%s在当前用户排他锁后校验名称',
+    async (action) => {
+      if (action === 'update') {
+        tagRepo.existsBy
+          .mockResolvedValueOnce(true)
+          .mockResolvedValueOnce(false);
+        await service.update(1, 7, '出差');
+      } else {
+        await service[action](7, '出差');
+      }
+      expect(tagRepo.manager.transaction).toHaveBeenCalledWith(
+        'READ COMMITTED',
+        expect.any(Function),
+      );
+      expect(userRepo.findOne).toHaveBeenCalledWith({
+        select: { id: true },
+        where: { id: 7 },
+        lock: { mode: 'pessimistic_write' },
+      });
+      const firstNameQuery = tagRepo.existsBy;
+      expect(userRepo.findOne.mock.invocationCallOrder[0]).toBeLessThan(
+        firstNameQuery.mock.invocationCallOrder[0],
+      );
+    },
+  );
+
+  it('用户不存在时不读取或创建标签，数据库写入失败时不返回假成功', async () => {
+    userRepo.findOne.mockResolvedValueOnce(null);
+    await expect(service.create(7, '出差')).rejects.toThrow('用户不存在');
+    expect(tagRepo.findOne).not.toHaveBeenCalled();
+    tagRepo.save.mockRejectedValueOnce(new Error('写入失败'));
+    await expect(service.create(7, '出差')).rejects.toThrow(
+      '创建标签失败，请重新尝试',
+    );
   });
 
   it('归档更新未命中目标时返回明确失败', async () => {

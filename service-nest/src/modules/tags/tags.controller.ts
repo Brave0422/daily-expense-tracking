@@ -63,6 +63,20 @@ export class TagsController {
   }
 
   /**
+   * 为新增或编辑流水草稿检查同名标签，供用户确认复用，不执行写入。
+   * @param userId 当前登录用户id
+   * @param body 已校验的自由输入标签名称
+   * @returns 当前用户的未归档标签id、名称及归档状态
+   */
+  @Get('check-name')
+  checkName(
+    @CurrentUserId() userId: number,
+    @Query() query: TagNameDto,
+  ): Promise<TagFilterListItem | null> {
+    return this.tagsService.checkName(userId, query.name);
+  }
+
+  /**
    * 编辑当前用户的标签名称
    * @param userId 当前用户id
    * @param id 标签id

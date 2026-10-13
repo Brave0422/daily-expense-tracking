@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-09-27T18:34:34+08:00
- * @description 标签业务接口，负责当前用户标签列表、搜索及增删改请求的发送与响应解包。
+ * @description 标签业务接口，负责当前用户标签列表、名称复用、搜索及增删改请求与响应解包。
  */
 
 import type { ApiResponse } from './common.types'
@@ -27,6 +27,14 @@ export async function searchUserTags(key: string): Promise<UserTag[]> {
 /** 创建当前用户的标签。 */
 export async function createTag(body: TagNameBody): Promise<void> {
   await apiClient.post<ApiResponse<void>>('/tags', body)
+}
+
+/** GET /tags/check-name：只查询同名未归档标签，供流水草稿询问是否复用，不执行写入。 */
+export async function checkTagName(body: TagNameBody): Promise<UserTag | null> {
+  const response = await apiClient.get<ApiResponse<UserTag | null>>('/tags/check-name', {
+    params: body,
+  })
+  return response.data.data
 }
 
 /** 编辑当前用户的标签名称。 */

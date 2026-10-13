@@ -16,3 +16,9 @@ export interface UserTag {
 export interface TagNameBody {
   name: string
 }
+
+/** 流水表单中的标签草稿，existingTag 仅在保留原标签或确认复用后提供。 */
+export interface TagDraftSelection {
+  name: string
+  existingTag?: UserTag
+}

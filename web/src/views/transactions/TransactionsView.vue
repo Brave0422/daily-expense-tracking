@@ -46,6 +46,7 @@ const {
 const isDatePickerOpen = ref(false)
 const isFormDialogOpen = ref(false)
 const editingTransaction = ref<DailyTransactionItem | null>(null)
+const tagsRevision = ref(0)
 
 function formatPeriod(period: string): string {
   const [year, monthNumber] = period.split('-')
@@ -118,6 +119,12 @@ function handleFormVisibleChange(visible: boolean): void {
   isFormDialogOpen.value = visible
   if (!visible) editingTransaction.value = null
 }
+
+/** 流水提交成功后，刷新已保存的标签筛选选项及账单。 */
+async function handleFormSuccess(): Promise<void> {
+  tagsRevision.value += 1
+  await refresh()
+}
 </script>
 
 <template>
@@ -131,6 +138,7 @@ function handleFormVisibleChange(visible: boolean): void {
       :is-stale="isResultStale"
       :has-failed="Boolean(errorMessage)"
       :has-filters="hasFilters"
+      :tags-revision="tagsRevision"
       @update:filters="updateFilters"
       @search="refresh"
       @reset="resetFilters"
@@ -295,7 +303,7 @@ function handleFormVisibleChange(visible: boolean): void {
       :visible="isFormDialogOpen"
       :transaction="editingTransaction"
       @update:visible="handleFormVisibleChange"
-      @submit-success="refresh"
+      @submit-success="handleFormSuccess"
     />
   </div>
 </template>

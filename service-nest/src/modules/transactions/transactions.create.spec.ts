@@ -1,4 +1,8 @@
-/** 创建流水的业务规则与事务边界测试。 */
+/**
+ * @author Brave
+ * @date 2026-10-11T22:18:39+08:00
+ * @description 创建流水的业务规则、标签草稿持久化及事务边界测试。
+ */
 import {
   BadRequestException,
   InternalServerErrorException,
@@ -7,6 +11,7 @@ import { EntityManager, In, IsNull, Repository } from 'typeorm';
 import type { DeepPartial } from 'typeorm';
 import { UserCategoryEntity } from '../categories/entities/user-category.entity';
 import { TagEntity } from '../tags/entities/tag.entity';
+import { UserEntity } from '../users/entities/user.entity';
 import { TransactionTagEntity } from './entities/transaction-tag.entity';
 import { TransactionEntity } from './entities/transaction.entity';
 import { TransactionType } from './enums/transaction-type-enum';
@@ -52,7 +57,13 @@ jest.mock(
 
 describe('TransactionsService.createTransaction', () => {
   let categoryRepo: { findOne: jest.Mock };
-  let tagRepo: { find: jest.Mock };
+  let tagRepo: {
+    find: jest.Mock;
+    findOne: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+  };
+  let userRepo: { findOne: jest.Mock };
   let transactionRepo: { create: jest.Mock; save: jest.Mock };
   let transactionTagRepo: { create: jest.Mock; save: jest.Mock };
   let manager: { getRepository: jest.Mock };
@@ -71,7 +82,13 @@ describe('TransactionsService.createTransaction', () => {
     };
     tagRepo = {
       find: jest.fn().mockResolvedValue([{ id: 3 }, { id: 5 }]),
+      findOne: jest.fn().mockResolvedValue(null),
+      create: jest.fn((data: DeepPartial<TagEntity>) => data),
+      save: jest.fn((data: DeepPartial<TagEntity>) =>
+        Promise.resolve({ ...data, id: 9 }),
+      ),
     };
+    userRepo = { findOne: jest.fn().mockResolvedValue({ id: 7 }) };
     transactionRepo = {
       create: jest.fn((data: DeepPartial<TransactionEntity>) => data),
       save: jest.fn((data: DeepPartial<TransactionEntity>) =>
@@ -86,6 +103,7 @@ describe('TransactionsService.createTransaction', () => {
     // 只有事务 manager 提供写入仓库，确保实现不会绕过当前事务使用注入仓库。
     const repositories = new Map<unknown, unknown>([
       [UserCategoryEntity, categoryRepo],
+      [UserEntity, userRepo],
       [TagEntity, tagRepo],
       [TransactionEntity, transactionRepo],
       [TransactionTagEntity, transactionTagRepo],
@@ -148,6 +166,55 @@ describe('TransactionsService.createTransaction', () => {
     expect(transactionRepo.save.mock.invocationCallOrder[0]).toBeLessThan(
       transactionTagRepo.save.mock.invocationCallOrder[0],
     );
+  });
+
+  it('新标签只有提交流水时才在同一事务中创建，随后绑定生成的id', async () => {
+    await service.createTransaction(
+      7,
+      TransactionType.EXPENSE,
+      12,
+      '17.28',
+      '2026-10-13',
+      null,
+      [3, 5],
+      null,
+      [' 新西兰旅行 ', '新西兰旅行'],
+    );
+    expect(userRepo.findOne).toHaveBeenCalledWith({
+      select: { id: true },
+      where: { id: 7 },
+      lock: { mode: 'pessimistic_write' },
+    });
+    expect(tagRepo.create).toHaveBeenCalledWith({
+      ownerUserId: 7,
+      name: '新西兰旅行',
+    });
+    expect(tagRepo.save).toHaveBeenCalledTimes(1);
+    expect(transactionTagRepo.save).toHaveBeenCalledWith([
+      { transactionId: 101, tagId: 3 },
+      { transactionId: 101, tagId: 5 },
+      { transactionId: 101, tagId: 9 },
+    ]);
+    expect(runTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('保存时发现草稿名称已被创建则拒绝未经确认的复用，不保存流水', async () => {
+    tagRepo.findOne.mockResolvedValue({ id: 9 });
+    await expect(
+      service.createTransaction(
+        7,
+        TransactionType.EXPENSE,
+        12,
+        '17.28',
+        '2026-10-13',
+        null,
+        [],
+        null,
+        ['新西兰旅行'],
+      ),
+    ).rejects.toThrow('请重新编辑该标签并确认是否继续使用');
+    expect(tagRepo.save).not.toHaveBeenCalled();
+    expect(transactionRepo.save).not.toHaveBeenCalled();
   });
 
   it.each([undefined, []])('未选择标签（%j）时只保存流水', async (tagIds) => {

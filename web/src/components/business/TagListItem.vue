@@ -2,10 +2,10 @@
 /**
  * @author Brave
  * @date 2026-09-27T18:34:34+08:00
- * @description 单个标签展示项，负责溢出名称提示、编辑入口和独立删除操作。
+ * @description 共用标签展示项，负责名称截断提示、可选编辑入口和独立移除操作。
  */
 
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Tooltip as TTooltip } from 'tdesign-vue-next'
 
 import type { UserTag } from '@/api/tag.types'
@@ -13,9 +13,16 @@ import BaseIcon from '@/components/base/BaseIcon.vue'
 
 interface Props {
   tag: UserTag
+  editable?: boolean
+  disabled?: boolean
+  maxWidth?: number
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  editable: true,
+  disabled: false,
+  maxWidth: 300,
+})
 const emit = defineEmits<{
   delete: [tag: UserTag]
   edit: [tag: UserTag]
@@ -23,6 +30,7 @@ const emit = defineEmits<{
 
 const tagNameElement = ref<HTMLElement | null>(null)
 const isNameOverflowing = ref(false)
+const tagLabel = computed(() => `${props.tag.name}${props.tag.archived ? '（已归档）' : ''}`)
 let resizeObserver: ResizeObserver | null = null
 
 /** 根据实际渲染宽度判断标签名称是否需要完整内容提示。 */
@@ -45,38 +53,38 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
 })
 
-watch(
-  () => props.tag.name,
-  async () => {
-    await nextTick()
-    updateNameOverflow()
-  },
-)
+watch(tagLabel, async () => {
+  await nextTick()
+  updateNameOverflow()
+})
 </script>
 
 <template>
-  <li class="tag-list-item">
-    <button
-      :aria-label="`编辑标签 ${props.tag.name}`"
-      class="tag-list-item__edit"
-      type="button"
-      @click="emit('edit', props.tag)"
+  <li
+    class="tag-list-item"
+    :class="{ 'tag-list-item--disabled': props.disabled }"
+    :style="{ maxWidth: `${props.maxWidth}px` }"
+  >
+    <component
+      :is="props.editable ? 'button' : 'span'"
+      :aria-label="props.editable ? `编辑标签 ${props.tag.name}` : undefined"
+      class="tag-list-item__content"
+      :class="{ 'tag-list-item__content--editable': props.editable }"
+      :type="props.editable ? 'button' : undefined"
+      :disabled="props.editable ? props.disabled : undefined"
+      @click="props.editable && !props.disabled && emit('edit', props.tag)"
     >
-      <TTooltip
-        :content="props.tag.name"
-        :disabled="!isNameOverflowing"
-        placement="top"
-        theme="light"
-      >
-        <span ref="tagNameElement" class="tag-list-item__name">{{ props.tag.name }}</span>
+      <TTooltip :content="tagLabel" :disabled="!isNameOverflowing" placement="top" theme="light">
+        <span ref="tagNameElement" class="tag-list-item__name">{{ tagLabel }}</span>
       </TTooltip>
-    </button>
+    </component>
 
     <button
       :aria-label="`删除标签 ${props.tag.name}`"
       class="tag-list-item__delete"
       title="删除"
       type="button"
+      :disabled="props.disabled"
       @click.stop="emit('delete', props.tag)"
     >
       <BaseIcon name="tagClose" :size="18" />
@@ -101,14 +109,14 @@ watch(
     box-shadow 0.2s;
 }
 
-.tag-list-item:hover,
-.tag-list-item:focus-within {
+.tag-list-item:not(.tag-list-item--disabled):hover,
+.tag-list-item:not(.tag-list-item--disabled):focus-within {
   background: var(--color-primary-soft);
   border-color: var(--color-primary-active);
   box-shadow: 0 4px 12px rgb(32 33 36 / 8%);
 }
 
-.tag-list-item__edit {
+.tag-list-item__content {
   display: flex;
   min-width: 0;
   flex: 1;
@@ -119,6 +127,9 @@ watch(
   text-align: left;
   background: transparent;
   border: 0;
+}
+
+.tag-list-item__content--editable {
   cursor: pointer;
 }
 
@@ -148,7 +159,12 @@ watch(
   place-items: center;
 }
 
-.tag-list-item__delete:hover {
-  background: #fff2f1;
+.tag-list-item__delete:hover:not(:disabled) {
+  background: var(--color-primary);
+}
+
+.tag-list-item button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 </style>

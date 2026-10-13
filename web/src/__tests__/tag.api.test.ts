@@ -7,15 +7,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const apiClientMock = vi.hoisted(() => ({
-  delete: vi.fn(),
-  get: vi.fn(),
-  patch: vi.fn(),
-  post: vi.fn(),
+  delete: vi.fn<(url: string) => Promise<unknown>>(),
+  get: vi.fn<(url: string, config?: unknown) => Promise<unknown>>(),
+  patch: vi.fn<(url: string, body?: unknown) => Promise<unknown>>(),
+  post: vi.fn<(url: string, body?: unknown) => Promise<unknown>>(),
 }))
 
 vi.mock('@/api/http', () => ({ apiClient: apiClientMock }))
 
-import { createTag, deleteTag, getUserTags, searchUserTags, updateTag } from '@/api/tag.api'
+import {
+  createTag,
+  deleteTag,
+  getUserTags,
+  checkTagName,
+  searchUserTags,
+  updateTag,
+} from '@/api/tag.api'
 
 describe('tag api', () => {
   beforeEach(() => {
@@ -55,5 +62,15 @@ describe('tag api', () => {
     expect(apiClientMock.get).toHaveBeenCalledWith('/tags/search', {
       params: { key: '聚餐' },
     })
+  })
+
+  it('只读检查同名标签，不发送创建请求', async () => {
+    const tag = { id: 7, name: '去新西兰旅游', archived: false }
+    apiClientMock.get.mockResolvedValue({ data: { data: tag } })
+    await expect(checkTagName({ name: '去新西兰旅游' })).resolves.toEqual(tag)
+    expect(apiClientMock.get).toHaveBeenCalledWith('/tags/check-name', {
+      params: { name: '去新西兰旅游' },
+    })
+    expect(apiClientMock.post).not.toHaveBeenCalled()
   })
 })
