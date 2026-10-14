@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | PC Web | 初版功能已完成 | 账户认证、流水管理、分类与标签配置、收支统计 |
 | NestJS 服务端 | 初版功能已完成 | 对应业务 API、双 Token 认证、数据校验与持久化 |
-| 移动 App | 待创建 | 使用 Flutter 实现移动端交互，复用现有业务 API |
+| 移动 App | 立项文档已建立，工程待初始化 | 使用 Flutter 实现移动端交互，复用现有业务 API |
 
 已实现的主要功能：
 
@@ -28,7 +28,7 @@
 daily-expense-tracking/
 ├── web/           # PC Web 客户端，初版已完成
 ├── service-nest/  # NestJS 服务端，初版已完成
-└── app/           # Flutter 移动端计划目录，尚未创建
+└── app/           # 移动端 PRD 与模块文档，Flutter 工程待初始化
 ```
 
 ## 已实现的技术栈
@@ -103,7 +103,7 @@ Refresh Cookie 使用 `HttpOnly`、`SameSite=Lax` 和 `/auth` 路径，生产环
 
 ## 移动 App 规划
 
-计划目录：`app/`，目标平台为 Android 和 iOS。以下为计划选型，尚未安装移动端依赖。
+目录：`app/`，目标平台为 Android 和 iOS。立项需求入口为 [移动端主 PRD](app/PRD.md)，通过主文档阅读各模块及 Flutter 代码与注释规范。当前只建立需求文档，尚未初始化 Flutter 工程或安装移动端依赖。
 
 | 技术 | 用途 |
 | --- | --- |
@@ -130,16 +130,11 @@ Refresh Cookie 使用 `HttpOnly`、`SameSite=Lax` 和 `/auth` 路径，生产环
 - Repository 封装业务数据访问，Service 封装具体 HTTP 接口；按实际复杂度增加抽象。
 - 复用现有后端接口和业务契约，移动端页面、图表交互及布局独立实现。
 
-### 认证接入待确定
+### 已确定的认证接入
 
-现有双 Token 机制可继续使用，移动端需要确定 Refresh Token 的传递方式：
+移动端沿用现有 Cookie 双 Token 登录与刷新接口，不新增 App 专用认证入口。Dio 配合 `dio_cookie_manager` 和 `cookie_jar` 接收、发送 Cookie，通过自定义存储接入 `flutter_secure_storage` 安全保存 Refresh Cookie；Access Token 保存在内存。
 
-| 方案 | App 接入方式 | 后端调整 |
-| --- | --- | --- |
-| 沿用 Cookie 接口 | Dio 配合 `dio_cookie_manager` / `cookie_jar` 管理 Cookie，通过自定义存储接入 `flutter_secure_storage` | 可复用现有登录、刷新接口 |
-| App 显式传递 Token | JSON 接收双 Token，安全保存 Refresh Token，刷新时显式提交并更新凭证 | 增加 App 的登录、刷新入口，复用现有认证服务 |
-
-目前尚未选定方案，也尚未实现 App 专用认证入口。无论采用哪种方案，都需要处理并发请求共享刷新任务、Token 轮换、启动时恢复会话及退出时清除凭证。
+实现需处理并发请求共享刷新任务、Token 轮换、启动恢复、退出清理与账号切换竞态。详细流程见 [移动端账户与认证 PRD](app/docs/03-authentication.md)。
 
 ### 图标与图表适配
 
@@ -226,4 +221,4 @@ npm test -- --runInBand
 npm run build
 ```
 
-移动端尚未创建，暂无对应的安装、启动和构建命令。
+移动端目前仅有 PRD，暂无可运行的 Flutter 工程。初始化、生成和验收顺序见 [移动端实施阶段](app/docs/10-delivery-and-acceptance.md)。
