@@ -2,13 +2,36 @@
 /**
  * @author Brave
  * @date 2026-09-20T15:28:28+08:00
- * @description 账单统计占位页，保留后续统计条件与图表数据区域。
+ * @description 流水统计页面，横向展示独立筛选的分类排行、分类占比与收支趋势。
  */
 
-import WorkspacePlaceholder from '@/components/business/WorkspacePlaceholder.vue'
+import StatisticsPanel from './components/StatisticsPanel.vue'
 </script>
 
 <template>
-  <!-- 统计页共享的筛选区与图表数据区骨架 -->
-  <WorkspacePlaceholder description="筛选周期和分类，查看收入与支出趋势。" title="账单统计" />
+  <section class="statistics-view" aria-label="流水统计">
+    <!-- 窄屏保留三板块顺序及最小宽度，排行与图例分别维护自己的纵向滚动 -->
+    <div class="statistics-view__panels">
+      <StatisticsPanel kind="ranking" title="分类排行" eyebrow="RANKING" />
+      <StatisticsPanel kind="proportion" title="分类占比" eyebrow="PROPORTION" />
+      <StatisticsPanel kind="trend" title="收支趋势" eyebrow="TREND" />
+    </div>
+  </section>
 </template>
+
+<style scoped>
+.statistics-view {
+  height: calc(100vh - var(--space-page) - var(--space-page));
+  min-height: 0;
+  overflow: hidden;
+}
+.statistics-view__panels {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: repeat(3, minmax(340px, 1fr));
+  gap: var(--space-page);
+  align-items: stretch;
+  overflow-x: auto;
+}
+</style>

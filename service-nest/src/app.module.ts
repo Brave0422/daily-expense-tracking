@@ -1,3 +1,8 @@
+/**
+ * @author 未知（历史未记录）
+ * @date 未知（历史未记录）
+ * @description 应用根模块，注册认证、流水、配置和流水统计能力。
+ */
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,6 +18,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TagsModule } from './modules/tags/tags.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 
 @Module({
   imports: [
@@ -40,6 +46,8 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
     TagsModule,
     // 流水模块
     TransactionsModule,
+    // 流水统计模块
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [
