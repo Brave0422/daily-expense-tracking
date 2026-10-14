@@ -15,6 +15,8 @@ export type IconName =
   | 'delete'
   | 'edit'
   | 'reorder'
+  | 'sortDescending'
+  | 'sortAscending'
   | 'search'
   | 'emptyData'
   | 'tagClose'
@@ -24,6 +26,7 @@ export type IconName =
   | 'show'
   | 'calendar'
   | 'monthlySummary'
+  | 'yearlySummary'
   | 'dailyDetails'
   | 'remark'
   | 'tag'
@@ -39,6 +42,8 @@ const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   delete: 'icon-shanchu',
   edit: 'icon-bianji',
   reorder: 'icon-jiaohuanshunxu',
+  sortDescending: 'icon-jiangxu',
+  sortAscending: 'icon-shengxu',
   search: 'icon-sousuo1',
   emptyData: 'icon-queshengye_zanwushuju',
   tagClose: 'icon-dituweizhixinxi_chahao',
@@ -48,9 +53,10 @@ const ICON_SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   show: 'icon-show',
   calendar: 'icon-rili',
   monthlySummary: 'icon-tianjinshiliangyoujiagezhishuyuebao',
+  yearlySummary: 'icon-yearly-summary-upload',
   dailyDetails: 'icon-ribao',
   remark: 'icon-24_beizhu',
-  tag: 'icon-biaoqianguanli',
+  tag: 'icon-biaoqian',
   more: 'icon-gengduo2_more-two',
   transactionEdit: 'icon-bianji1',
   transactionDelete: 'icon-shanchu1',

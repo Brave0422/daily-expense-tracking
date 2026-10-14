@@ -1,12 +1,12 @@
 /**
  * @author Brave
  * @date 2026-10-14T14:17:47+08:00
- * @description ECharts环形图与柱状图配置，保留精确金额文案、完整时间轴及稳定分类配色。
+ * @description ECharts饼图与柱状图配置，保留精确金额文案、完整时间轴及稳定分类配色。
  */
 import type { TooltipComponentOption } from 'echarts/components'
 import type { CategoryStatisticsResult, TransactionTrendResult } from '@/api/statistics.types'
 import { formatAmount } from '@/utils/money'
-import { getCategoryChartColor, getCategoryPath, getCategoryTooltip } from './statistics-view.util'
+import { getCategoryChartColor, getCategoryTooltip } from './statistics-view.util'
 import type { StatisticsChartOption } from './statistics-chart'
 
 /**
@@ -24,8 +24,8 @@ function getTooltipDataIndex(params: unknown): number {
     : -1
 }
 /**
- * 以纯文本生成Tooltip节点，防止分类名称或父级路径被解析成HTML。
- * @param content 包含完整路径或日期及后端精确金额的文案
+ * 以纯文本生成Tooltip节点，防止分类名称被解析成HTML。
+ * @param content 包含分类名称或日期及后端精确金额的文案
  * @returns 可交给ECharts展示的HTML元素
  */
 function createTooltipContent(content: string): HTMLElement {
@@ -78,7 +78,7 @@ function createStatisticsTooltip(
   }
 }
 /**
- * 用全部精确分类金额的绘图数值构造环形系列，百分比文案始终取后端响应。
+ * 用全部精确分类金额的绘图数值构造实心饼图，百分比文案始终取后端响应。
  * @param result 当前成功的分类占比响应，不重新排序或合并分类
  * @param container 当前图表容器，限制Tooltip到可见视口
  * @returns 按分类ID稳定配色的完整ECharts配置
@@ -90,7 +90,7 @@ export function createCategoryProportionOption(
   /**
    * 使用分类ID对应的原始金额和后端占比，忽略图表内部舍入的percent。
    * @param params ECharts扇区提示参数
-   * @returns 包含完整分类路径的纯文本节点
+   * @returns 包含分类自身名称的纯文本节点
    */
   function formatCategoryTooltip(params: unknown): HTMLElement {
     const item = result.items[getTooltipDataIndex(params)]
@@ -109,7 +109,7 @@ export function createCategoryProportionOption(
         type: 'pie',
         stillShowZeroSum: false,
         showEmptyCircle: false,
-        radius: ['68%', '92%'],
+        radius: '92%',
         center: ['50%', '50%'],
         selectedMode: false,
         label: { show: false },
@@ -118,7 +118,7 @@ export function createCategoryProportionOption(
         // value仅用于ECharts绘图权重，不用舍入后的percentage重建比例。
         data: result.items.map((item) => ({
           id: String(item.categoryId),
-          name: getCategoryPath(item),
+          name: item.name,
           value: Number(item.amount),
           itemStyle: { color: getCategoryChartColor(item.categoryId) },
         })),

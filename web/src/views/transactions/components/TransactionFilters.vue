@@ -226,6 +226,8 @@ onBeforeUnmount(() => {
           clearable
           :show-all-levels="false"
           :min-collapsed-num="1"
+          :tag-input-props="{ excessTagsDisplayType: 'scroll' }"
+          :popup-props="{ overlayClassName: 'transaction-category-popup' }"
           :loading="isCategoriesLoading"
           :disabled="isCategoriesLoading || Boolean(categoryError)"
           aria-labelledby="transaction-category-label"
@@ -266,12 +268,29 @@ onBeforeUnmount(() => {
           <input
             id="transaction-title"
             :value="props.filters.title"
-            type="search"
+            type="text"
             maxlength="50"
             :disabled="isDailyFiltersDisabled"
             :placeholder="isDailyFiltersDisabled ? '仅日明细可用' : '搜索标题'"
             @input="handleTextInput('title', $event)"
           />
+          <button
+            v-if="props.filters.title && !isDailyFiltersDisabled"
+            type="button"
+            class="filter-input__clear"
+            aria-label="清空标题"
+            @mousedown.prevent
+            @click="updateField('title', '')"
+          >
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M16.9503 7.05029L12.0005 12M12.0005 12L7.05078 16.9498M12.0005 12L16.9503 16.9498M12.0005 12L7.05078 7.05029"
+                stroke="currentColor"
+                stroke-linecap="square"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
         </div>
       </div>
       <div class="filter-field" :class="{ 'filter-field--disabled': isDailyFiltersDisabled }">
@@ -283,6 +302,7 @@ onBeforeUnmount(() => {
           filterable
           clearable
           :min-collapsed-num="1"
+          :tag-input-props="{ excessTagsDisplayType: 'scroll' }"
           :loading="isTagsLoading"
           :disabled="isDailyFiltersDisabled || isTagsLoading || Boolean(tagError)"
           aria-labelledby="transaction-tag-label"
@@ -314,12 +334,29 @@ onBeforeUnmount(() => {
           <input
             id="transaction-remark"
             :value="props.filters.remark"
-            type="search"
+            type="text"
             maxlength="100"
             :disabled="isDailyFiltersDisabled"
             :placeholder="isDailyFiltersDisabled ? '仅日明细可用' : '搜索备注'"
             @input="handleTextInput('remark', $event)"
           />
+          <button
+            v-if="props.filters.remark && !isDailyFiltersDisabled"
+            type="button"
+            class="filter-input__clear"
+            aria-label="清空备注"
+            @mousedown.prevent
+            @click="updateField('remark', '')"
+          >
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M16.9503 7.05029L12.0005 12M12.0005 12L7.05078 16.9498M12.0005 12L16.9503 16.9498M12.0005 12L7.05078 7.05029"
+                stroke="currentColor"
+                stroke-linecap="square"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
         </div>
       </div>
       <fieldset class="filter-field">
@@ -392,6 +429,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .transaction-filters {
+  --td-brand-color-light: var(--color-primary-soft);
+  --td-text-color-brand: #9a7b08;
   display: flex;
   width: 276px;
   min-width: 0;
@@ -479,6 +518,28 @@ onBeforeUnmount(() => {
   height: 38px;
   border-radius: 8px;
 }
+/* 多选采用单行折叠，并消除标签行内基线造成的垂直偏移。 */
+.transaction-filters :deep(.t-tag-input .t-input),
+.transaction-filters :deep(.t-tag-input .t-input__prefix),
+.transaction-filters :deep(.t-tag-input__prefix) {
+  display: flex;
+  align-items: center;
+}
+.transaction-filters :deep(.t-tag-input .t-tag) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+/* 分类弹层挂载到body，通过专用类使用主题变量，覆盖组件库的默认蓝色。 */
+:global(.transaction-category-popup) {
+  --td-brand-color-light: var(--color-primary-soft);
+  --td-brand-color-light-hover: var(--color-primary-soft);
+  --td-bg-color-container-hover: var(--color-primary-soft);
+  --td-text-color-brand: #9a7b08;
+}
+:global(.transaction-category-popup .t-cascader__item.t-is-selected),
+:global(.transaction-category-popup .t-cascader__item.t-is-selected .t-checkbox__label) {
+  color: #9a7b08;
+}
 .filter-input input {
   width: 100%;
   min-width: 0;
@@ -493,8 +554,31 @@ onBeforeUnmount(() => {
 .filter-amounts input::placeholder {
   color: #9a9ea6;
 }
+.filter-input__clear {
+  display: grid;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  color: var(--color-primary);
+  background: transparent;
+  line-height: 1;
+  cursor: pointer;
+}
+.filter-input__clear svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+.filter-input__clear:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 .filter-tag-icon {
-  color: #9a7b08;
+  color: var(--color-icon);
 }
 /* 年周期保留控件位置，禁用字段与图标使用统一灰色。 */
 .filter-field--disabled > label,

@@ -159,10 +159,6 @@ watch(tagLabel, async () => {
   place-items: center;
 }
 
-.tag-list-item__delete:hover:not(:disabled) {
-  background: var(--color-primary);
-}
-
 .tag-list-item button:disabled {
   cursor: not-allowed;
   opacity: 0.65;

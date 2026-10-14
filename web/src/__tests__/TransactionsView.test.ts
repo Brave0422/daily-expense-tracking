@@ -261,6 +261,38 @@ describe('TransactionsView', () => {
     expect(wrapper.find('.filter-totals').exists()).toBe(false)
   })
 
+  it.each([
+    { field: 'title', label: '清空标题', retainedField: 'remark', retainedValue: '优惠' },
+    { field: 'remark', label: '清空备注', retainedField: 'title', retainedValue: '显示器' },
+  ])(
+    '$label保留其他筛选，并按现有防抖规则查询',
+    async ({ field, label, retainedField, retainedValue }) => {
+      const wrapper = mountPage()
+      await flushPromises()
+      await wrapper.get('#transaction-title').setValue('显示器')
+      await wrapper.get('#transaction-remark').setValue('优惠')
+      await vi.advanceTimersByTimeAsync(300)
+      await flushPromises()
+      apiMocks.getDailyTransactions.mockClear()
+
+      await wrapper.get(`button[aria-label="${label}"]`).trigger('click')
+      expect(wrapper.get<HTMLInputElement>(`#transaction-${field}`).element.value).toBe('')
+      expect(wrapper.get<HTMLInputElement>(`#transaction-${retainedField}`).element.value).toBe(
+        retainedValue,
+      )
+      expect(wrapper.find(`button[aria-label="${label}"]`).exists()).toBe(false)
+      expect(apiMocks.getDailyTransactions).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(300)
+      await flushPromises()
+      expect(apiMocks.getDailyTransactions).toHaveBeenCalledTimes(1)
+      expect(apiMocks.getDailyTransactions.mock.lastCall?.[0]).toMatchObject({
+        month: '2026-10',
+        [retainedField]: retainedValue,
+      })
+      expect(apiMocks.getDailyTransactions.mock.lastCall?.[0]).not.toHaveProperty(field)
+    },
+  )
+
   it('删除先确认且取消不发请求，不影响日期折叠，无标题时显示分类路径', async () => {
     const result = createResult()
     const transaction = result.days[0]?.transactions[0]

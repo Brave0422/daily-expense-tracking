@@ -1,7 +1,7 @@
 /**
  * @author Brave
  * @date 2026-10-14T12:48:33+08:00
- * @description 统计周期显示、数据库边界校验、分类路径与独立于图标背景的稳定图表配色。
+ * @description 统计周期显示、数据库边界校验、分类提示与独立于图标背景的稳定图表配色。
  */
 import type { CategoryStatisticsItem, StatisticsPeriodType } from '@/api/statistics.types'
 import { formatAmount } from '@/utils/money'
@@ -30,17 +30,10 @@ export function isValidStatisticsPeriod(period: string, periodType: StatisticsPe
 }
 /**
  * @param item 当前分类聚合项
- * @returns 可区分同名二级分类的完整父子路径
- */
-export function getCategoryPath(item: CategoryStatisticsItem): string {
-  return item.parent ? `${item.parent.name} / ${item.name}` : item.name
-}
-/**
- * @param item 当前分类聚合项
- * @returns 分类路径、完整元金额和后端百分比 Tooltip
+ * @returns 分类自身名称、完整元金额和后端百分比 Tooltip，不附加父类名称
  */
 export function getCategoryTooltip(item: CategoryStatisticsItem): string {
-  return `${getCategoryPath(item)} · ¥ ${formatAmount(item.amount)} · ${item.percentage}%`
+  return `${item.name} · ¥ ${formatAmount(item.amount)} · ${item.percentage}%`
 }
 /**
  * 使用 ID 的黄金角色相生成稳定配色，邻近二级分类也有可区分的颜色。

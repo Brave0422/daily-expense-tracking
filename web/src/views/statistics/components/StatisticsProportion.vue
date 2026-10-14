@@ -2,64 +2,63 @@
 /**
  * @author Brave
  * @date 2026-10-14T12:48:33+08:00
- * @description 分类图例与ECharts环形图，用金额绘制全部扇区并按分类ID稳定配色。
+ * @description 左侧总额及ECharts饼图与右侧分类图例，用金额绘制全部扇区并按分类ID稳定配色。
  */
 import { computed, ref } from 'vue'
 import type { CategoryStatisticsResult } from '@/api/statistics.types'
 import { formatAmount } from '@/utils/money'
-import { getCategoryChartColor, getCategoryTooltip, getCategoryPath } from '../statistics-view.util'
+import { getCategoryChartColor, getCategoryTooltip } from '../statistics-view.util'
 import { useStatisticsChart } from '../composables/useStatisticsChart'
 import { createCategoryProportionOption } from '../statistics-chart-options'
 const props = defineProps<{ result: CategoryStatisticsResult }>()
 const chartElement = ref<HTMLElement | null>(null)
 const chartOption = computed(() => createCategoryProportionOption(props.result, chartElement.value))
 const { showItemTooltip, clearItemTooltip } = useStatisticsChart(chartElement, chartOption)
-const amountFontSize = computed(() => {
-  const length = formatAmount(props.result.totalAmount).length + 2
-  // cqw 随实际环形图容器缩放，窄卡片上避免货币符号和金额挤到不同行。
-  return `clamp(9px, ${60 / (length * 0.7)}cqw, 19px)`
-})
 </script>
 <template>
   <div class="proportion-content">
-    <!-- 图例独立滚动，顺序及集合与后端和环形图完全一致 -->
-    <ul class="proportion-legend" aria-label="分类占比图例">
-      <li v-for="(item, index) in props.result.items" :key="item.categoryId">
-        <span
-          tabindex="0"
-          class="proportion-legend__item"
-          :aria-label="getCategoryTooltip(item)"
-          @mouseenter="showItemTooltip(index)"
-          @mouseleave="clearItemTooltip"
-          @focus="showItemTooltip(index)"
-          @blur="clearItemTooltip"
-          @keydown.esc="clearItemTooltip"
-        >
-          <i
-            :style="{ backgroundColor: getCategoryChartColor(item.categoryId) }"
-            aria-hidden="true"
-          />
-          <span class="proportion-legend__name" :title="getCategoryPath(item)"
-            >{{ item.name }}<small v-if="item.parent">{{ item.parent.name }}</small></span
-          >
-          <span class="proportion-legend__percentage">{{ item.percentage }}%</span>
-        </span>
-      </li>
-    </ul>
-    <div class="proportion-chart">
-      <!-- ECharts负责扇区、原生高亮和Tooltip；中心金额保留精确字符串展示 -->
-      <div
-        ref="chartElement"
-        class="proportion-chart__canvas"
-        role="img"
-        aria-label="分类金额环形图"
-      />
-      <div class="proportion-chart__center">
+    <div class="proportion-visual">
+      <div class="proportion-total">
         <span>{{ props.result.type === 'expense' ? '总支出' : '总收入' }}</span>
-        <strong :class="`amount-${props.result.type}`" :style="{ fontSize: amountFontSize }"
+        <strong :class="`amount-${props.result.type}`"
           >¥ {{ formatAmount(props.result.totalAmount) }}</strong
         >
       </div>
+      <div class="proportion-chart-area">
+        <div class="proportion-chart">
+          <!-- ECharts负责实心扇区、原生高亮和Tooltip -->
+          <div
+            ref="chartElement"
+            class="proportion-chart__canvas"
+            role="img"
+            aria-label="分类金额饼图"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="proportion-directory">
+      <!-- 总额固定在左侧图表区域顶部，右侧图例独立滚动并与饼图保持相同顺序 -->
+      <ul class="proportion-legend" aria-label="分类占比图例">
+        <li v-for="(item, index) in props.result.items" :key="item.categoryId">
+          <span
+            tabindex="0"
+            class="proportion-legend__item"
+            :aria-label="getCategoryTooltip(item)"
+            @mouseenter="showItemTooltip(index)"
+            @mouseleave="clearItemTooltip"
+            @focus="showItemTooltip(index)"
+            @blur="clearItemTooltip"
+            @keydown.esc="clearItemTooltip"
+          >
+            <i
+              :style="{ backgroundColor: getCategoryChartColor(item.categoryId) }"
+              aria-hidden="true"
+            />
+            <span class="proportion-legend__name" :title="item.name">{{ item.name }}</span>
+            <span class="proportion-legend__percentage">{{ item.percentage }}%</span>
+          </span>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
@@ -73,16 +72,50 @@ const amountFontSize = computed(() => {
 .proportion-content {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(145px, 1.25fr);
+  grid-template-columns: minmax(145px, 1.25fr) minmax(0, 1fr);
   gap: 12px;
   min-height: 0;
   align-items: center;
   height: 100%;
 }
-.proportion-legend {
+.proportion-visual,
+.proportion-directory {
+  display: flex;
+  flex-direction: column;
   align-self: stretch;
   min-height: 0;
-  padding: 12px 4px 0 0;
+  min-width: 0;
+}
+.proportion-directory {
+  padding-top: 16px;
+}
+.proportion-chart-area {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  place-items: center;
+}
+.proportion-total {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 0 10px;
+}
+.proportion-total span {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+.proportion-total strong {
+  font-size: clamp(23px, 2.1vw, 34px);
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+.proportion-legend {
+  flex: 1;
+  min-height: 0;
+  padding: 0 4px 0 0;
   margin: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -110,21 +143,12 @@ const amountFontSize = computed(() => {
   white-space: nowrap;
   font-size: 12px;
 }
-.proportion-legend__name small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 10px;
-  color: var(--color-text-secondary);
-  margin-top: 3px;
-}
 .proportion-legend__percentage {
   flex: none;
   color: var(--color-text-secondary);
   font-size: 10px;
 }
 .proportion-chart {
-  container-type: inline-size;
   aspect-ratio: 1;
   width: 100%;
   position: relative;
@@ -135,26 +159,5 @@ const amountFontSize = computed(() => {
   inset: 0;
   width: 100%;
   height: 100%;
-}
-.proportion-chart__center {
-  position: absolute;
-  inset: 28% 20%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-.proportion-chart__center span {
-  color: var(--color-text-secondary);
-  font-size: 11px;
-}
-.proportion-chart__center strong {
-  max-width: 100%;
-  text-align: center;
-  overflow-wrap: anywhere;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.4;
 }
 </style>

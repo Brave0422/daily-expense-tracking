@@ -627,11 +627,9 @@ export class TransactionsService {
               .subQuery()
               .select('1')
               .from(TransactionTagEntity, 'filteredTransactionTag')
+              // 属性名后直接换行会干扰 TypeORM 的列名替换，关联条件保持连续。
               .where(
-                `
-                filteredTransactionTag.transactionId
-                = filteredTransaction.id
-              `,
+                'filteredTransactionTag.transactionId = filteredTransaction.id',
               )
               .andWhere('filteredTransactionTag.tagId IN (:...tagIds)')
               .getQuery();

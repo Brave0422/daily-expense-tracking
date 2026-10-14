@@ -33,6 +33,7 @@ describe('loadIconfontSymbols', () => {
       'var(--category-icon-background',
     )
     expect(generalSymbol?.querySelector('title')).toBeNull()
+    expect(document.getElementById('expense-local-ui-icon-symbol-sprite')).toBeNull()
   })
 
   it('重复加载时不重复创建脚本和 Sprite', () => {
@@ -41,6 +42,25 @@ describe('loadIconfontSymbols', () => {
 
     expect(document.querySelectorAll(`#${APP_SYMBOL_SCRIPT_ID}`)).toHaveLength(1)
     expect(document.querySelectorAll(`#${CATEGORY_SYMBOL_SPRITE_ID}`)).toHaveLength(1)
+  })
+
+  it.each(['icon-jiangxu', 'icon-shengxu'])('%s 仅将活动箭头变为不透明主题色', (symbolId) => {
+    const sprite = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    sprite.innerHTML =
+      appSymbolSource.match(new RegExp(`<symbol id="${symbolId}"[\\s\\S]*?</symbol>`))?.[0] ?? ''
+    document.body.append(sprite)
+    try {
+      loadIconfontSymbols()
+      loadIconfontSymbols()
+      const arrows = sprite.querySelectorAll('path')
+      expect(arrows).toHaveLength(2)
+      expect(arrows[0]?.getAttribute('fill')).toBe('#000000')
+      expect(arrows[0]?.getAttribute('fill-opacity')).toBe('.25')
+      expect(arrows[1]?.getAttribute('fill')).toBe('var(--color-primary, #ffe639)')
+      expect(arrows[1]?.hasAttribute('fill-opacity')).toBe(false)
+    } finally {
+      sprite.remove()
+    }
   })
 
   it('删除图标主体继承按钮颜色，白色减号保留而非显示实心圆', () => {

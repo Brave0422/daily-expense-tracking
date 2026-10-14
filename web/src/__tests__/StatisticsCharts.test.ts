@@ -6,9 +6,10 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TooltipComponentOption } from 'echarts/components'
+import type { ECharts } from 'echarts/core'
 import type { CategoryStatisticsResult, TransactionTrendResult } from '@/api/statistics.types'
 import type { StatisticsChartOption } from '@/views/statistics/statistics-chart'
-const createChartMock = vi.hoisted(() => vi.fn())
+const createChartMock = vi.hoisted(() => vi.fn<(container: HTMLElement) => ChartInstanceMock>())
 vi.mock('@/views/statistics/statistics-chart', () => ({ createStatisticsChart: createChartMock }))
 import StatisticsProportion from '@/views/statistics/components/StatisticsProportion.vue'
 import StatisticsTrend from '@/views/statistics/components/StatisticsTrend.vue'
@@ -112,9 +113,9 @@ function formatTooltip(
 function createChartInstance() {
   return {
     setOption: vi.fn<(option: StatisticsChartOption, options: { notMerge: boolean }) => void>(),
-    dispatchAction: vi.fn(),
-    resize: vi.fn(),
-    dispose: vi.fn(),
+    dispatchAction: vi.fn<ECharts['dispatchAction']>(),
+    resize: vi.fn<ECharts['resize']>(),
+    dispose: vi.fn<ECharts['dispose']>(),
   }
 }
 type ChartInstanceMock = ReturnType<typeof createChartInstance>
@@ -167,13 +168,13 @@ describe('ECharts统计图表', () => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
   })
-  it('环形系列按原始金额绘制，分类跨顺序保持ID和稳定颜色', async () => {
+  it('饼图按原始金额绘制，分类跨顺序保持ID和稳定颜色', async () => {
     const wrapper = mount(StatisticsProportion, { props: { result } })
     wrappers.push(wrapper)
     expect(getAppliedOption().series).toMatchObject([
       {
         type: 'pie',
-        radius: ['68%', '92%'],
+        radius: '92%',
         data: [
           { id: '11', value: 1, itemStyle: { color: getCategoryChartColor(11) } },
           { id: '12', value: 2, itemStyle: { color: getCategoryChartColor(12) } },
@@ -181,7 +182,7 @@ describe('ECharts统计图表', () => {
       },
     ])
     expect(getCategoryChartColor(11)).not.toBe(getCategoryChartColor(12))
-    expect(wrapper.text()).toContain('¥ 3.00')
+    expect(wrapper.get('.proportion-visual .proportion-total').text()).toContain('¥ 3.00')
     expect(wrapper.find('svg').exists()).toBe(false)
     await wrapper.setProps({
       result: { ...result, period: '2026-09', items: [...result.items].reverse() },
@@ -210,7 +211,8 @@ describe('ECharts统计图表', () => {
       seriesIndex: 0,
       dataIndex: 0,
     })
-    expect(formatTooltip(getAppliedOption(), 0).textContent).toBe('三餐 / 早餐 · ¥ 1.00 · 33.33%')
+    expect(formatTooltip(getAppliedOption(), 0).textContent).toBe('早餐 · ¥ 1.00 · 33.33%')
+    expect(wrapper.get('.proportion-legend__name').attributes('title')).toBe('早餐')
     expect(getTooltip(getAppliedOption()).appendTo).toBe('body')
     await wrapper.find('.proportion-legend__item').trigger('mouseleave')
     expect(getChart().dispatchAction).toHaveBeenCalledWith({ type: 'downplay', seriesIndex: 0 })
@@ -242,7 +244,7 @@ describe('ECharts统计图表', () => {
     )
     const content = formatTooltip(option, 0)
     expect(content.textContent).toBe(
-      '三餐 / <img src=x onerror=alert(1)> · ¥ 90,071,992,547,409.91 · 100.00%',
+      '<img src=x onerror=alert(1)> · ¥ 90,071,992,547,409.91 · 100.00%',
     )
     expect(content.querySelector('img')).toBeNull()
   })

@@ -8,6 +8,7 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 
 import BaseIcon, { type IconName } from '@/components/base/BaseIcon.vue'
+import appSymbolSource from '@/assets/iconfont/app-symbol.js?raw'
 
 const SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   transactions: 'icon-home',
@@ -17,6 +18,8 @@ const SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   delete: 'icon-shanchu',
   edit: 'icon-bianji',
   reorder: 'icon-jiaohuanshunxu',
+  sortDescending: 'icon-jiangxu',
+  sortAscending: 'icon-shengxu',
   search: 'icon-sousuo1',
   emptyData: 'icon-queshengye_zanwushuju',
   tagClose: 'icon-dituweizhixinxi_chahao',
@@ -26,9 +29,10 @@ const SYMBOL_ID_BY_NAME: Readonly<Record<IconName, string>> = {
   show: 'icon-show',
   calendar: 'icon-rili',
   monthlySummary: 'icon-tianjinshiliangyoujiagezhishuyuebao',
+  yearlySummary: 'icon-yearly-summary-upload',
   dailyDetails: 'icon-ribao',
   remark: 'icon-24_beizhu',
-  tag: 'icon-biaoqianguanli',
+  tag: 'icon-biaoqian',
   more: 'icon-gengduo2_more-two',
   transactionEdit: 'icon-bianji1',
   transactionDelete: 'icon-shanchu1',
@@ -41,6 +45,7 @@ describe('BaseIcon', () => {
     })
 
     expect(wrapper.get('use').attributes('href')).toBe(`#${symbolId}`)
+    expect(appSymbolSource).toContain(`<symbol id="${symbolId}"`)
     expect(wrapper.get('svg').attributes('style')).toContain('width: 20px')
     expect(wrapper.get('svg').attributes('aria-hidden')).toBe('true')
   })

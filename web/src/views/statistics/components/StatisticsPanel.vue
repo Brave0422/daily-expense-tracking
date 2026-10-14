@@ -40,6 +40,10 @@ const {
 } = useStatistics(props.kind)
 const isDatePickerOpen = ref(false)
 const periodLabel = computed(() => formatStatisticsPeriod(period.value))
+const periodSwitchLabel = computed(() =>
+  periodType.value === 'month' ? '切换到年统计' : '切换到月统计',
+)
+const datePickerLabel = computed(() => (periodType.value === 'month' ? '选择月份' : '选择年份'))
 const sortLabel = computed(() =>
   order.value === 'desc' ? '金额降序，点击切换为升序' : '金额升序，点击切换为降序',
 )
@@ -130,32 +134,31 @@ function disableDate(date: string | number | Date): boolean {
           </span>
         </BaseTooltip>
       </div>
-      <div class="statistics-segment" role="group" :aria-label="`${props.title}统计周期`">
+      <BaseTooltip :content="periodSwitchLabel">
         <button
           type="button"
-          :aria-pressed="periodType === 'month'"
-          @click="handlePeriodTypeChange('month')"
+          class="statistics-icon-button statistics-period-toggle"
+          :aria-label="periodSwitchLabel"
+          @click="handlePeriodTypeChange(periodType === 'month' ? 'year' : 'month')"
         >
-          月
+          <BaseIcon
+            :name="periodType === 'month' ? 'yearlySummary' : 'monthlySummary'"
+            :size="20"
+          />
         </button>
-        <button
-          type="button"
-          :aria-pressed="periodType === 'year'"
-          @click="handlePeriodTypeChange('year')"
-        >
-          年
-        </button>
-      </div>
+      </BaseTooltip>
       <TPopup v-model:visible="isDatePickerOpen" trigger="click" placement="bottom-left">
-        <button
-          type="button"
-          class="statistics-period"
-          :aria-label="`选择${props.title}${periodType === 'month' ? '月份' : '年份'}，当前${periodLabel}`"
-          :aria-expanded="isDatePickerOpen"
-          @keydown.esc="isDatePickerOpen = false"
-        >
-          <BaseIcon name="calendar" :size="17" /><span>{{ periodLabel }}</span>
-        </button>
+        <BaseTooltip :content="datePickerLabel">
+          <button
+            type="button"
+            class="statistics-icon-button statistics-period"
+            :aria-label="`选择${props.title}${periodType === 'month' ? '月份' : '年份'}，当前${periodLabel}`"
+            :aria-expanded="isDatePickerOpen"
+            @keydown.esc="isDatePickerOpen = false"
+          >
+            <BaseIcon name="calendar" :size="20" />
+          </button>
+        </BaseTooltip>
         <template #content>
           <TDatePickerPanel
             :key="periodType"
@@ -175,7 +178,7 @@ function disableDate(date: string | number | Date): boolean {
             :aria-label="sortLabel"
             @click="toggleOrder"
           >
-            <BaseIcon name="reorder" :size="17" /><span>{{ order === 'desc' ? '↓' : '↑' }}</span>
+            <BaseIcon :name="order === 'desc' ? 'sortDescending' : 'sortAscending'" :size="20" />
           </button>
         </BaseTooltip>
       </span>
@@ -277,12 +280,18 @@ function disableDate(date: string | number | Date): boolean {
 .statistics-segment {
   display: inline-flex;
   flex: none;
+  height: 38px;
+  align-items: center;
   padding: 3px;
   background: #f3f4f6;
   border-radius: 9px;
 }
 .statistics-segment button {
-  padding: 5px 9px;
+  display: inline-flex;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
   color: var(--color-text-secondary);
   border: 0;
   border-radius: 6px;
@@ -298,25 +307,31 @@ function disableDate(date: string | number | Date): boolean {
   cursor: not-allowed;
   color: #b7bbc3;
 }
-.statistics-period {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  padding: 6px 0;
-  border: 0;
-  color: var(--color-text-secondary);
-  font-size: 12px;
+.statistics-icon-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  place-items: center;
+  color: var(--color-text);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: 9px;
   cursor: pointer;
-  white-space: nowrap;
+  transition: background 0.15s;
+}
+.statistics-icon-button:is(:hover, :focus-visible) {
+  background: var(--color-primary);
 }
 .statistics-sort {
   margin-left: auto;
 }
 .statistics-sort__button {
-  display: inline-flex;
-  gap: 1px;
-  align-items: center;
-  padding: 6px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;

@@ -305,7 +305,7 @@ watch(visibleTransactionIds, (ids) => {
 .transaction-row__tag {
   display: inline-flex;
   flex: none;
-  color: #9a7b08;
+  color: var(--color-icon);
   cursor: default;
 }
 .transaction-row__actions {
@@ -326,8 +326,11 @@ watch(visibleTransactionIds, (ids) => {
   white-space: nowrap;
 }
 .transaction-row__more {
+  display: grid;
   width: 31px;
   height: 31px;
+  padding: 0;
+  place-items: center;
 }
 /* 浮层挂载到 body，不能依赖页面祖先选择器。 */
 .transaction-row__menu {

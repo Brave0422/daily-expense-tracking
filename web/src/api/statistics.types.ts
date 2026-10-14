@@ -37,7 +37,7 @@ export interface CategoryStatisticsItem {
   parent: { categoryId: number; name: string } | null
   amount: string
   /**
-   * 百分比值，例如 12.50 表示 12.50%，用于文案及排行进度条。
+   * 百分比值，例如 12.50 表示 12.50%，用于排行及分类占比文案。
    */
   percentage: string
 }
