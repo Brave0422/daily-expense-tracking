@@ -1,6 +1,6 @@
 # Daily Expense Tracking
 
-一个面向个人日常消费场景的多端记账系统。PC Web 和 NestJS 服务端的初版功能已完成，下一阶段开发 Flutter 移动 App，复用现有账户、流水、分类、标签和统计 API。
+一个面向个人日常消费场景的多端记账系统。PC Web、NestJS 服务端和 Flutter 移动端的初版已完成；后续移动端改用 **Swift + SwiftUI 原生 iOS** 实现，复用现有账户、流水、分类、标签和统计 API。Android 后续另行规划。
 
 项目采用联网使用模式，业务数据以服务端为准。移动端首版不提供离线记账或本地账单同步功能。
 
@@ -10,7 +10,8 @@
 | --- | --- | --- |
 | PC Web | 初版功能已完成 | 账户认证、流水管理、分类与标签配置、收支统计 |
 | NestJS 服务端 | 初版功能已完成 | 对应业务 API、双 Token 认证、数据校验与持久化 |
-| 移动 App | 立项文档已建立，工程待初始化 | 使用 Flutter 实现移动端交互，复用现有业务 API |
+| 原生 iOS | 分模块 PRD 已建立，原生工程待生成 | SwiftUI 原生交互，视觉接近 Web，复用现有业务 API |
+| Flutter 移动端 | 初版已实现，保留为历史实现与参考 | 现有 Android / iOS 工程与验证记录见 `app/` |
 
 已实现的主要功能：
 
@@ -20,7 +21,7 @@
 - 标签：新增、编辑、归档删除、搜索及重名检查；流水表单支持在提交流水时一并创建或修改标签。
 - 统计：按月 / 年查看分类排行、分类占比、收支趋势，以及与上一个月 / 年的比较。
 
-预算管理尚未实现，不属于当前初版功能范围。
+预算管理与录入模板尚未实现，不属于当前初版功能范围。
 
 ## 项目结构
 
@@ -28,10 +29,11 @@
 daily-expense-tracking/
 ├── web/           # PC Web 客户端，初版已完成
 ├── service-nest/  # NestJS 服务端，初版已完成
-└── app/           # 移动端 PRD 与模块文档，Flutter 工程待初始化
+├── ios/           # 新的原生 iOS 方向；本轮仅有 PRD 和 Web 设计参考图
+└── app/           # 已有 Flutter 客户端、历史 PRD 与实施记录
 ```
 
-## 已实现的技术栈
+## 已实现的 Web 与服务端技术栈
 
 ### PC Web
 
@@ -42,7 +44,8 @@ daily-expense-tracking/
 - Vue Router：页面路由与登录访问控制。
 - Pinia：登录会话等全局状态。
 - Axios：HTTP 请求、Bearer Token 注入、认证刷新与错误处理。
-- Apache ECharts：分类占比和收支趋势图表，直接按需引入 ECharts 模块。
+- Apache ECharts 6.1.0：分类占比使用实心饼图、收支趋势使用竖向柱状图；按需引入 PieChart、BarChart、Grid、Tooltip、Aria 和 CanvasRenderer。分类排行使用原生页面列表。
+- 本地 SVG 分类图标与 Iconfont Symbol：分类图案、继承背景色和通用操作图标；分类资源保留来源及 MIT 许可说明。
 - Zod：认证表单数据校验。
 - Vitest + Vue Test Utils：单元测试与组件测试。
 - ESLint + Oxlint + Prettier：代码检查与格式化。
@@ -101,49 +104,46 @@ Refresh Cookie 使用 `HttpOnly`、`SameSite=Lax` 和 `/auth` 路径，生产环
 
 接口与请求 / 响应类型以 `service-nest/src/modules/` 和 `web/src/api/` 中的实现为准。当前尚未集成 OpenAPI 文档或自动生成 API Client。
 
-## 移动 App 规划
+## 原生 iOS 规划
 
-目录：`app/`，目标平台为 Android 和 iOS。立项需求入口为 [移动端主 PRD](app/PRD.md)，通过主文档阅读各模块及 Flutter 代码与注释规范。当前只建立需求文档，尚未初始化 Flutter 工程或安装移动端依赖。
+目录：`ios/`，与历史 Flutter 工程的 `app/ios/` 区分。本轮仅建立分模块 PRD 和 Web 参考图，未生成 Xcode 工程、Swift 源码或安装依赖。需求入口为 [原生 iOS 主 PRD](ios/PRD.md)，Android 后续另行规划。
 
-| 技术 | 用途 |
+| 计划技术 | 用途 |
 | --- | --- |
-| Flutter + Dart | 移动端页面与平台交互 |
-| Material 3 | 主要 UI 组件与主题体系 |
-| Cupertino | 按需适配 iOS 交互习惯 |
-| Riverpod | 页面状态、异步请求状态与依赖管理 |
-| go_router | 路由、登录访问控制与会话恢复后的导航 |
-| Dio | HTTP 请求、认证拦截器与请求取消 |
-| Freezed + json_serializable | 不可变模型及 JSON 序列化 |
-| flutter_secure_storage | 长期认证凭证的安全存储 |
-| flutter_svg | 分类 SVG 图案显示 |
-| fl_chart | 分类占比、排行与收支趋势图表 |
-| flutter_test + integration_test | 单元、组件与集成测试 |
+| Swift + SwiftUI | 原生页面、NavigationStack、TabView、全屏表单与 Sheet |
+| Observation | 页面状态与数据观察，UI 状态由 MainActor 管理 |
+| Swift Concurrency | async / await、任务取消、actor 会话协调 |
+| URLSession + Codable | HTTP、JSON 模型、统一响应与错误处理 |
+| Security / Keychain | Refresh Cookie 安全持久化和环境隔离 |
+| Swift Charts | 原生实心饼图、柱状趋势与触摸选择；排行使用列表 |
+| Asset Catalog + SF Symbols | 本地分类图案与系统操作图标 |
+| XCTest + XCUITest | 后续业务 / 会话契约与关键界面流程验证 |
 
-模型代码生成需要配套配置 `build_runner`、`freezed` 和 `json_serializable` 开发依赖；具体版本在创建 App 时统一确认。
+PRD 以 iOS 17.0 为最低部署基线；实际 Xcode、Swift 编译器与 SDK 版本在后续创建工程时记录。
 
-### 数据与代码组织
+### 数据、认证与架构
 
-- 必须联网使用，账单写入以服务端成功响应为准；网络失败时提示用户并保留当前表单输入。
-- 首版不引入 Drift / SQLite，不维护本地账单数据库、离线写入队列或同步协议。
-- Riverpod 管理页面状态与内存中的请求结果；写入成功后刷新相关数据。
-- 按业务模块组织代码，使用 View、ViewModel、Repository、Service 分工。Riverpod 的 `Notifier / AsyncNotifier` 可以承担 ViewModel 职责，避免重复维护同一份状态。
-- Repository 封装业务数据访问，Service 封装具体 HTTP 接口；按实际复杂度增加抽象。
-- 复用现有后端接口和业务契约，移动端页面、图表交互及布局独立实现。
+- 必须联网，业务数据以服务端为准；不引入本地账单数据库、离线写入队列或同步协议。
+- 按业务模块组织，View、ViewModel、Repository、Service 分工；业务结果在当前会话内存中缓存，写成功后刷新相关查询。
+- 沿用现有 Cookie 双 Token 接口：Access Token 仅内存保存，完整 Refresh Cookie 由受控 URLSession 适配层解析并保存在 Keychain，不新增 App 专用认证入口。
+- 实现启动恢复、并发共享刷新、最多一次认证重放、Cookie 轮换、退出清理与账号切换隔离。详见 [iOS 账户与认证](ios/docs/03-authentication.md)。
+- 金额使用精确十进制或安全整数分，发生日期保持自然日期；标签新建 / 改名随流水事务提交，取消草稿不产生写入。
 
-### 已确定的认证接入
+### 视觉、图标与图表
 
-移动端沿用现有 Cookie 双 Token 登录与刷新接口，不新增 App 专用认证入口。Dio 配合 `dio_cookie_manager` 和 `cookie_jar` 接收、发送 Cookie，通过自定义存储接入 `flutter_secure_storage` 安全保存 Refresh Cookie；Access Token 保存在内存。
+- 参考现有 Web：黄色强调、浅灰背景、白色圆角卡片、支出绿色、收入红色和彩色分类图标。主导航为“流水 / 统计 / 管理”。
+- Web 筛选侧栏改为 Sheet，长录入弹窗改为全屏表单，统计三列改为子分段；手机图表用点按 / 拖动读取信息。详见 [iOS 视觉与交互](ios/docs/08-ios-design-and-interaction.md)。
+- 分类图形沿用 `web/src/assets/icons/categories/`，后续转换为本地原生资源，按 iconKey 映射；SwiftUI 绘制服务端 backgroundColor 的圆形背景，保留资源许可。
+- 复用统计数据接口，图表使用 Swift Charts 实现，金额与百分比文字仍使用服务端精确结果。
+- 五张用户提供的 Web 原图及差异说明见 [设计参考](ios/docs/00-sources-and-references.md)。
 
-实现需处理并发请求共享刷新任务、Token 轮换、启动恢复、退出清理与账号切换竞态。详细流程见 [移动端账户与认证 PRD](app/docs/03-authentication.md)。
+原生 iOS 的编译、模拟器 / 真机调试和签名需要 macOS + Xcode。后续生成顺序与设备验收见 [实施阶段](ios/docs/10-delivery-and-acceptance.md)。
 
-### 图标与图表适配
+### 历史 Flutter 实现
 
-- 分类图标资源位于 `web/src/assets/icons/categories/`，服务端通过 `iconKey` 与 `backgroundColor` 提供图标及最终背景色。
-- Web 将 SVG 转为 Symbol，并通过 CSS 变量设置背景色；App 需要建立 `iconKey` 到 SVG 资源的映射，不能直接照搬 Web 的 Symbol / CSS 机制。
-- 建议由 Flutter 绘制圆形背景，使用适配后的 SVG 显示中心图案；具体资源处理在创建 App 时完成。
-- 现有统计接口可复用，ECharts 配置与 Tooltip 实现需要转换为 Flutter 图表和触摸交互。
+`app/` 已包含 Flutter + Dart 工程，使用 Material 3、Riverpod、go_router、Dio、Freezed / json_serializable、安全存储、flutter_svg 和 fl_chart。保留作业务与实现参考，后续原生开发入口以 `ios/PRD.md` 为准。
 
-Android 可在当前 Windows 环境开发；iOS 构建与调试需要 macOS 和 Xcode 环境。
+历史运行说明见 [app/README.md](app/README.md)，原需求见 [app/PRD.md](app/PRD.md)，历史检查与设备待验项见 [Flutter 实施记录](app/docs/11-implementation-report.md)。旧 PRD 中“工程待生成”的描述代表立项时状态，不能据此判断当前没有 Flutter 工程；历史 Flutter 通过记录也不代表原生 iOS 已通过验证。
 
 ## 数据约定
 
@@ -221,4 +221,4 @@ npm test -- --runInBand
 npm run build
 ```
 
-移动端目前仅有 PRD，暂无可运行的 Flutter 工程。初始化、生成和验收顺序见 [移动端实施阶段](app/docs/10-delivery-and-acceptance.md)。
+原生 iOS 当前只有 PRD，没有可执行构建命令；后续在 macOS / Xcode 按 [iOS 实施阶段](ios/docs/10-delivery-and-acceptance.md) 生成与验收。已有 Flutter 工程的运行命令见 [app/README.md](app/README.md)。
