@@ -1,0 +1,7 @@
+#include "Shared.xcconfig"
+// 模拟器中的localhost指向Mac，访问Windows服务请在Local.xcconfig覆盖。
+API_BASE_URL = http:/$()/localhost:3000
+INFOPLIST_FILE = Config/Info-Debug.plist
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG
+// 本机配置不入库；Release不读取此文件。
+#include? "Local.xcconfig"

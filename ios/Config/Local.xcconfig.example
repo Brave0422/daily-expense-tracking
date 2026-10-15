@@ -1,0 +1,5 @@
+// 复制为Local.xcconfig，再填写Mac或手机可达的Windows局域网地址。
+API_BASE_URL = http:/$()/192.168.1.100:3000
+// 真机调试时填写您自己的开发团队和唯一Bundle ID。
+DEVELOPMENT_TEAM =
+PRODUCT_BUNDLE_IDENTIFIER = com.example.dailyexpensetracking

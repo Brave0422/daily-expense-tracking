@@ -1,0 +1,745 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+		1598FC52D5DED0D48198B576 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Resources/Assets.xcassets";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "folder.assetcatalog";
+		};
+		A9C8059A23B76202C8D25203 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Resources/CategoryIconMapping.json";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "text.json";
+		};
+		1EA2EE2AD3D8BAF925BD5260 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Resources/THIRD_PARTY_NOTICES.md";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "net.daringfireball.markdown";
+		};
+		A291208F6A9482EE08430A92 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Resources/Localizable.xcstrings";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "text.json.xcstrings";
+		};
+		2C94172D67DA116C7BB32C13 = {
+			isa = "PBXFileReference";
+			path = "Config/Shared.xcconfig";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "text.xcconfig";
+		};
+		7326A50204128321A8234000 = {
+			isa = "PBXFileReference";
+			path = "Config/Debug.xcconfig";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "text.xcconfig";
+		};
+		513804B2957FB72C4F7A17B1 = {
+			isa = "PBXFileReference";
+			path = "Config/Release.xcconfig";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "text.xcconfig";
+		};
+		E2C82396874112CACA8E1C6F = {
+			isa = "PBXFileReference";
+			path = "Config/Info-Debug.plist";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "text.plist.xml";
+		};
+		58ED76B75D1B3A9F0AF4E24C = {
+			isa = "PBXFileReference";
+			path = "Config/Info-Release.plist";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "text.plist.xml";
+		};
+		425F73784D65473D54095711 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/App/AppModel.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		826CF953FA844F5466AC6E95 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/App/DailyExpenseTrackingApp.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		BB8479B824A8D6A79050FE36 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Authentication/RefreshCookie.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		C4C4064A82485302CBCE6039 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Authentication/SessionCoordinator.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		BB01BC850F2B064C85057BF7 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Configuration/AppConfiguration.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		473A3F085516C28219E23042 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Networking/HTTPTransport.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		6EBC9F25E02016C65210C882 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Networking/LedgerRepository.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		C031F4AB628357D87692C054 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Storage/CredentialStore.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		5B0028E4F3878792794AD9E7 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Utilities/LedgerValue.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		565B73E9D6DA3FA9E63B3F87 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Core/Utilities/QueryState.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		8F8C0A1F38EDCBCC3AD705BD = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/DesignSystem/NameEditorSheet.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		3BEB46E0DC24A2B712C7FC4F = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/DesignSystem/PeriodSheet.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		5E27A023F634B54E07037E21 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/DesignSystem/Theme.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		D2D02F5C483037E932469C94 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Auth/AuthView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		9FEC7EDFAC419514F68D6F10 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Categories/CategoriesView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		FE9940B55EB7E215913EC744 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Management/ManagementView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		EB45A8D7D18ED2140AE2551D = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Statistics/StatisticsModels.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		58E703A96ADDE19D506AC050 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Statistics/StatisticsView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		AE31C85F8E0EEF37F8E0785C = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Tags/TagSelectionView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		1267D2B81EB49C831F66FCB8 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Tags/TagsView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		938A5749625BAECB1441A4FA = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Transactions/LedgerModels.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		9F94ABE841EBA0494CBFECB6 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Transactions/TransactionDetailView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		DA66FBC710965F43ACCA1194 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Transactions/TransactionEditorModel.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		E8A534EC22A31A5FA890868F = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Transactions/TransactionEditorView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		8CF1DE58F57F0E21D41252F7 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Transactions/TransactionFilterView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		6FAD30A3AF5D9951BA54B403 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Transactions/TransactionsModel.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		C26FBC5326AFD2BABB44B901 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTracking/Features/Transactions/TransactionsView.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		EFDD6CC57F25D9A52E874E02 = {
+			isa = "PBXBuildFile";
+			fileRef = "425F73784D65473D54095711";
+		};
+		20B99908EB9952B0584BD83C = {
+			isa = "PBXBuildFile";
+			fileRef = "826CF953FA844F5466AC6E95";
+		};
+		2650514368F71378E7A448B1 = {
+			isa = "PBXBuildFile";
+			fileRef = "BB8479B824A8D6A79050FE36";
+		};
+		64111F76EFE3D5409E1EF7B8 = {
+			isa = "PBXBuildFile";
+			fileRef = "C4C4064A82485302CBCE6039";
+		};
+		F79FE5392F2D5A4F454DC5B7 = {
+			isa = "PBXBuildFile";
+			fileRef = "BB01BC850F2B064C85057BF7";
+		};
+		C7275703337F1689713CEF93 = {
+			isa = "PBXBuildFile";
+			fileRef = "473A3F085516C28219E23042";
+		};
+		7A756E26D86D56ADB43A3F94 = {
+			isa = "PBXBuildFile";
+			fileRef = "6EBC9F25E02016C65210C882";
+		};
+		3872590573648B17F601B891 = {
+			isa = "PBXBuildFile";
+			fileRef = "C031F4AB628357D87692C054";
+		};
+		BB8C5997304DC521B1201E10 = {
+			isa = "PBXBuildFile";
+			fileRef = "5B0028E4F3878792794AD9E7";
+		};
+		405C9BCB24FCD7E35C207C0C = {
+			isa = "PBXBuildFile";
+			fileRef = "565B73E9D6DA3FA9E63B3F87";
+		};
+		A0DFCB56CFD5B79B01DB3639 = {
+			isa = "PBXBuildFile";
+			fileRef = "8F8C0A1F38EDCBCC3AD705BD";
+		};
+		5FA494F1A528690E83476990 = {
+			isa = "PBXBuildFile";
+			fileRef = "3BEB46E0DC24A2B712C7FC4F";
+		};
+		B95B8312C98BEBD1C9E20466 = {
+			isa = "PBXBuildFile";
+			fileRef = "5E27A023F634B54E07037E21";
+		};
+		1DDA69E24D1CB943021885BB = {
+			isa = "PBXBuildFile";
+			fileRef = "D2D02F5C483037E932469C94";
+		};
+		541E8E12CE1EEE51435D2BD4 = {
+			isa = "PBXBuildFile";
+			fileRef = "9FEC7EDFAC419514F68D6F10";
+		};
+		A9CED2193880700D1B50C14A = {
+			isa = "PBXBuildFile";
+			fileRef = "FE9940B55EB7E215913EC744";
+		};
+		427E98B93F2F4A9346D5F0C2 = {
+			isa = "PBXBuildFile";
+			fileRef = "EB45A8D7D18ED2140AE2551D";
+		};
+		14498BE30B8F5F746AD66C15 = {
+			isa = "PBXBuildFile";
+			fileRef = "58E703A96ADDE19D506AC050";
+		};
+		1A04BEC40F546861EBFAFCCE = {
+			isa = "PBXBuildFile";
+			fileRef = "AE31C85F8E0EEF37F8E0785C";
+		};
+		1F3F66C8A5B076532E42D502 = {
+			isa = "PBXBuildFile";
+			fileRef = "1267D2B81EB49C831F66FCB8";
+		};
+		67147659BA14C5335EFC2E93 = {
+			isa = "PBXBuildFile";
+			fileRef = "938A5749625BAECB1441A4FA";
+		};
+		2F7AE5DD5C86FC1486E99DC8 = {
+			isa = "PBXBuildFile";
+			fileRef = "9F94ABE841EBA0494CBFECB6";
+		};
+		490B94EBC980C88627F5C51F = {
+			isa = "PBXBuildFile";
+			fileRef = "DA66FBC710965F43ACCA1194";
+		};
+		ED396CC2F28EF5304524332C = {
+			isa = "PBXBuildFile";
+			fileRef = "E8A534EC22A31A5FA890868F";
+		};
+		0C422275B103395574CF8285 = {
+			isa = "PBXBuildFile";
+			fileRef = "8CF1DE58F57F0E21D41252F7";
+		};
+		89281401E67AB9B01FA232B3 = {
+			isa = "PBXBuildFile";
+			fileRef = "6FAD30A3AF5D9951BA54B403";
+		};
+		8F246605A6C5D2A091BB87A9 = {
+			isa = "PBXBuildFile";
+			fileRef = "C26FBC5326AFD2BABB44B901";
+		};
+		B424F163FD71A8A2031D1C4C = {
+			isa = "PBXSourcesBuildPhase";
+			buildActionMask = 2147483647;
+			files = ("EFDD6CC57F25D9A52E874E02", "20B99908EB9952B0584BD83C", "2650514368F71378E7A448B1", "64111F76EFE3D5409E1EF7B8", "F79FE5392F2D5A4F454DC5B7", "C7275703337F1689713CEF93", "7A756E26D86D56ADB43A3F94", "3872590573648B17F601B891", "BB8C5997304DC521B1201E10", "405C9BCB24FCD7E35C207C0C", "A0DFCB56CFD5B79B01DB3639", "5FA494F1A528690E83476990", "B95B8312C98BEBD1C9E20466", "1DDA69E24D1CB943021885BB", "541E8E12CE1EEE51435D2BD4", "A9CED2193880700D1B50C14A", "427E98B93F2F4A9346D5F0C2", "14498BE30B8F5F746AD66C15", "1A04BEC40F546861EBFAFCCE", "1F3F66C8A5B076532E42D502", "67147659BA14C5335EFC2E93", "2F7AE5DD5C86FC1486E99DC8", "490B94EBC980C88627F5C51F", "ED396CC2F28EF5304524332C", "0C422275B103395574CF8285", "89281401E67AB9B01FA232B3", "8F246605A6C5D2A091BB87A9");
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EF97D8E16793309CEC8E2050 = {
+			isa = "PBXBuildFile";
+			fileRef = "1598FC52D5DED0D48198B576";
+		};
+		989CF37D48E81FE595027543 = {
+			isa = "PBXBuildFile";
+			fileRef = "A9C8059A23B76202C8D25203";
+		};
+		4D44E2C9C5DD0E92A14A4B0F = {
+			isa = "PBXBuildFile";
+			fileRef = "1EA2EE2AD3D8BAF925BD5260";
+		};
+		1882E9485DDC4D3B332C94A7 = {
+			isa = "PBXBuildFile";
+			fileRef = "A291208F6A9482EE08430A92";
+		};
+		7A326384DC2AE3CC8C17A2A6 = {
+			isa = "PBXResourcesBuildPhase";
+			buildActionMask = 2147483647;
+			files = ("EF97D8E16793309CEC8E2050", "989CF37D48E81FE595027543", "4D44E2C9C5DD0E92A14A4B0F", "1882E9485DDC4D3B332C94A7");
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3F2255334306413C38B69021 = {
+			isa = "PBXFrameworksBuildPhase";
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		11397B124DBECEC2E0BFE4B9 = {
+			isa = "PBXFileReference";
+			explicitFileType = "wrapper.application";
+			includeInIndex = 0;
+			path = "DailyExpenseTracking.app";
+			sourceTree = "BUILT_PRODUCTS_DIR";
+		};
+		8DBEF2C7624CBE911AB9C2C2 = {
+			isa = "XCBuildConfiguration";
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				ENABLE_TESTABILITY = "YES";
+				DEBUG_INFORMATION_FORMAT = "dwarf";
+			};
+			name = "Debug";
+			baseConfigurationReference = "7326A50204128321A8234000";
+		};
+		99C505EABEB4322CDEE04BB5 = {
+			isa = "XCBuildConfiguration";
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+			};
+			name = "Release";
+			baseConfigurationReference = "513804B2957FB72C4F7A17B1";
+		};
+		464A02D199D22B991DD77DC9 = {
+			isa = "XCConfigurationList";
+			buildConfigurations = ("8DBEF2C7624CBE911AB9C2C2", "99C505EABEB4322CDEE04BB5");
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		3D8028EB11CF41368FE7CA7F = {
+			isa = "PBXNativeTarget";
+			buildConfigurationList = "464A02D199D22B991DD77DC9";
+			buildPhases = ("B424F163FD71A8A2031D1C4C", "3F2255334306413C38B69021", "7A326384DC2AE3CC8C17A2A6");
+			buildRules = ();
+			dependencies = ();
+			name = "DailyExpenseTracking";
+			productName = "DailyExpenseTracking";
+			productReference = "11397B124DBECEC2E0BFE4B9";
+			productType = "com.apple.product-type.application";
+		};
+		0AC36A06D6C8AA459CF8E386 = {
+			isa = "PBXGroup";
+			children = ("425F73784D65473D54095711", "826CF953FA844F5466AC6E95", "BB8479B824A8D6A79050FE36", "C4C4064A82485302CBCE6039", "BB01BC850F2B064C85057BF7", "473A3F085516C28219E23042", "6EBC9F25E02016C65210C882", "C031F4AB628357D87692C054", "5B0028E4F3878792794AD9E7", "565B73E9D6DA3FA9E63B3F87", "8F8C0A1F38EDCBCC3AD705BD", "3BEB46E0DC24A2B712C7FC4F", "5E27A023F634B54E07037E21", "D2D02F5C483037E932469C94", "9FEC7EDFAC419514F68D6F10", "FE9940B55EB7E215913EC744", "EB45A8D7D18ED2140AE2551D", "58E703A96ADDE19D506AC050", "AE31C85F8E0EEF37F8E0785C", "1267D2B81EB49C831F66FCB8", "938A5749625BAECB1441A4FA", "9F94ABE841EBA0494CBFECB6", "DA66FBC710965F43ACCA1194", "E8A534EC22A31A5FA890868F", "8CF1DE58F57F0E21D41252F7", "6FAD30A3AF5D9951BA54B403", "C26FBC5326AFD2BABB44B901");
+			name = "DailyExpenseTracking";
+			sourceTree = "<group>";
+		};
+		D46FA93B69083E1B25575032 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTrackingTests/ContractTests.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		5DC8A88C1DE48ABB9ABC633C = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTrackingTests/CookieTests.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		BBE8451CD3520B3874C29AB7 = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTrackingTests/QueryStateTests.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		F940CBCBA933E2A168B963AB = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTrackingTests/SessionTests.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		F6ED203A2DB705C078C95174 = {
+			isa = "PBXBuildFile";
+			fileRef = "D46FA93B69083E1B25575032";
+		};
+		04D0C45E7F18A13521C69E0F = {
+			isa = "PBXBuildFile";
+			fileRef = "5DC8A88C1DE48ABB9ABC633C";
+		};
+		5822730F9D3029874C335EAC = {
+			isa = "PBXBuildFile";
+			fileRef = "BBE8451CD3520B3874C29AB7";
+		};
+		16D09770FAC6C001A1C8FE22 = {
+			isa = "PBXBuildFile";
+			fileRef = "F940CBCBA933E2A168B963AB";
+		};
+		A3DB60E2A748106FFE5115F8 = {
+			isa = "PBXSourcesBuildPhase";
+			buildActionMask = 2147483647;
+			files = ("F6ED203A2DB705C078C95174", "04D0C45E7F18A13521C69E0F", "5822730F9D3029874C335EAC", "16D09770FAC6C001A1C8FE22");
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4E2A5A8BC747A5F9D4C861D = {
+			isa = "PBXResourcesBuildPhase";
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D49E6E603F497BA75883606A = {
+			isa = "PBXFrameworksBuildPhase";
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EA959D2BF7A97E7458E57379 = {
+			isa = "PBXFileReference";
+			explicitFileType = "wrapper.cfbundle";
+			includeInIndex = 0;
+			path = "DailyExpenseTrackingTests.xctest";
+			sourceTree = "BUILT_PRODUCTS_DIR";
+		};
+		689F503B9968CC0DED79932B = {
+			isa = "XCBuildConfiguration";
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				GENERATE_INFOPLIST_FILE = "YES";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.dailyexpensetrackingtests";
+				CODE_SIGN_STYLE = "Automatic";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DailyExpenseTracking.app/DailyExpenseTracking";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				ENABLE_TESTABILITY = "YES";
+				DEBUG_INFORMATION_FORMAT = "dwarf";
+			};
+			name = "Debug";
+		};
+		6BD83248186BBEC21A0D88C1 = {
+			isa = "XCBuildConfiguration";
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				GENERATE_INFOPLIST_FILE = "YES";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.dailyexpensetrackingtests";
+				CODE_SIGN_STYLE = "Automatic";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DailyExpenseTracking.app/DailyExpenseTracking";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+			};
+			name = "Release";
+		};
+		B83B9F80B47145FF9732D8E7 = {
+			isa = "XCConfigurationList";
+			buildConfigurations = ("689F503B9968CC0DED79932B", "6BD83248186BBEC21A0D88C1");
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		96A8B93938D664C20D3EBB71 = {
+			isa = "PBXContainerItemProxy";
+			containerPortal = "98F54143AB4E86B28C3AFEE0";
+			proxyType = 1;
+			remoteGlobalIDString = "3D8028EB11CF41368FE7CA7F";
+			remoteInfo = "DailyExpenseTracking";
+		};
+		5EB9564627B7C6C8D1247B06 = {
+			isa = "PBXTargetDependency";
+			target = "3D8028EB11CF41368FE7CA7F";
+			targetProxy = "96A8B93938D664C20D3EBB71";
+		};
+		793B5B99C277515F85E846D9 = {
+			isa = "PBXNativeTarget";
+			buildConfigurationList = "B83B9F80B47145FF9732D8E7";
+			buildPhases = ("A3DB60E2A748106FFE5115F8", "D49E6E603F497BA75883606A", "F4E2A5A8BC747A5F9D4C861D");
+			buildRules = ();
+			dependencies = ("5EB9564627B7C6C8D1247B06");
+			name = "DailyExpenseTrackingTests";
+			productName = "DailyExpenseTrackingTests";
+			productReference = "EA959D2BF7A97E7458E57379";
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AAF7ED11595C9E7FFC0549D3 = {
+			isa = "PBXGroup";
+			children = ("D46FA93B69083E1B25575032", "5DC8A88C1DE48ABB9ABC633C", "BBE8451CD3520B3874C29AB7", "F940CBCBA933E2A168B963AB");
+			name = "DailyExpenseTrackingTests";
+			sourceTree = "<group>";
+		};
+		1D7B2CAA8126C5D3D4CFF60C = {
+			isa = "PBXFileReference";
+			path = "DailyExpenseTrackingUITests/AuthenticationUITests.swift";
+			sourceTree = "SOURCE_ROOT";
+			lastKnownFileType = "sourcecode.swift";
+		};
+		8A1C0E613E12A1D3F7A0120F = {
+			isa = "PBXBuildFile";
+			fileRef = "1D7B2CAA8126C5D3D4CFF60C";
+		};
+		DD1A99F440AEC72ACC0CD4C9 = {
+			isa = "PBXSourcesBuildPhase";
+			buildActionMask = 2147483647;
+			files = ("8A1C0E613E12A1D3F7A0120F");
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47D61BC98105DE7EB5A23057 = {
+			isa = "PBXResourcesBuildPhase";
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		461CDA4687A0C46C57C680ED = {
+			isa = "PBXFrameworksBuildPhase";
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81E2B482FBB67BDC76D47324 = {
+			isa = "PBXFileReference";
+			explicitFileType = "wrapper.cfbundle";
+			includeInIndex = 0;
+			path = "DailyExpenseTrackingUITests.xctest";
+			sourceTree = "BUILT_PRODUCTS_DIR";
+		};
+		DD4522DA212B041E6085580F = {
+			isa = "XCBuildConfiguration";
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				GENERATE_INFOPLIST_FILE = "YES";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.dailyexpensetrackinguitests";
+				CODE_SIGN_STYLE = "Automatic";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");
+				TEST_TARGET_NAME = "DailyExpenseTracking";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				ENABLE_TESTABILITY = "YES";
+				DEBUG_INFORMATION_FORMAT = "dwarf";
+			};
+			name = "Debug";
+		};
+		B21D2FFEA88E4D8AAB1CC1D6 = {
+			isa = "XCBuildConfiguration";
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				GENERATE_INFOPLIST_FILE = "YES";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.dailyexpensetrackinguitests";
+				CODE_SIGN_STYLE = "Automatic";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");
+				TEST_TARGET_NAME = "DailyExpenseTracking";
+			};
+			name = "Release";
+		};
+		B9BD7EE8FD2E1A8D8A5E9854 = {
+			isa = "XCConfigurationList";
+			buildConfigurations = ("DD4522DA212B041E6085580F", "B21D2FFEA88E4D8AAB1CC1D6");
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		E553160D51D67EB0BBD688A5 = {
+			isa = "PBXContainerItemProxy";
+			containerPortal = "98F54143AB4E86B28C3AFEE0";
+			proxyType = 1;
+			remoteGlobalIDString = "3D8028EB11CF41368FE7CA7F";
+			remoteInfo = "DailyExpenseTracking";
+		};
+		B92C3B5825E2868DC781350B = {
+			isa = "PBXTargetDependency";
+			target = "3D8028EB11CF41368FE7CA7F";
+			targetProxy = "E553160D51D67EB0BBD688A5";
+		};
+		4F0FF88B52602ACE64DCBF71 = {
+			isa = "PBXNativeTarget";
+			buildConfigurationList = "B9BD7EE8FD2E1A8D8A5E9854";
+			buildPhases = ("DD1A99F440AEC72ACC0CD4C9", "461CDA4687A0C46C57C680ED", "47D61BC98105DE7EB5A23057");
+			buildRules = ();
+			dependencies = ("B92C3B5825E2868DC781350B");
+			name = "DailyExpenseTrackingUITests";
+			productName = "DailyExpenseTrackingUITests";
+			productReference = "81E2B482FBB67BDC76D47324";
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A7E6009968111A6FC15C5E66 = {
+			isa = "PBXGroup";
+			children = ("1D7B2CAA8126C5D3D4CFF60C");
+			name = "DailyExpenseTrackingUITests";
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C = {
+			isa = "PBXGroup";
+			children = ("11397B124DBECEC2E0BFE4B9", "EA959D2BF7A97E7458E57379", "81E2B482FBB67BDC76D47324");
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		B6561938591A059DEBBCECA2 = {
+			isa = "PBXGroup";
+			children = ("2C94172D67DA116C7BB32C13", "7326A50204128321A8234000", "513804B2957FB72C4F7A17B1", "E2C82396874112CACA8E1C6F", "58ED76B75D1B3A9F0AF4E24C");
+			name = "Config";
+			sourceTree = "<group>";
+		};
+		9D8AE853B3291004D3E76343 = {
+			isa = "PBXGroup";
+			children = ("1598FC52D5DED0D48198B576", "A9C8059A23B76202C8D25203", "1EA2EE2AD3D8BAF925BD5260", "A291208F6A9482EE08430A92");
+			name = "Resources";
+			sourceTree = "<group>";
+		};
+		870B3294C0CBD48AF6BBCC1B = {
+			isa = "PBXGroup";
+			children = ("0AC36A06D6C8AA459CF8E386", "AAF7ED11595C9E7FFC0549D3", "A7E6009968111A6FC15C5E66", "9D8AE853B3291004D3E76343", "B6561938591A059DEBBCECA2", "FBDC4F23F93125BBEEAE800C");
+			sourceTree = "<group>";
+		};
+		AA60E62D3E7BAEF305ADABEA = {
+			isa = "XCBuildConfiguration";
+			name = "Debug";
+			buildSettings = {
+				CLANG_ENABLE_MODULES = "YES";
+				CLANG_ENABLE_OBJC_ARC = "YES";
+				SDKROOT = "iphoneos";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				ENABLE_TESTABILITY = "YES";
+			};
+		};
+		3D553B551D2688E2E7A15153 = {
+			isa = "XCBuildConfiguration";
+			name = "Release";
+			buildSettings = {
+				CLANG_ENABLE_MODULES = "YES";
+				CLANG_ENABLE_OBJC_ARC = "YES";
+				SDKROOT = "iphoneos";
+				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				SWIFT_VERSION = "5.0";
+				SWIFT_STRICT_CONCURRENCY = "complete";
+				ENABLE_TESTABILITY = "NO";
+			};
+		};
+		640DC9EFD529235A8D9E2727 = {
+			isa = "XCConfigurationList";
+			buildConfigurations = ("AA60E62D3E7BAEF305ADABEA", "3D553B551D2688E2E7A15153");
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Release";
+		};
+		98F54143AB4E86B28C3AFEE0 = {
+			isa = "PBXProject";
+			attributes = {
+				BuildIndependentTargetsInParallel = "YES";
+				LastUpgradeCheck = "1530";
+			};
+			buildConfigurationList = "640DC9EFD529235A8D9E2727";
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = ("zh-Hans", "en", "Base");
+			mainGroup = "870B3294C0CBD48AF6BBCC1B";
+			productRefGroup = "FBDC4F23F93125BBEEAE800C";
+			projectDirPath = "";
+			projectRoot = "";
+			targets = ("3D8028EB11CF41368FE7CA7F", "793B5B99C277515F85E846D9", "4F0FF88B52602ACE64DCBF71");
+		};
+	};
+	rootObject = "98F54143AB4E86B28C3AFEE0";
+}

@@ -1,0 +1,446 @@
+{
+  "icon-category-alcohol": {
+    "source": "web/src/assets/icons/categories/general/category-alcohol.svg",
+    "asset": "icon-category-alcohol.imageset/glyph.pdf"
+  },
+  "icon-category-baby-care": {
+    "source": "web/src/assets/icons/categories/general/category-baby-care.svg",
+    "asset": "icon-category-baby-care.imageset/glyph.pdf"
+  },
+  "icon-category-camping": {
+    "source": "web/src/assets/icons/categories/general/category-camping.svg",
+    "asset": "icon-category-camping.imageset/glyph.pdf"
+  },
+  "icon-category-car-maintenance": {
+    "source": "web/src/assets/icons/categories/general/category-car-maintenance.svg",
+    "asset": "icon-category-car-maintenance.imageset/glyph.pdf"
+  },
+  "icon-category-car-wash": {
+    "source": "web/src/assets/icons/categories/general/category-car-wash.svg",
+    "asset": "icon-category-car-wash.imageset/glyph.pdf"
+  },
+  "icon-category-coffee": {
+    "source": "web/src/assets/icons/categories/general/category-coffee.svg",
+    "asset": "icon-category-coffee.imageset/glyph.pdf"
+  },
+  "icon-category-cosmetics": {
+    "source": "web/src/assets/icons/categories/general/category-cosmetics.svg",
+    "asset": "icon-category-cosmetics.imageset/glyph.pdf"
+  },
+  "icon-category-dental": {
+    "source": "web/src/assets/icons/categories/general/category-dental.svg",
+    "asset": "icon-category-dental.imageset/glyph.pdf"
+  },
+  "icon-category-express-delivery": {
+    "source": "web/src/assets/icons/categories/general/category-express-delivery.svg",
+    "asset": "icon-category-express-delivery.imageset/glyph.pdf"
+  },
+  "icon-category-fitness": {
+    "source": "web/src/assets/icons/categories/general/category-fitness.svg",
+    "asset": "icon-category-fitness.imageset/glyph.pdf"
+  },
+  "icon-category-fuel": {
+    "source": "web/src/assets/icons/categories/general/category-fuel.svg",
+    "asset": "icon-category-fuel.imageset/glyph.pdf"
+  },
+  "icon-category-glasses": {
+    "source": "web/src/assets/icons/categories/general/category-glasses.svg",
+    "asset": "icon-category-glasses.imageset/glyph.pdf"
+  },
+  "icon-category-home-appliance": {
+    "source": "web/src/assets/icons/categories/general/category-home-appliance.svg",
+    "asset": "icon-category-home-appliance.imageset/glyph.pdf"
+  },
+  "icon-category-home-repair": {
+    "source": "web/src/assets/icons/categories/general/category-home-repair.svg",
+    "asset": "icon-category-home-repair.imageset/glyph.pdf"
+  },
+  "icon-category-hotel": {
+    "source": "web/src/assets/icons/categories/general/category-hotel.svg",
+    "asset": "icon-category-hotel.imageset/glyph.pdf"
+  },
+  "icon-category-insurance": {
+    "source": "web/src/assets/icons/categories/general/category-insurance.svg",
+    "asset": "icon-category-insurance.imageset/glyph.pdf"
+  },
+  "icon-category-jewelry": {
+    "source": "web/src/assets/icons/categories/general/category-jewelry.svg",
+    "asset": "icon-category-jewelry.imageset/glyph.pdf"
+  },
+  "icon-category-laundry": {
+    "source": "web/src/assets/icons/categories/general/category-laundry.svg",
+    "asset": "icon-category-laundry.imageset/glyph.pdf"
+  },
+  "icon-category-luggage": {
+    "source": "web/src/assets/icons/categories/general/category-luggage.svg",
+    "asset": "icon-category-luggage.imageset/glyph.pdf"
+  },
+  "icon-category-music": {
+    "source": "web/src/assets/icons/categories/general/category-music.svg",
+    "asset": "icon-category-music.imageset/glyph.pdf"
+  },
+  "icon-category-pet-food": {
+    "source": "web/src/assets/icons/categories/general/category-pet-food.svg",
+    "asset": "icon-category-pet-food.imageset/glyph.pdf"
+  },
+  "icon-category-pets": {
+    "source": "web/src/assets/icons/categories/general/category-pets.svg",
+    "asset": "icon-category-pets.imageset/glyph.pdf"
+  },
+  "icon-category-shopping": {
+    "source": "web/src/assets/icons/categories/general/category-shopping.svg",
+    "asset": "icon-category-shopping.imageset/glyph.pdf"
+  },
+  "icon-category-takeout": {
+    "source": "web/src/assets/icons/categories/general/category-takeout.svg",
+    "asset": "icon-category-takeout.imageset/glyph.pdf"
+  },
+  "icon-category-tobacco": {
+    "source": "web/src/assets/icons/categories/general/category-tobacco.svg",
+    "asset": "icon-category-tobacco.imageset/glyph.pdf"
+  },
+  "icon-category-toll": {
+    "source": "web/src/assets/icons/categories/general/category-toll.svg",
+    "asset": "icon-category-toll.imageset/glyph.pdf"
+  },
+  "icon-category-toys": {
+    "source": "web/src/assets/icons/categories/general/category-toys.svg",
+    "asset": "icon-category-toys.imageset/glyph.pdf"
+  },
+  "icon-category-veterinary": {
+    "source": "web/src/assets/icons/categories/general/category-veterinary.svg",
+    "asset": "icon-category-veterinary.imageset/glyph.pdf"
+  },
+  "icon-expense-clothing": {
+    "source": "web/src/assets/icons/categories/level1/expense-clothing.svg",
+    "asset": "icon-expense-clothing.imageset/glyph.pdf"
+  },
+  "icon-expense-clothing-bottoms": {
+    "source": "web/src/assets/icons/categories/level2/expense-clothing-bottoms.svg",
+    "asset": "icon-expense-clothing-bottoms.imageset/glyph.pdf"
+  },
+  "icon-expense-clothing-shoes": {
+    "source": "web/src/assets/icons/categories/level2/expense-clothing-shoes.svg",
+    "asset": "icon-expense-clothing-shoes.imageset/glyph.pdf"
+  },
+  "icon-expense-clothing-tops": {
+    "source": "web/src/assets/icons/categories/level2/expense-clothing-tops.svg",
+    "asset": "icon-expense-clothing-tops.imageset/glyph.pdf"
+  },
+  "icon-expense-clothing-underwear-socks": {
+    "source": "web/src/assets/icons/categories/level2/expense-clothing-underwear-socks.svg",
+    "asset": "icon-expense-clothing-underwear-socks.imageset/glyph.pdf"
+  },
+  "icon-expense-communication": {
+    "source": "web/src/assets/icons/categories/level1/expense-communication.svg",
+    "asset": "icon-expense-communication.imageset/glyph.pdf"
+  },
+  "icon-expense-communication-broadband": {
+    "source": "web/src/assets/icons/categories/level2/expense-communication-broadband.svg",
+    "asset": "icon-expense-communication-broadband.imageset/glyph.pdf"
+  },
+  "icon-expense-communication-mobile-data": {
+    "source": "web/src/assets/icons/categories/level2/expense-communication-mobile-data.svg",
+    "asset": "icon-expense-communication-mobile-data.imageset/glyph.pdf"
+  },
+  "icon-expense-communication-phone-bill": {
+    "source": "web/src/assets/icons/categories/level2/expense-communication-phone-bill.svg",
+    "asset": "icon-expense-communication-phone-bill.imageset/glyph.pdf"
+  },
+  "icon-expense-digital": {
+    "source": "web/src/assets/icons/categories/level1/expense-digital.svg",
+    "asset": "icon-expense-digital.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-computer": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-computer.svg",
+    "asset": "icon-expense-digital-computer.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-digital-accessories": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-digital-accessories.svg",
+    "asset": "icon-expense-digital-digital-accessories.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-digital-repair": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-digital-repair.svg",
+    "asset": "icon-expense-digital-digital-repair.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-phone": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-phone.svg",
+    "asset": "icon-expense-digital-phone.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-services": {
+    "source": "web/src/assets/icons/categories/level1/expense-digital-services.svg",
+    "asset": "icon-expense-digital-services.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-services-cloud-server": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-services-cloud-server.svg",
+    "asset": "icon-expense-digital-services-cloud-server.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-services-cloud-storage": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-services-cloud-storage.svg",
+    "asset": "icon-expense-digital-services-cloud-storage.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-services-network-service": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-services-network-service.svg",
+    "asset": "icon-expense-digital-services-network-service.imageset/glyph.pdf"
+  },
+  "icon-expense-digital-services-software-subscription": {
+    "source": "web/src/assets/icons/categories/level2/expense-digital-services-software-subscription.svg",
+    "asset": "icon-expense-digital-services-software-subscription.imageset/glyph.pdf"
+  },
+  "icon-expense-education": {
+    "source": "web/src/assets/icons/categories/level1/expense-education.svg",
+    "asset": "icon-expense-education.imageset/glyph.pdf"
+  },
+  "icon-expense-education-books": {
+    "source": "web/src/assets/icons/categories/level2/expense-education-books.svg",
+    "asset": "icon-expense-education-books.imageset/glyph.pdf"
+  },
+  "icon-expense-education-course-training": {
+    "source": "web/src/assets/icons/categories/level2/expense-education-course-training.svg",
+    "asset": "icon-expense-education-course-training.imageset/glyph.pdf"
+  },
+  "icon-expense-education-exam-certification": {
+    "source": "web/src/assets/icons/categories/level2/expense-education-exam-certification.svg",
+    "asset": "icon-expense-education-exam-certification.imageset/glyph.pdf"
+  },
+  "icon-expense-education-study-supplies": {
+    "source": "web/src/assets/icons/categories/level2/expense-education-study-supplies.svg",
+    "asset": "icon-expense-education-study-supplies.imageset/glyph.pdf"
+  },
+  "icon-expense-education-tuition": {
+    "source": "web/src/assets/icons/categories/level2/expense-education-tuition.svg",
+    "asset": "icon-expense-education-tuition.imageset/glyph.pdf"
+  },
+  "icon-expense-entertainment": {
+    "source": "web/src/assets/icons/categories/level1/expense-entertainment.svg",
+    "asset": "icon-expense-entertainment.imageset/glyph.pdf"
+  },
+  "icon-expense-entertainment-games": {
+    "source": "web/src/assets/icons/categories/level2/expense-entertainment-games.svg",
+    "asset": "icon-expense-entertainment-games.imageset/glyph.pdf"
+  },
+  "icon-expense-entertainment-movies": {
+    "source": "web/src/assets/icons/categories/level2/expense-entertainment-movies.svg",
+    "asset": "icon-expense-entertainment-movies.imageset/glyph.pdf"
+  },
+  "icon-expense-entertainment-tickets": {
+    "source": "web/src/assets/icons/categories/level2/expense-entertainment-tickets.svg",
+    "asset": "icon-expense-entertainment-tickets.imageset/glyph.pdf"
+  },
+  "icon-expense-household": {
+    "source": "web/src/assets/icons/categories/level1/expense-household.svg",
+    "asset": "icon-expense-household.imageset/glyph.pdf"
+  },
+  "icon-expense-household-home-cleaning": {
+    "source": "web/src/assets/icons/categories/level2/expense-household-home-cleaning.svg",
+    "asset": "icon-expense-household-home-cleaning.imageset/glyph.pdf"
+  },
+  "icon-expense-household-home-furnishing": {
+    "source": "web/src/assets/icons/categories/level2/expense-household-home-furnishing.svg",
+    "asset": "icon-expense-household-home-furnishing.imageset/glyph.pdf"
+  },
+  "icon-expense-household-kitchen": {
+    "source": "web/src/assets/icons/categories/level2/expense-household-kitchen.svg",
+    "asset": "icon-expense-household-kitchen.imageset/glyph.pdf"
+  },
+  "icon-expense-household-other-daily": {
+    "source": "web/src/assets/icons/categories/level2/expense-household-other-daily.svg",
+    "asset": "icon-expense-household-other-daily.imageset/glyph.pdf"
+  },
+  "icon-expense-household-paper-consumables": {
+    "source": "web/src/assets/icons/categories/level2/expense-household-paper-consumables.svg",
+    "asset": "icon-expense-household-paper-consumables.imageset/glyph.pdf"
+  },
+  "icon-expense-household-personal-cleaning": {
+    "source": "web/src/assets/icons/categories/level2/expense-household-personal-cleaning.svg",
+    "asset": "icon-expense-household-personal-cleaning.imageset/glyph.pdf"
+  },
+  "icon-expense-housing": {
+    "source": "web/src/assets/icons/categories/level1/expense-housing.svg",
+    "asset": "icon-expense-housing.imageset/glyph.pdf"
+  },
+  "icon-expense-housing-electricity": {
+    "source": "web/src/assets/icons/categories/level2/expense-housing-electricity.svg",
+    "asset": "icon-expense-housing-electricity.imageset/glyph.pdf"
+  },
+  "icon-expense-housing-gas": {
+    "source": "web/src/assets/icons/categories/level2/expense-housing-gas.svg",
+    "asset": "icon-expense-housing-gas.imageset/glyph.pdf"
+  },
+  "icon-expense-housing-mortgage": {
+    "source": "web/src/assets/icons/categories/level2/expense-housing-mortgage.svg",
+    "asset": "icon-expense-housing-mortgage.imageset/glyph.pdf"
+  },
+  "icon-expense-housing-property-fee": {
+    "source": "web/src/assets/icons/categories/level2/expense-housing-property-fee.svg",
+    "asset": "icon-expense-housing-property-fee.imageset/glyph.pdf"
+  },
+  "icon-expense-housing-rent": {
+    "source": "web/src/assets/icons/categories/level2/expense-housing-rent.svg",
+    "asset": "icon-expense-housing-rent.imageset/glyph.pdf"
+  },
+  "icon-expense-housing-water": {
+    "source": "web/src/assets/icons/categories/level2/expense-housing-water.svg",
+    "asset": "icon-expense-housing-water.imageset/glyph.pdf"
+  },
+  "icon-expense-meal-food": {
+    "source": "web/src/assets/icons/categories/level1/expense-meal-food.svg",
+    "asset": "icon-expense-meal-food.imageset/glyph.pdf"
+  },
+  "icon-expense-meal-food-daily-fruit": {
+    "source": "web/src/assets/icons/categories/level2/expense-meal-food-daily-fruit.svg",
+    "asset": "icon-expense-meal-food-daily-fruit.imageset/glyph.pdf"
+  },
+  "icon-expense-meal-food-staple-food": {
+    "source": "web/src/assets/icons/categories/level2/expense-meal-food-staple-food.svg",
+    "asset": "icon-expense-meal-food-staple-food.imageset/glyph.pdf"
+  },
+  "icon-expense-meals": {
+    "source": "web/src/assets/icons/categories/level1/expense-meals.svg",
+    "asset": "icon-expense-meals.imageset/glyph.pdf"
+  },
+  "icon-expense-meals-breakfast": {
+    "source": "web/src/assets/icons/categories/level2/expense-meals-breakfast.svg",
+    "asset": "icon-expense-meals-breakfast.imageset/glyph.pdf"
+  },
+  "icon-expense-meals-dinner": {
+    "source": "web/src/assets/icons/categories/level2/expense-meals-dinner.svg",
+    "asset": "icon-expense-meals-dinner.imageset/glyph.pdf"
+  },
+  "icon-expense-meals-groceries": {
+    "source": "web/src/assets/icons/categories/level2/expense-meals-groceries.svg",
+    "asset": "icon-expense-meals-groceries.imageset/glyph.pdf"
+  },
+  "icon-expense-meals-lunch": {
+    "source": "web/src/assets/icons/categories/level2/expense-meals-lunch.svg",
+    "asset": "icon-expense-meals-lunch.imageset/glyph.pdf"
+  },
+  "icon-expense-medical": {
+    "source": "web/src/assets/icons/categories/level1/expense-medical.svg",
+    "asset": "icon-expense-medical.imageset/glyph.pdf"
+  },
+  "icon-expense-medical-doctor": {
+    "source": "web/src/assets/icons/categories/level2/expense-medical-doctor.svg",
+    "asset": "icon-expense-medical-doctor.imageset/glyph.pdf"
+  },
+  "icon-expense-medical-examination": {
+    "source": "web/src/assets/icons/categories/level2/expense-medical-examination.svg",
+    "asset": "icon-expense-medical-examination.imageset/glyph.pdf"
+  },
+  "icon-expense-medical-medicine": {
+    "source": "web/src/assets/icons/categories/level2/expense-medical-medicine.svg",
+    "asset": "icon-expense-medical-medicine.imageset/glyph.pdf"
+  },
+  "icon-expense-personal-care": {
+    "source": "web/src/assets/icons/categories/level1/expense-personal-care.svg",
+    "asset": "icon-expense-personal-care.imageset/glyph.pdf"
+  },
+  "icon-expense-personal-care-haircut": {
+    "source": "web/src/assets/icons/categories/level2/expense-personal-care-haircut.svg",
+    "asset": "icon-expense-personal-care-haircut.imageset/glyph.pdf"
+  },
+  "icon-expense-personal-care-skincare": {
+    "source": "web/src/assets/icons/categories/level2/expense-personal-care-skincare.svg",
+    "asset": "icon-expense-personal-care-skincare.imageset/glyph.pdf"
+  },
+  "icon-expense-snacks-drinks": {
+    "source": "web/src/assets/icons/categories/level1/expense-snacks-drinks.svg",
+    "asset": "icon-expense-snacks-drinks.imageset/glyph.pdf"
+  },
+  "icon-expense-snacks-drinks-beverages": {
+    "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-beverages.svg",
+    "asset": "icon-expense-snacks-drinks-beverages.imageset/glyph.pdf"
+  },
+  "icon-expense-snacks-drinks-cooked-snacks": {
+    "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-cooked-snacks.svg",
+    "asset": "icon-expense-snacks-drinks-cooked-snacks.imageset/glyph.pdf"
+  },
+  "icon-expense-snacks-drinks-desserts-bakery": {
+    "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-desserts-bakery.svg",
+    "asset": "icon-expense-snacks-drinks-desserts-bakery.imageset/glyph.pdf"
+  },
+  "icon-expense-snacks-drinks-instant-food": {
+    "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-instant-food.svg",
+    "asset": "icon-expense-snacks-drinks-instant-food.imageset/glyph.pdf"
+  },
+  "icon-expense-snacks-drinks-leisure-snacks": {
+    "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-leisure-snacks.svg",
+    "asset": "icon-expense-snacks-drinks-leisure-snacks.imageset/glyph.pdf"
+  },
+  "icon-expense-social": {
+    "source": "web/src/assets/icons/categories/level1/expense-social.svg",
+    "asset": "icon-expense-social.imageset/glyph.pdf"
+  },
+  "icon-expense-social-donation": {
+    "source": "web/src/assets/icons/categories/level2/expense-social-donation.svg",
+    "asset": "icon-expense-social-donation.imageset/glyph.pdf"
+  },
+  "icon-expense-social-family-support": {
+    "source": "web/src/assets/icons/categories/level2/expense-social-family-support.svg",
+    "asset": "icon-expense-social-family-support.imageset/glyph.pdf"
+  },
+  "icon-expense-social-gifts": {
+    "source": "web/src/assets/icons/categories/level2/expense-social-gifts.svg",
+    "asset": "icon-expense-social-gifts.imageset/glyph.pdf"
+  },
+  "icon-expense-social-red-packet": {
+    "source": "web/src/assets/icons/categories/level2/expense-social-red-packet.svg",
+    "asset": "icon-expense-social-red-packet.imageset/glyph.pdf"
+  },
+  "icon-expense-transport": {
+    "source": "web/src/assets/icons/categories/level1/expense-transport.svg",
+    "asset": "icon-expense-transport.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-cruise": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-cruise.svg",
+    "asset": "icon-expense-transport-cruise.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-flight": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-flight.svg",
+    "asset": "icon-expense-transport-flight.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-high-speed-rail": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-high-speed-rail.svg",
+    "asset": "icon-expense-transport-high-speed-rail.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-parking": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-parking.svg",
+    "asset": "icon-expense-transport-parking.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-public-transit": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-public-transit.svg",
+    "asset": "icon-expense-transport-public-transit.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-shared-bike": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-shared-bike.svg",
+    "asset": "icon-expense-transport-shared-bike.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-taxi": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-taxi.svg",
+    "asset": "icon-expense-transport-taxi.imageset/glyph.pdf"
+  },
+  "icon-expense-transport-train": {
+    "source": "web/src/assets/icons/categories/level2/expense-transport-train.svg",
+    "asset": "icon-expense-transport-train.imageset/glyph.pdf"
+  },
+  "icon-income-bonus": {
+    "source": "web/src/assets/icons/categories/level1/income-bonus.svg",
+    "asset": "icon-income-bonus.imageset/glyph.pdf"
+  },
+  "icon-income-investment": {
+    "source": "web/src/assets/icons/categories/level1/income-investment.svg",
+    "asset": "icon-income-investment.imageset/glyph.pdf"
+  },
+  "icon-income-salary": {
+    "source": "web/src/assets/icons/categories/level1/income-salary.svg",
+    "asset": "icon-income-salary.imageset/glyph.pdf"
+  },
+  "icon-income-secondhand-sale": {
+    "source": "web/src/assets/icons/categories/level1/income-secondhand-sale.svg",
+    "asset": "icon-income-secondhand-sale.imageset/glyph.pdf"
+  },
+  "icon-income-side-business": {
+    "source": "web/src/assets/icons/categories/level1/income-side-business.svg",
+    "asset": "icon-income-side-business.imageset/glyph.pdf"
+  }
+}

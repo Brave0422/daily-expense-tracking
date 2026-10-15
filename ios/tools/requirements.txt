@@ -1,0 +1,7 @@
+tree-sitter==0.25.2
+tree-sitter-swift==0.7.4
+openstep-parser==2.0.3
+pypdf==6.20.1
+svglib==2.3.0
+reportlab==5.0.1
+Pillow==12.3.0

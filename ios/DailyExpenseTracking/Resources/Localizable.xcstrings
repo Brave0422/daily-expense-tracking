@@ -1,0 +1,2606 @@
+{
+  "sourceLanguage": "zh-Hans",
+  "strings": {
+    " · 升序": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · 升序"
+          }
+        }
+      }
+    },
+    " · 降序": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · 降序"
+          }
+        }
+      }
+    },
+    "API环境规范化失败": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API环境规范化失败"
+          }
+        }
+      }
+    },
+    "Release 必须配置正式 HTTPS 服务地址": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release 必须配置正式 HTTPS 服务地址"
+          }
+        }
+      }
+    },
+    "一级": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一级"
+          }
+        }
+      }
+    },
+    "上一周期": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "上一周期"
+          }
+        }
+      }
+    },
+    "下一周期": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下一周期"
+          }
+        }
+      }
+    },
+    "不限": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不限"
+          }
+        }
+      }
+    },
+    "二级": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "二级"
+          }
+        }
+      }
+    },
+    "会话 Cookie 缺少有效期": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话 Cookie 缺少有效期"
+          }
+        }
+      }
+    },
+    "会话 Cookie 范围或有效期不符合服务约定": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话 Cookie 范围或有效期不符合服务约定"
+          }
+        }
+      }
+    },
+    "会话已切换，此操作已取消": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "会话已切换，此操作已取消"
+          }
+        }
+      }
+    },
+    "使用此名称": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用此名称"
+          }
+        }
+      }
+    },
+    "保存": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存"
+          }
+        }
+      }
+    },
+    "保存中…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存中…"
+          }
+        }
+      }
+    },
+    "保存后立即创建全局标签。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存后立即创建全局标签。"
+          }
+        }
+      }
+    },
+    "保存流水后将影响使用此标签的其他流水；现在只修改草稿。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存流水后将影响使用此标签的其他流水；现在只修改草稿。"
+          }
+        }
+      }
+    },
+    "修改密码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修改密码"
+          }
+        }
+      }
+    },
+    "修改新名称": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "修改新名称"
+          }
+        }
+      }
+    },
+    "元": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "元"
+          }
+        }
+      }
+    },
+    "全部": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部"
+          }
+        }
+      }
+    },
+    "全部收支": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部收支"
+          }
+        }
+      }
+    },
+    "全部标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全部标签"
+          }
+        }
+      }
+    },
+    "六位数字": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "六位数字"
+          }
+        }
+      }
+    },
+    "关于": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关于"
+          }
+        }
+      }
+    },
+    "关闭": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭"
+          }
+        }
+      }
+    },
+    "分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分类"
+          }
+        }
+      }
+    },
+    "分类 *": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分类 *"
+          }
+        }
+      }
+    },
+    "分类占比饼图，可通过下方完整图例逐项选择": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分类占比饼图，可通过下方完整图例逐项选择"
+          }
+        }
+      }
+    },
+    "分类名称（最多50字符）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分类名称（最多50字符）"
+          }
+        }
+      }
+    },
+    "分类层级": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分类层级"
+          }
+        }
+      }
+    },
+    "分类管理": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "分类管理"
+          }
+        }
+      }
+    },
+    "创建账户": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "创建账户"
+          }
+        }
+      }
+    },
+    "删除分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除分类"
+          }
+        }
+      }
+    },
+    "删除标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除标签"
+          }
+        }
+      }
+    },
+    "删除流水": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "删除流水"
+          }
+        }
+      }
+    },
+    "前往分类管理": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前往分类管理"
+          }
+        }
+      }
+    },
+    "加载分类…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加载分类…"
+          }
+        }
+      }
+    },
+    "加载历史选项…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "加载历史选项…"
+          }
+        }
+      }
+    },
+    "占比": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "占比"
+          }
+        }
+      }
+    },
+    "历史关联保留，标签不再用于新绑定。不会删除流水。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "历史关联保留，标签不再用于新绑定。不会删除流水。"
+          }
+        }
+      }
+    },
+    "历史流水仍保留关联；该分类下记录不再计入统计，统计金额可能改变。一级分类仍有有效二级时请先逐个删除二级。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "历史流水仍保留关联；该分类下记录不再计入统计，统计金额可能改变。一级分类仍有有效二级时请先逐个删除二级。"
+          }
+        }
+      }
+    },
+    "原生 iOS · 数据与 Web 共用同一服务": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "原生 iOS · 数据与 Web 共用同一服务"
+          }
+        }
+      }
+    },
+    "发生日期": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发生日期"
+          }
+        }
+      }
+    },
+    "发生日期 *": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发生日期 *"
+          }
+        }
+      }
+    },
+    "发送验证码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "发送验证码"
+          }
+        }
+      }
+    },
+    "取消": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
+          }
+        }
+      }
+    },
+    "名称": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称"
+          }
+        }
+      }
+    },
+    "名称（最多50字符）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名称（最多50字符）"
+          }
+        }
+      }
+    },
+    "周一": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周一"
+          }
+        }
+      }
+    },
+    "周三": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周三"
+          }
+        }
+      }
+    },
+    "周二": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周二"
+          }
+        }
+      }
+    },
+    "周五": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周五"
+          }
+        }
+      }
+    },
+    "周六": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周六"
+          }
+        }
+      }
+    },
+    "周四": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周四"
+          }
+        }
+      }
+    },
+    "周日": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周日"
+          }
+        }
+      }
+    },
+    "响应未提供有效的安全会话 Cookie": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "响应未提供有效的安全会话 Cookie"
+          }
+        }
+      }
+    },
+    "响应结构与接口约定不符，请检查服务版本": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "响应结构与接口约定不符，请检查服务版本"
+          }
+        }
+      }
+    },
+    "图库": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图库"
+          }
+        }
+      }
+    },
+    "图标预览": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "图标预览"
+          }
+        }
+      }
+    },
+    "备注": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备注"
+          }
+        }
+      }
+    },
+    "备注（最多100字符）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备注（最多100字符）"
+          }
+        }
+      }
+    },
+    "备注（选填，最多100字符）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备注（选填，最多100字符）"
+          }
+        }
+      }
+    },
+    "备注：": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "备注："
+          }
+        }
+      }
+    },
+    "复用已有标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "复用已有标签"
+          }
+        }
+      }
+    },
+    "好": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好"
+          }
+        }
+      }
+    },
+    "安全凭证保存失败，请清理后重新登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安全凭证保存失败，请清理后重新登录"
+          }
+        }
+      }
+    },
+    "安全凭证已损坏，请清理后重新登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安全凭证已损坏，请清理后重新登录"
+          }
+        }
+      }
+    },
+    "安全凭证轮换保存失败，请清理后重新登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "安全凭证轮换保存失败，请清理后重新登录"
+          }
+        }
+      }
+    },
+    "完成": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
+          }
+        }
+      }
+    },
+    "完整时间点与金额": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完整时间点与金额"
+          }
+        }
+      }
+    },
+    "密码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码"
+          }
+        }
+      }
+    },
+    "密码修改成功，当前会话继续有效": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码修改成功，当前会话继续有效"
+          }
+        }
+      }
+    },
+    "密码重置成功，请登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码重置成功，请登录"
+          }
+        }
+      }
+    },
+    "密码长度须为6–20个字符": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码长度须为6–20个字符"
+          }
+        }
+      }
+    },
+    "层级": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "层级"
+          }
+        }
+      }
+    },
+    "已保存": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存"
+          }
+        }
+      }
+    },
+    "已保存，列表刷新失败：": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存，列表刷新失败："
+          }
+        }
+      }
+    },
+    "已保存，刷新失败：": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存，刷新失败："
+          }
+        }
+      }
+    },
+    "已加载：": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已加载："
+          }
+        }
+      }
+    },
+    "已按汇总条件查看本月明细": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已按汇总条件查看本月明细"
+          }
+        }
+      }
+    },
+    "已有同名标签，是否复用？": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已有同名标签，是否复用？"
+          }
+        }
+      }
+    },
+    "已有同名标签，请移除新名称后选择已有标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已有同名标签，请移除新名称后选择已有标签"
+          }
+        }
+      }
+    },
+    "已有同名草稿": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已有同名草稿"
+          }
+        }
+      }
+    },
+    "已有相同名称草稿": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已有相同名称草稿"
+          }
+        }
+      }
+    },
+    "已清除不符合收支类型的分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已清除不符合收支类型的分类"
+          }
+        }
+      }
+    },
+    "已登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已登录"
+          }
+        }
+      }
+    },
+    "已筛选": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已筛选"
+          }
+        }
+      }
+    },
+    "已选 · 保存流水时才生效": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已选 · 保存流水时才生效"
+          }
+        }
+      }
+    },
+    "年": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "年"
+          }
+        }
+      }
+    },
+    "年份": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "年份"
+          }
+        }
+      }
+    },
+    "应用": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "应用"
+          }
+        }
+      }
+    },
+    "当前分类已删除，历史关联保留": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前分类已删除，历史关联保留"
+          }
+        }
+      }
+    },
+    "待保存改名": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "待保存改名"
+          }
+        }
+      }
+    },
+    "忘记密码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "忘记密码"
+          }
+        }
+      }
+    },
+    "成功后将清空本机当前会话、页面与未保存草稿。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "成功后将清空本机当前会话、页面与未保存草稿。"
+          }
+        }
+      }
+    },
+    "持平 0.00%": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "持平 0.00%"
+          }
+        }
+      }
+    },
+    "排行": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "排行"
+          }
+        }
+      }
+    },
+    "搜索中…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索中…"
+          }
+        }
+      }
+    },
+    "搜索或输入新名称": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索或输入新名称"
+          }
+        }
+      }
+    },
+    "搜索服务端标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索服务端标签"
+          }
+        }
+      }
+    },
+    "搜索词": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "搜索词"
+          }
+        }
+      }
+    },
+    "操作成功": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "操作成功"
+          }
+        }
+      }
+    },
+    "支出": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "支出"
+          }
+        }
+      }
+    },
+    "收入": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收入"
+          }
+        }
+      }
+    },
+    "收入仅一级": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收入仅一级"
+          }
+        }
+      }
+    },
+    "收支": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收支"
+          }
+        }
+      }
+    },
+    "收支分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收支分类"
+          }
+        }
+      }
+    },
+    "收支类型": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收支类型"
+          }
+        }
+      }
+    },
+    "改名": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "改名"
+          }
+        }
+      }
+    },
+    "放弃修改": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃修改"
+          }
+        }
+      }
+    },
+    "放弃分类修改？": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃分类修改？"
+          }
+        }
+      }
+    },
+    "放弃名称修改？": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃名称修改？"
+          }
+        }
+      }
+    },
+    "放弃当前输入？": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃当前输入？"
+          }
+        }
+      }
+    },
+    "放弃本次标签选择修改？": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃本次标签选择修改？"
+          }
+        }
+      }
+    },
+    "放弃本次流水及标签草稿？": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃本次流水及标签草稿？"
+          }
+        }
+      }
+    },
+    "放弃输入": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃输入"
+          }
+        }
+      }
+    },
+    "文字条件": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字条件"
+          }
+        }
+      }
+    },
+    "新名称与另一有效标签冲突，不能替换原ID": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新名称与另一有效标签冲突，不能替换原ID"
+          }
+        }
+      }
+    },
+    "新增": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增"
+          }
+        }
+      }
+    },
+    "新增分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增分类"
+          }
+        }
+      }
+    },
+    "新增标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增标签"
+          }
+        }
+      }
+    },
+    "新增流水": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增流水"
+          }
+        }
+      }
+    },
+    "新标签将在保存流水时创建。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新标签将在保存流水时创建。"
+          }
+        }
+      }
+    },
+    "无标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无标签"
+          }
+        }
+      }
+    },
+    "无法构造服务地址": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法构造服务地址"
+          }
+        }
+      }
+    },
+    "无法读取安全凭证，请解锁设备后重试": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取安全凭证，请解锁设备后重试"
+          }
+        }
+      }
+    },
+    "日常记账": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日常记账"
+          }
+        }
+      }
+    },
+    "日明细": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日明细"
+          }
+        }
+      }
+    },
+    "日期格式应为 YYYY-MM-DD": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日期格式应为 YYYY-MM-DD"
+          }
+        }
+      }
+    },
+    "时间": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "时间"
+          }
+        }
+      }
+    },
+    "显示密码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示密码"
+          }
+        }
+      }
+    },
+    "暂无二级分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无二级分类"
+          }
+        }
+      }
+    },
+    "暂无二级分类，请先创建": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无二级分类，请先创建"
+          }
+        }
+      }
+    },
+    "暂无分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无分类"
+          }
+        }
+      }
+    },
+    "暂无标签，点击右上角新增": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂无标签，点击右上角新增"
+          }
+        }
+      }
+    },
+    "暂时无法恢复会话，请检查网络后重试": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "暂时无法恢复会话，请检查网络后重试"
+          }
+        }
+      }
+    },
+    "最大金额": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最大金额"
+          }
+        }
+      }
+    },
+    "最小金额": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最小金额"
+          }
+        }
+      }
+    },
+    "最小金额不能大于最大金额": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最小金额不能大于最大金额"
+          }
+        }
+      }
+    },
+    "月": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月"
+          }
+        }
+      }
+    },
+    "月份": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月份"
+          }
+        }
+      }
+    },
+    "月汇总": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "月汇总"
+          }
+        }
+      }
+    },
+    "有备注": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有备注"
+          }
+        }
+      }
+    },
+    "服务地址未配置": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务地址未配置"
+          }
+        }
+      }
+    },
+    "服务端搜索": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务端搜索"
+          }
+        }
+      }
+    },
+    "服务返回无效响应，请稍后重试": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务返回无效响应，请稍后重试"
+          }
+        }
+      }
+    },
+    "未填写": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "未填写"
+          }
+        }
+      }
+    },
+    "本周期暂无统计": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本周期暂无统计"
+          }
+        }
+      }
+    },
+    "本周期暂无记录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本周期暂无记录"
+          }
+        }
+      }
+    },
+    "本地凭证清理失败，请解锁设备后重试": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地凭证清理失败，请解锁设备后重试"
+          }
+        }
+      }
+    },
+    "本年": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本年"
+          }
+        }
+      }
+    },
+    "本月": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本月"
+          }
+        }
+      }
+    },
+    "查看本月明细": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看本月明细"
+          }
+        }
+      }
+    },
+    "标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签"
+          }
+        }
+      }
+    },
+    "标签改名": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签改名"
+          }
+        }
+      }
+    },
+    "标签改名草稿": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签改名草稿"
+          }
+        }
+      }
+    },
+    "标签管理": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标签管理"
+          }
+        }
+      }
+    },
+    "标题": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标题"
+          }
+        }
+      }
+    },
+    "标题（最多50字符）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标题（最多50字符）"
+          }
+        }
+      }
+    },
+    "标题（选填，最多50字符）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标题（选填，最多50字符）"
+          }
+        }
+      }
+    },
+    "标题：": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "标题："
+          }
+        }
+      }
+    },
+    "正在准备账本…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在准备账本…"
+          }
+        }
+      }
+    },
+    "正在加载…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在加载…"
+          }
+        }
+      }
+    },
+    "正在加载统计…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在加载统计…"
+          }
+        }
+      }
+    },
+    "正在加载趋势…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在加载趋势…"
+          }
+        }
+      }
+    },
+    "正在恢复会话…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在恢复会话…"
+          }
+        }
+      }
+    },
+    "正在查重…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在查重…"
+          }
+        }
+      }
+    },
+    "正在退出…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在退出…"
+          }
+        }
+      }
+    },
+    "此名称已选择": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此名称已选择"
+          }
+        }
+      }
+    },
+    "没有匹配标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有匹配标签"
+          }
+        }
+      }
+    },
+    "注册": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "注册"
+          }
+        }
+      }
+    },
+    "注册成功，请登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "注册成功，请登录"
+          }
+        }
+      }
+    },
+    "流水": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "流水"
+          }
+        }
+      }
+    },
+    "流水已删除": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "流水已删除"
+          }
+        }
+      }
+    },
+    "流水标签": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "流水标签"
+          }
+        }
+      }
+    },
+    "流水模式": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "流水模式"
+          }
+        }
+      }
+    },
+    "流水详情": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "流水详情"
+          }
+        }
+      }
+    },
+    "添加一级": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加一级"
+          }
+        }
+      }
+    },
+    "添加二级分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加二级分类"
+          }
+        }
+      }
+    },
+    "清理凭证并重新登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清理凭证并重新登录"
+          }
+        }
+      }
+    },
+    "清理本地会话并重新登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清理本地会话并重新登录"
+          }
+        }
+      }
+    },
+    "清除筛选": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除筛选"
+          }
+        }
+      }
+    },
+    "点击右上角添加一级分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击右上角添加一级分类"
+          }
+        }
+      }
+    },
+    "点击右上角记一笔": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点击右上角记一笔"
+          }
+        }
+      }
+    },
+    "点按或横向拖动柱图查看原金额": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点按或横向拖动柱图查看原金额"
+          }
+        }
+      }
+    },
+    "父分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "父分类"
+          }
+        }
+      }
+    },
+    "版本": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "版本"
+          }
+        }
+      }
+    },
+    "登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录"
+          }
+        }
+      }
+    },
+    "登录状态已失效，请重新登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "登录状态已失效，请重新登录"
+          }
+        }
+      }
+    },
+    "确认删除": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认删除"
+          }
+        }
+      }
+    },
+    "确认改名会影响使用此标签的其他流水。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认改名会影响使用此标签的其他流水。"
+          }
+        }
+      }
+    },
+    "筛选": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选"
+          }
+        }
+      }
+    },
+    "筛选无结果": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选无结果"
+          }
+        }
+      }
+    },
+    "筛选流水": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选流水"
+          }
+        }
+      }
+    },
+    "筛选结果": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "筛选结果"
+          }
+        }
+      }
+    },
+    "管理": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理"
+          }
+        }
+      }
+    },
+    "类型": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "类型"
+          }
+        }
+      }
+    },
+    "结余": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结余"
+          }
+        }
+      }
+    },
+    "结果尚未确认，请先返回列表刷新核实，避免重复提交": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "结果尚未确认，请先返回列表刷新核实，避免重复提交"
+          }
+        }
+      }
+    },
+    "统计": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "统计"
+          }
+        }
+      }
+    },
+    "统计不包含已删除分类下的流水；历史流水总览可能与统计不同。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "统计不包含已删除分类下的流水；历史流水总览可能与统计不同。"
+          }
+        }
+      }
+    },
+    "统计周期": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "统计周期"
+          }
+        }
+      }
+    },
+    "统计板块": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "统计板块"
+          }
+        }
+      }
+    },
+    "继续填写": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续填写"
+          }
+        }
+      }
+    },
+    "继续选择": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "继续选择"
+          }
+        }
+      }
+    },
+    "编辑分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑分类"
+          }
+        }
+      }
+    },
+    "编辑流水": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑流水"
+          }
+        }
+      }
+    },
+    "补充说明": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "补充说明"
+          }
+        }
+      }
+    },
+    "记一笔": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记一笔"
+          }
+        }
+      }
+    },
+    "记录已不可用或已不在当前结果中，请刷新确认": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录已不可用或已不在当前结果中，请刷新确认"
+          }
+        }
+      }
+    },
+    "记录每一笔，生活更有数。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "记录每一笔，生活更有数。"
+          }
+        }
+      }
+    },
+    "设置密码（6–20字符）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "设置密码（6–20字符）"
+          }
+        }
+      }
+    },
+    "请先删除二级分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请先删除二级分类"
+          }
+        }
+      }
+    },
+    "请取消返回流水页，刷新核实后再决定是否重新录入。当前输入会保留到您确认放弃。": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请取消返回流水页，刷新核实后再决定是否重新录入。当前输入会保留到您确认放弃。"
+          }
+        }
+      }
+    },
+    "请在 Config 中设置有效的 API_BASE_URL": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请在 Config 中设置有效的 API_BASE_URL"
+          }
+        }
+      }
+    },
+    "请输入六位数字验证码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入六位数字验证码"
+          }
+        }
+      }
+    },
+    "请输入名称": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入名称"
+          }
+        }
+      }
+    },
+    "请输入密码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入密码"
+          }
+        }
+      }
+    },
+    "请输入有效邮箱": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入有效邮箱"
+          }
+        }
+      }
+    },
+    "请输入有效金额，最多13位整数、2位小数，记账金额须大于零": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入有效金额，最多13位整数、2位小数，记账金额须大于零"
+          }
+        }
+      }
+    },
+    "请输入邮箱": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请输入邮箱"
+          }
+        }
+      }
+    },
+    "请选择": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择"
+          }
+        }
+      }
+    },
+    "请选择1000至9999年": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择1000至9999年"
+          }
+        }
+      }
+    },
+    "请选择二级分类，或先在管理中创建": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择二级分类，或先在管理中创建"
+          }
+        }
+      }
+    },
+    "请选择分类图标": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择分类图标"
+          }
+        }
+      }
+    },
+    "请选择收入分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择收入分类"
+          }
+        }
+      }
+    },
+    "请选择有效日期": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择有效日期"
+          }
+        }
+      }
+    },
+    "请选择有效统计周期：月1000-02至9999-11，年1001至9998": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请选择有效统计周期：月1000-02至9999-11，年1001至9998"
+          }
+        }
+      }
+    },
+    "读取图库…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "读取图库…"
+          }
+        }
+      }
+    },
+    "读取标签…": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "读取标签…"
+          }
+        }
+      }
+    },
+    "调整或清除筛选条件": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "调整或清除筛选条件"
+          }
+        }
+      }
+    },
+    "账": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账"
+          }
+        }
+      }
+    },
+    "账户安全": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "账户安全"
+          }
+        }
+      }
+    },
+    "趋势": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "趋势"
+          }
+        }
+      }
+    },
+    "较上年": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "较上年"
+          }
+        }
+      }
+    },
+    "较上月": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "较上月"
+          }
+        }
+      }
+    },
+    "退出当前账户？": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出当前账户？"
+          }
+        }
+      }
+    },
+    "退出未完成，请重试：": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出未完成，请重试："
+          }
+        }
+      }
+    },
+    "退出登录": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "退出登录"
+          }
+        }
+      }
+    },
+    "选择 / 新建 / 改名": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择 / 新建 / 改名"
+          }
+        }
+      }
+    },
+    "选择二级分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择二级分类"
+          }
+        }
+      }
+    },
+    "选择图标": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择图标"
+          }
+        }
+      }
+    },
+    "选择年份": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择年份"
+          }
+        }
+      }
+    },
+    "选择收入分类": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择收入分类"
+          }
+        }
+      }
+    },
+    "选择月份": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选择月份"
+          }
+        }
+      }
+    },
+    "邮件验证码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邮件验证码"
+          }
+        }
+      }
+    },
+    "邮箱": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "邮箱"
+          }
+        }
+      }
+    },
+    "配置管理": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "配置管理"
+          }
+        }
+      }
+    },
+    "重置条件": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重置条件"
+          }
+        }
+      }
+    },
+    "重试": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重试"
+          }
+        }
+      }
+    },
+    "金额": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金额"
+          }
+        }
+      }
+    },
+    "金额区间（元）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金额区间（元）"
+          }
+        }
+      }
+    },
+    "金额升序": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金额升序"
+          }
+        }
+      }
+    },
+    "金额降序": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金额降序"
+          }
+        }
+      }
+    },
+    "金额（元）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "金额（元）"
+          }
+        }
+      }
+    },
+    "隐藏密码": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隐藏密码"
+          }
+        }
+      }
+    },
+    "验证码已发送，请查收邮件": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "验证码已发送，请查收邮件"
+          }
+        }
+      }
+    },
+    "（已删除）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "（已删除）"
+          }
+        }
+      }
+    },
+    "（待创建）": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "（待创建）"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
