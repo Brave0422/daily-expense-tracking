@@ -1,0 +1,7 @@
+# Flutter 浏览器预览使用独立端口，接口路径保持原样以保留 Cookie 的 /auth 范围。
+server:
+  host: localhost
+  port: 5174
+  proxy:
+    - target: http://127.0.0.1:3000/
+      regex: '^/(auth|verification-codes|categories|tags|transactions|statistics)(/|$)'
