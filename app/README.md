@@ -51,7 +51,7 @@ lib/core/storage/                安全 Cookie、串行写入与 Secure 约束
 lib/core/utils/                  精确金额、自然日期、Unicode 码点校验
 lib/core/widgets/                查询状态、表单返回保护、周期与图标
 lib/features/                   各业务模型、查询 / 草稿与页面
-assets/icons/categories/         110 个适配 SVG 及许可说明
+assets/icons/categories/         111 个适配 SVG 及许可说明
 test/                           单元、契约、会话、页面和布局测试
 integration_test/               真设备闭环测试入口
 tool/                           Windows 运行、图标适配、注释检查

@@ -228,11 +228,15 @@ watch(visibleTransactionIds, (ids) => {
   padding: 10px 14px;
   background: #f5f6f8;
   border: 1px solid transparent;
+  border-radius: 11px 11px 0 0;
   cursor: pointer;
+}
+/* 标题圆角贴合卡片内缘，收起后补齐底部圆角。 */
+.daily-group__heading[aria-expanded='false'] {
+  border-radius: 11px;
 }
 .daily-group__heading:is(:hover, :focus-visible) {
   background: var(--color-primary-soft);
-  border-color: var(--color-primary);
 }
 .daily-group__date {
   display: flex;

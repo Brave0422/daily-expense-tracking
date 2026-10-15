@@ -273,15 +273,15 @@
       "symbolId": "icon-expense-snacks-drinks-leisure-snacks"
     },
     {
-      "id": "late-night-snack",
-      "label": "夜宵",
+      "id": "cooked-snacks",
+      "label": "小吃熟食",
       "parentId": "snacks-drinks",
       "parentLabel": "零食饮品",
       "direction": "EXPENSE",
       "color": "#F2A82F",
-      "file": "level2/expense-snacks-drinks-late-night-snack.svg",
-      "iconfontName": "expense-snacks-drinks-late-night-snack",
-      "symbolId": "icon-expense-snacks-drinks-late-night-snack"
+      "file": "level2/expense-snacks-drinks-cooked-snacks.svg",
+      "iconfontName": "expense-snacks-drinks-cooked-snacks",
+      "symbolId": "icon-expense-snacks-drinks-cooked-snacks"
     },
     {
       "id": "beverages",
@@ -295,15 +295,26 @@
       "symbolId": "icon-expense-snacks-drinks-beverages"
     },
     {
-      "id": "desserts-snacks",
-      "label": "甜品小吃",
+      "id": "desserts-bakery",
+      "label": "甜品烘焙",
       "parentId": "snacks-drinks",
       "parentLabel": "零食饮品",
       "direction": "EXPENSE",
       "color": "#F2A82F",
-      "file": "level2/expense-snacks-drinks-desserts-snacks.svg",
-      "iconfontName": "expense-snacks-drinks-desserts-snacks",
-      "symbolId": "icon-expense-snacks-drinks-desserts-snacks"
+      "file": "level2/expense-snacks-drinks-desserts-bakery.svg",
+      "iconfontName": "expense-snacks-drinks-desserts-bakery",
+      "symbolId": "icon-expense-snacks-drinks-desserts-bakery"
+    },
+    {
+      "id": "instant-food",
+      "label": "方便速食",
+      "parentId": "snacks-drinks",
+      "parentLabel": "零食饮品",
+      "direction": "EXPENSE",
+      "color": "#F2A82F",
+      "file": "level2/expense-snacks-drinks-instant-food.svg",
+      "iconfontName": "expense-snacks-drinks-instant-food",
+      "symbolId": "icon-expense-snacks-drinks-instant-food"
     },
     {
       "id": "games",

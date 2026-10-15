@@ -211,12 +211,16 @@ function toggleCategory(month: number, categoryId: number): void {
   padding: 10px 14px;
   background: #f5f6f8;
   border: 1px solid transparent;
+  border-radius: 11px 11px 0 0;
   cursor: pointer;
+}
+/* 标题圆角贴合卡片内缘，收起后补齐底部圆角。 */
+.monthly-group__heading[aria-expanded='false'] {
+  border-radius: 11px;
 }
 .monthly-group__heading:is(:hover, :focus-visible),
 .monthly-category--expandable:is(:hover, :focus-visible) {
   background: var(--color-primary-soft);
-  border-color: var(--color-primary);
 }
 .monthly-group__month {
   display: flex;

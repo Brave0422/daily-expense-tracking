@@ -72,6 +72,14 @@ const CUSTOM_GLYPHS = {
     '<path fill="#fff" d="M4 2h2v6h2V2h2v7a3 3 0 0 1-2 2.8V22H6V11.8A3 3 0 0 1 4 9V2Zm13 0c1.7 0 3 2.7 3 6v5h-2v9h-2v-9h-2V8c0-3.3 1.3-6 3-6Zm0 3c-.4.7-1 1.9-1 3v3h2V8c0-1.1-.6-2.3-1-3Z" fill-rule="evenodd"/>',
   groceryBag:
     '<path fill="#fff" d="M9 7V5a3 3 0 1 1 6 0v2h3l2 15H4L6 7h3Zm2 0h2V5a1 1 0 1 0-2 0v2Zm1 3c-2.2 0-4 1.8-4 4 0 3 4 5 4 5s4-2 4-5c0-2.2-1.8-4-4-4Zm0 2a2 2 0 0 1 2 2c0 1.1-1.1 2.1-2 2.7-.9-.6-2-1.6-2-2.7a2 2 0 0 1 2-2Z" fill-rule="evenodd"/>',
+  snackBag:
+    '<path fill="#fff" fill-rule="evenodd" d="m5 2 1.8 1L8.5 2l1.8 1L12 2l1.7 1 1.8-1 1.7 1L19 2l-1 5 1 15-1.8-1-1.7 1-1.8-1-1.7 1-1.7-1-1.8 1-1.7-1L5 22 6 7 5 2Zm2.3 4h9.4V4.5H7.3V6Zm0 13.5h9.4V18H7.3v1.5Zm2.4-11a3.7 3.7 0 1 0 0 7.4 3.7 3.7 0 0 0 0-7.4Zm0 1.6a2.1 2.1 0 1 1 0 4.2 2.1 2.1 0 0 1 0-4.2Zm5.1 1.4c-.6 1.7-1.4 2.9-2.7 3.6 1.1 1.2 3 1.5 4.2.3 1.1-1.2.6-2.9-1.5-3.9Z"/>',
+  cookedSnacks:
+    '<path fill="#fff" d="m3.6 21.7-1.3-1.2 2.9-3.3 1.3 1.2-2.9 3.3Zm3.2-5.6c-2.1-1.5-1.4-4.6 1.1-7.7 2.4-3.1 5.7-5.3 7.7-4.8l.8-1 1.4 1.1-.9 1.1c.8 1.8-.5 5.3-2.8 8.3-2.5 3.2-5.4 4.8-7.3 3Zm4.8 6.2-1.4-1.1 2.5-3.1 1.4 1.1-2.5 3.1Zm9.1-13.9 1.1-1.4 1.4 1.1-1.1 1.4-1.4-1.1Z"/><circle fill="#fff" cx="20" cy="11.5" r="2.7"/><circle fill="#fff" cx="16.4" cy="16" r="2.7"/>',
+  cupcake:
+    '<circle fill="#fff" cx="12" cy="3.1" r="1.6"/><path fill="#fff" d="M9.8 5a3.8 3.8 0 0 0 4.4 0 4.7 4.7 0 0 1 2.9 3.8A3.5 3.5 0 0 1 20 12c0 1.3-1 2.3-2.3 2.3-.9 0-1.7-.5-2.1-1.2a2.7 2.7 0 0 1-3.6.8 2.7 2.7 0 0 1-3.6-.8 2.4 2.4 0 0 1-2.1 1.2C5 14.3 4 13.3 4 12a3.5 3.5 0 0 1 2.9-3.2A4.7 4.7 0 0 1 9.8 5Z"/><path fill="#fff" fill-rule="evenodd" d="M5.5 16h13l-1.3 4.6A1.9 1.9 0 0 1 15.4 22H8.6a1.9 1.9 0 0 1-1.8-1.4L5.5 16Zm3 1.5.5 2.8h1.2l-.5-2.8H8.5Zm2.9 0v2.8h1.2v-2.8h-1.2Zm3 0-.5 2.8h1.2l.5-2.8h-1.2Z"/>',
+  instantNoodles:
+    '<path fill="#fff" d="M5.6 6.3 3.2 3.6C6 .8 11 .9 14 3.1l-3.5 3.2a16.7 16.7 0 0 0-4.9 0Z"/><path fill="#fff" fill-rule="evenodd" d="M3 10c0-2.2 4-4 9-4s9 1.8 9 4c0 .5-.2 1-.6 1.4l-1.8 8.9A2.2 2.2 0 0 1 16.4 22H7.6a2.2 2.2 0 0 1-2.2-1.7l-1.8-8.9A2.1 2.1 0 0 1 3 10Zm2 0c0 .7 2.8 2.1 7 2.1s7-1.4 7-2.1-2.8-2.1-7-2.1S5 9.3 5 10Zm2 5 .7 3h8.6l.7-3H7Z"/><path d="M8 9.8c.8-.8 1.6.8 2.4 0s1.6-.8 2.4 0 1.6.8 2.4 0" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"/>',
   hanger:
     '<path fill="#fff" d="M12 2a4 4 0 0 1 4 4c0 2.3-1.3 3.4-2.5 4.3-.4.3-.7.6-.9.9l9.4 6.3V21H2v-3.5l9-6.3V9.8l.9-.6c1.3-.9 2.1-1.5 2.1-3.2a2 2 0 1 0-4 0H8a4 4 0 0 1 4-4Zm0 11-7.4 5.2v.8h14.8v-.8L12 13Z" fill-rule="evenodd"/>',
   shirt:
@@ -116,8 +124,7 @@ const CUSTOM_GLYPHS = {
     '<path fill="#fff" d="M7 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm10 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3.5 7a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm17 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM12 8c4 0 7 3.7 7 7.3 0 3.7-3 6.7-7 6.7s-7-3-7-6.7C5 11.7 8 8 12 8Zm-1.2 3v2.8H8v2.4h2.8V19h2.4v-2.8H16v-2.4h-2.8V11h-2.4Z" fill-rule="evenodd"/>',
   babyCare:
     '<path fill="#fff" d="M9 2h6v3l2 2v2.2a5 5 0 0 1 3 4.6V22H4v-8.2a5 5 0 0 1 3-4.6V7l2-2V2Zm2 2v2L9 8v1h6V8l-2-2V4h-2Zm-4 9v6h10v-6a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2Zm3 1h4v2h-4v-2Z" fill-rule="evenodd"/>',
-  toys:
-    '<path fill="#fff" d="M3 3h8v8H3V3Zm2 2v4h4V5H5Zm8-2h8v8h-8V3Zm2 2v4h4V5h-4ZM3 13h8v8H3v-8Zm2 2v4h4v-4H5Zm8-2h8v8h-8v-8Zm4 2.2L15.2 19h3.6L17 15.2Z" fill-rule="evenodd"/>',
+  toys: '<path fill="#fff" d="M3 3h8v8H3V3Zm2 2v4h4V5H5Zm8-2h8v8h-8V3Zm2 2v4h4V5h-4ZM3 13h8v8H3v-8Zm2 2v4h4v-4H5Zm8-2h8v8h-8v-8Zm4 2.2L15.2 19h3.6L17 15.2Z" fill-rule="evenodd"/>',
   fitness:
     '<path fill="#fff" d="M2 9h2V6h3v3h10V6h3v3h2v6h-2v3h-3v-3H7v3H4v-3H2V9Zm5 2v2h10v-2H7Z" fill-rule="evenodd"/>',
   dental:
@@ -128,14 +135,12 @@ const CUSTOM_GLYPHS = {
     '<path fill="#fff" d="M10 2h6v7l3 3v10H7V12l3-3V2Zm2 2v4h2V4h-2Zm-.6 6L9 12.4V14h8v-1.6L14.6 10h-3.2ZM9 16v4h8v-4H9Z" fill-rule="evenodd"/>',
   jewelry:
     '<path fill="#fff" d="m8 2-4 5 8 7 8-7-4-5H8Zm1 2h6l1.6 2H7.4L9 4Zm3 7L7.7 8h8.6L12 11Zm0 3a5 5 0 1 1-5 5H4a8 8 0 1 0 16 0h-3a5 5 0 0 1-5 5 5 5 0 0 1 0-10Z" fill-rule="evenodd"/>',
-  fuel:
-    '<path fill="#fff" d="M4 2h11v20H3V4a2 2 0 0 1 1-2Zm2 3v5h6V5H6Zm0 8v6h6v-6H6Zm11-8 4 4v9a1 1 0 0 0 2 0v-5h-2v-2h2V8.8l-2-2V8h-2V5h-2Z" fill-rule="evenodd"/>',
+  fuel: '<path fill="#fff" d="M4 2h11v20H3V4a2 2 0 0 1 1-2Zm2 3v5h6V5H6Zm0 8v6h6v-6H6Zm11-8 4 4v9a1 1 0 0 0 2 0v-5h-2v-2h2V8.8l-2-2V8h-2V5h-2Z" fill-rule="evenodd"/>',
   carMaintenance:
     '<path fill="#fff" d="m5 5 2-3 2 1-1.2 1.8L10 7l1.8-1.2 1.4 1.4L12 9l2.2 2.2L16 10l1.4 1.4-1.2 1.8 2.1 2.1L20 14l2 2-3 3-2-2 1.3-1.7-2.1-2.1-1.8 1.2L13 13l1.2-1.8L12 9 10.2 10 9 8.8l1-1.8-2.2-2.2L6 6 5 5ZM3 13h8l3 4h3v4H2v-6a2 2 0 0 1 1-2Zm1 3v2h8.3l-1.5-2H4Z" fill-rule="evenodd"/>',
   carWash:
     '<path fill="#fff" d="M6 2s2 2.2 2 3.5a2 2 0 1 1-4 0C4 4.2 6 2 6 2Zm6 0s2 2.2 2 3.5a2 2 0 1 1-4 0C10 4.2 12 2 12 2Zm6 0s2 2.2 2 3.5a2 2 0 1 1-4 0C16 4.2 18 2 18 2ZM5 10h14l3 5v6h-3v-2H5v2H2v-6l3-5Zm1.7 3-1.2 2h13l-1.2-2H6.7ZM6 16.5A1.5 1.5 0 1 0 6 19a1.5 1.5 0 0 0 0-3Zm12 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" fill-rule="evenodd"/>',
-  toll:
-    '<path fill="#fff" d="M2 3h20v4H2V3Zm2 6h7v13H4V9Zm2 3v3h3v-3H6Zm8-3h6v13h-3v-5h-3V9Zm0 3v2h3v-2h-3ZM1 20h22v2H1v-2Z" fill-rule="evenodd"/>',
+  toll: '<path fill="#fff" d="M2 3h20v4H2V3Zm2 6h7v13H4V9Zm2 3v3h3v-3H6Zm8-3h6v13h-3v-5h-3V9Zm0 3v2h3v-2h-3ZM1 20h22v2H1v-2Z" fill-rule="evenodd"/>',
   hotel:
     '<path fill="#fff" d="M3 3h3v9h5V7h6a4 4 0 0 1 4 4v11h-3v-3H6v3H3V3Zm11 7v2h4v-1a1 1 0 0 0-1-1h-3ZM6 15v2h12v-2H6Z" fill-rule="evenodd"/>',
   luggage:
@@ -202,10 +207,11 @@ const secondaryCategoryGroups = [
   [
     'snacks-drinks',
     [
-      ['leisure-snacks', '休闲零食', 'rice-ball'],
-      ['late-night-snack', '夜宵', 'moon'],
+      ['leisure-snacks', '休闲零食', null, 'snackBag'],
+      ['cooked-snacks', '小吃熟食', null, 'cookedSnacks'],
       ['beverages', '饮料茶饮', 'drink'],
-      ['desserts-snacks', '甜品小吃', 'cake'],
+      ['desserts-bakery', '甜品烘焙', null, 'cupcake'],
+      ['instant-food', '方便速食', null, 'instantNoodles'],
     ],
   ],
   [
@@ -340,36 +346,16 @@ const generalIcons = [
   ['cosmetics', '美妆', 'personal', PALETTES.cosmetics, null, 'cosmetics'],
   ['jewelry', '珠宝首饰', 'personal', PALETTES.jewelry, null, 'jewelry'],
   ['fuel', '汽车加油', 'vehicle', PALETTES.fuel, null, 'fuel'],
-  [
-    'car-maintenance',
-    '汽车保养',
-    'vehicle',
-    PALETTES.carMaintenance,
-    null,
-    'carMaintenance',
-  ],
+  ['car-maintenance', '汽车保养', 'vehicle', PALETTES.carMaintenance, null, 'carMaintenance'],
   ['car-wash', '洗车', 'vehicle', PALETTES.carWash, null, 'carWash'],
   ['toll', '高速过路费', 'vehicle', PALETTES.toll, null, 'toll'],
   ['hotel', '酒店住宿', 'travel', PALETTES.hotel, null, 'hotel'],
   ['luggage', '旅行行李', 'travel', PALETTES.luggage, null, 'luggage'],
   ['camping', '露营', 'travel', PALETTES.camping, null, 'camping'],
   ['laundry', '洗衣', 'household', PALETTES.laundry, null, 'laundry'],
-  [
-    'home-appliance',
-    '家用电器',
-    'household',
-    PALETTES.homeAppliance,
-    null,
-    'homeAppliance',
-  ],
+  ['home-appliance', '家用电器', 'household', PALETTES.homeAppliance, null, 'homeAppliance'],
   ['home-repair', '装修维修', 'household', PALETTES.homeRepair, null, 'homeRepair'],
-  [
-    'express-delivery',
-    '快递物流',
-    'service',
-    PALETTES.expressDelivery,
-    'undertake-delivery',
-  ],
+  ['express-delivery', '快递物流', 'service', PALETTES.expressDelivery, 'undertake-delivery'],
   ['insurance', '保险', 'service', PALETTES.insurance, null, 'insurance'],
 ].map(([id, label, group, color, source, custom], index) => ({
   id,
