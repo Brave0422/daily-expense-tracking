@@ -29,7 +29,7 @@ export async function createTag(body: TagNameBody): Promise<void> {
   await apiClient.post<ApiResponse<void>>('/tags', body)
 }
 
-/** GET /tags/check-name：只查询同名未归档标签，供流水草稿询问是否复用，不执行写入。 */
+/** GET /api/tags/check-name：只查询同名未归档标签，供流水草稿询问是否复用，不执行写入。 */
 export async function checkTagName(body: TagNameBody): Promise<UserTag | null> {
   const response = await apiClient.get<ApiResponse<UserTag | null>>('/tags/check-name', {
     params: body,

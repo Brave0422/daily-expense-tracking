@@ -15,6 +15,7 @@ declare module 'axios' {
   }
 }
 
+// 自定义 API 地址也应包含 /api；业务模块只声明相对于该地址的端点路径。
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 const REFRESH_EXCLUDED_PATHS = [
   '/auth/login',

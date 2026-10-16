@@ -26,12 +26,12 @@
 - Cookie Jar 使用自定义 Storage，通过 `flutter_secure_storage` 持久化。不能直接采用普通 FileStorage 保存长期 Refresh Cookie。
 - 保留 Cookie 的主机、路径、Secure、HttpOnly、有效期等属性，不只保存一个裸 Token；不忽略 Cookie 过期时间。
 - Access Token 只保存在内存中。App 重启后使用安全存储中的 Refresh Cookie 重新获得 Access Token。
-- 业务请求使用 Bearer；Refresh Cookie 的服务端 Path 为 `/auth`，无需发送给所有业务路径。
+- 业务请求使用 Bearer；Refresh Cookie 的服务端 Path 为 `/api/auth`，无需发送给所有业务路径。
 - 普通请求客户端和独立刷新客户端共用同一 Cookie Jar。刷新客户端不再触发 401 自动刷新，防止递归。
 - 登录 / 刷新成功必须等待新的 Cookie 持久化完成。退出后的旧响应不得重新写入 Token 或 Cookie。
 - Cookie 安全存储失败、损坏或写入失败需报告并允许重新登录，不能假装已经建立可恢复会话。
 
-后端生产环境使用 Secure Cookie，所以生产 App 请求必须使用 HTTPS。开发直连时保持现有 `/auth` 路径；经过反向代理时专项核对 Cookie Path。
+后端生产环境使用 Secure Cookie，所以生产 App 请求必须使用 HTTPS。开发直连时保持现有 `/api/auth` 路径；经过反向代理时专项核对 Cookie Path。
 
 ## 4. 会话状态与启动顺序
 
@@ -39,7 +39,7 @@
 
 1. 初始化平台绑定和安全存储，装载 Cookie，再创建统一网络依赖。
 2. 没有可用 Refresh Cookie：进入未登录，不发送无意义的恢复请求。
-3. 有 Cookie：调用 `POST /auth/refresh`，成功保存内存 Access Token，再开放受保护路由。
+3. 有 Cookie：调用 `POST /api/auth/refresh`，成功保存内存 Access Token，再开放受保护路由。
 4. 刷新返回明确 401：清除当前凭证和旧业务状态，进入登录页。
 5. 网络不可用、超时或 5xx：保持恢复暂时失败，保留凭证，显示重试；不把临时故障误判为退出登录。
 

@@ -26,18 +26,17 @@ describe('loadIconfontSymbols', () => {
     expect(appSymbolScript?.getAttribute('src')).not.toContain('alicdn.com')
 
     const categorySprite = document.getElementById(CATEGORY_SYMBOL_SPRITE_ID)
-    expect(categorySprite?.querySelectorAll('symbol')).toHaveLength(111)
-    for (const categoryId of [
-      'leisure-snacks',
-      'cooked-snacks',
-      'desserts-bakery',
-      'instant-food',
-    ]) {
+    expect(categorySprite?.querySelectorAll('symbol')).toHaveLength(112)
+    for (const categoryId of ['leisure-snacks', 'cooked-snacks', 'desserts-bakery']) {
       expect(
         categorySprite?.querySelector(`#icon-expense-snacks-drinks-${categoryId}`),
       ).not.toBeNull()
     }
-    for (const categoryId of ['late-night-snack', 'desserts-snacks']) {
+    expect(categorySprite?.querySelector('#icon-expense-meal-food-instant-food')).not.toBeNull()
+    expect(
+      categorySprite?.querySelector('#icon-expense-personal-care-medical-beauty'),
+    ).not.toBeNull()
+    for (const categoryId of ['late-night-snack', 'desserts-snacks', 'instant-food']) {
       expect(categorySprite?.querySelector(`#icon-expense-snacks-drinks-${categoryId}`)).toBeNull()
     }
 

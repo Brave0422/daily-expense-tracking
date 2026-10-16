@@ -80,6 +80,8 @@ const CUSTOM_GLYPHS = {
     '<circle fill="#fff" cx="12" cy="3.1" r="1.6"/><path fill="#fff" d="M9.8 5a3.8 3.8 0 0 0 4.4 0 4.7 4.7 0 0 1 2.9 3.8A3.5 3.5 0 0 1 20 12c0 1.3-1 2.3-2.3 2.3-.9 0-1.7-.5-2.1-1.2a2.7 2.7 0 0 1-3.6.8 2.7 2.7 0 0 1-3.6-.8 2.4 2.4 0 0 1-2.1 1.2C5 14.3 4 13.3 4 12a3.5 3.5 0 0 1 2.9-3.2A4.7 4.7 0 0 1 9.8 5Z"/><path fill="#fff" fill-rule="evenodd" d="M5.5 16h13l-1.3 4.6A1.9 1.9 0 0 1 15.4 22H8.6a1.9 1.9 0 0 1-1.8-1.4L5.5 16Zm3 1.5.5 2.8h1.2l-.5-2.8H8.5Zm2.9 0v2.8h1.2v-2.8h-1.2Zm3 0-.5 2.8h1.2l.5-2.8h-1.2Z"/>',
   instantNoodles:
     '<path fill="#fff" d="M5.6 6.3 3.2 3.6C6 .8 11 .9 14 3.1l-3.5 3.2a16.7 16.7 0 0 0-4.9 0Z"/><path fill="#fff" fill-rule="evenodd" d="M3 10c0-2.2 4-4 9-4s9 1.8 9 4c0 .5-.2 1-.6 1.4l-1.8 8.9A2.2 2.2 0 0 1 16.4 22H7.6a2.2 2.2 0 0 1-2.2-1.7l-1.8-8.9A2.1 2.1 0 0 1 3 10Zm2 0c0 .7 2.8 2.1 7 2.1s7-1.4 7-2.1-2.8-2.1-7-2.1S5 9.3 5 10Zm2 5 .7 3h8.6l.7-3H7Z"/><path d="M8 9.8c.8-.8 1.6.8 2.4 0s1.6-.8 2.4 0 1.6.8 2.4 0" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"/>',
+  medicalBeauty:
+    '<path d="M10 3.1c4.5-1.7 8.6 1.4 8.6 6.3 0 4.3-.7 8.4 2.6 10.5-2 .7-4.1.5-5.6-.5M6 8.3c-1.7 1-2.4 3.7-1.2 5.7M7.6 8.6v5.2c0 4.4 2.1 7.2 5 7.2s4.4-2.7 4.4-6.4v-3.2M10 6.3c1.2 2.5 3.5 3.6 6.5 3.4M10.2 12.1l-.7 2.9h1.6m2.6-2.8 1.4-.5m-3.6 6c1 .5 2 .4 2.8-.2" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path fill="#fff" d="m6.4 1 1.2 3.2 3.2 1.2-3.2 1.2-1.2 3.2-1.2-3.2L2 5.4l3.2-1.2L6.4 1Z"/>',
   hanger:
     '<path fill="#fff" d="M12 2a4 4 0 0 1 4 4c0 2.3-1.3 3.4-2.5 4.3-.4.3-.7.6-.9.9l9.4 6.3V21H2v-3.5l9-6.3V9.8l.9-.6c1.3-.9 2.1-1.5 2.1-3.2a2 2 0 1 0-4 0H8a4 4 0 0 1 4-4Zm0 11-7.4 5.2v.8h14.8v-.8L12 13Z" fill-rule="evenodd"/>',
   shirt:
@@ -202,6 +204,7 @@ const secondaryCategoryGroups = [
     [
       ['staple-food', '基础食品', 'corn'],
       ['daily-fruit', '日常水果', 'apple'],
+      ['instant-food', '方便速食', null, 'instantNoodles'],
     ],
   ],
   [
@@ -211,7 +214,6 @@ const secondaryCategoryGroups = [
       ['cooked-snacks', '小吃熟食', null, 'cookedSnacks'],
       ['beverages', '饮料茶饮', 'drink'],
       ['desserts-bakery', '甜品烘焙', null, 'cupcake'],
-      ['instant-food', '方便速食', null, 'instantNoodles'],
     ],
   ],
   [
@@ -247,6 +249,7 @@ const secondaryCategoryGroups = [
     [
       ['haircut', '理发', null, 'scissors'],
       ['skincare', '护肤品', 'face-retouching'],
+      ['medical-beauty', '医疗美容', null, 'medicalBeauty'],
     ],
   ],
   [

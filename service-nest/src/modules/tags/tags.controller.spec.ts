@@ -11,6 +11,7 @@ import { Test } from '@nestjs/testing';
 import type { NextFunction, Response } from 'express';
 import type { Server } from 'node:http';
 import request from 'supertest';
+import { API_PREFIX } from '../../common/constants/api.constants';
 import { ResponseInterceptor } from '../../common/interceptors/response.interceptor';
 import type { RequestWithOptionalUser } from '../auth/types/authenticated-request.type';
 import { TagsController } from './tags.controller';
@@ -18,7 +19,7 @@ import { TagsService } from './tags.service';
 
 jest.mock('./tags.service', () => ({ TagsService: class TagsService {} }));
 
-describe('GET /tags/check-name', () => {
+describe('GET /api/tags/check-name', () => {
   let app: INestApplication<Server>;
   const checkName = jest.fn();
 
@@ -28,6 +29,7 @@ describe('GET /tags/check-name', () => {
       providers: [{ provide: TagsService, useValue: { checkName } }],
     }).compile();
     app = module.createNestApplication<INestApplication<Server>>();
+    app.setGlobalPrefix(API_PREFIX);
     app.use(
       (req: RequestWithOptionalUser, _res: Response, next: NextFunction) => {
         if (req.headers['x-test-auth'])
@@ -56,7 +58,7 @@ describe('GET /tags/check-name', () => {
 
   it('标准化输入并只使用认证上下文的用户id，返回可绑定的标签', async () => {
     const result = await request(app.getHttpServer())
-      .get('/tags/check-name')
+      .get('/api/tags/check-name')
       .set('x-test-auth', '1')
       .query({ name: ' 去新西兰旅游 ', userId: 999 })
       .expect(200);
@@ -73,7 +75,7 @@ describe('GET /tags/check-name', () => {
     { name: '😀'.repeat(51) },
   ])('拒绝非法名称 %j', async (body) => {
     await request(app.getHttpServer())
-      .get('/tags/check-name')
+      .get('/api/tags/check-name')
       .set('x-test-auth', '1')
       .query(body)
       .expect(400);
@@ -81,14 +83,14 @@ describe('GET /tags/check-name', () => {
   });
   it('接受50个Unicode字符，未登录时拒绝查询', async () => {
     await request(app.getHttpServer())
-      .get('/tags/check-name')
+      .get('/api/tags/check-name')
       .set('x-test-auth', '1')
       .query({ name: '😀'.repeat(50) })
       .expect(200);
     expect(checkName).toHaveBeenCalledWith(7, '😀'.repeat(50));
     checkName.mockClear();
     await request(app.getHttpServer())
-      .get('/tags/check-name')
+      .get('/api/tags/check-name')
       .query({ name: '旅行' })
       .expect(401);
     expect(checkName).not.toHaveBeenCalled();

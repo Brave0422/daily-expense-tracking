@@ -2,7 +2,7 @@ import Foundation
 
 /// 当前构建的受信服务环境。
 struct AppConfiguration: Sendable {
-    /// 无 /api 代理前缀的服务根地址。
+    /// 包含 /api 统一前缀的接口基础地址。
     let baseURL: URL
     /// 按 Bundle 和完整环境隔离 Keychain 项。
     let credentialNamespace: String

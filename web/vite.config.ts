@@ -23,11 +23,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        // 对象键按 Cookie 的原始 Path 精确匹配，不支持正则表达式。
-        cookiePathRewrite: {
-          '/auth': '/api/auth',
-        },
+        // 后端统一使用 /api，保留请求路径及服务端 Cookie Path。
       },
     },
   },

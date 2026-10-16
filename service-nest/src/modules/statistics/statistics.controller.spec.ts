@@ -9,6 +9,7 @@ import { Test } from '@nestjs/testing';
 import type { NextFunction, Response } from 'express';
 import request from 'supertest';
 import type { App } from 'supertest/types';
+import { API_PREFIX } from '../../common/constants/api.constants';
 import { ResponseInterceptor } from '../../common/interceptors/response.interceptor';
 import type { RequestWithOptionalUser } from '../auth/types/authenticated-request.type';
 import { StatisticsController } from './statistics.controller';
@@ -68,6 +69,7 @@ describe('StatisticsController HTTP', () => {
       providers: [{ provide: StatisticsService, useValue: service }],
     }).compile();
     app = module.createNestApplication();
+    app.setGlobalPrefix(API_PREFIX);
     app.use(
       (req: RequestWithOptionalUser, _res: Response, next: NextFunction) => {
         if (req.headers.authorization === 'Bearer test-user')
@@ -94,7 +96,7 @@ describe('StatisticsController HTTP', () => {
     '%s 使用认证用户、独立 DTO 和单层响应',
     async (path, method, query, args) => {
       const response = await request(app.getHttpServer())
-        .get(`/statistics/${path}`)
+        .get(`/api/statistics/${path}`)
         .set('Authorization', 'Bearer test-user')
         .query(query)
         .expect(200);
@@ -108,7 +110,7 @@ describe('StatisticsController HTTP', () => {
   );
   it.each(cases)('%s 未认证时拒绝访问', async (path, method, query) => {
     await request(app.getHttpServer())
-      .get(`/statistics/${path}`)
+      .get(`/api/statistics/${path}`)
       .query(query)
       .expect(401);
     expect(service[method]).not.toHaveBeenCalled();
@@ -130,7 +132,7 @@ describe('StatisticsController HTTP', () => {
         ...(!('order' in query) ? ['order'] : []),
       ]) {
         await request(app.getHttpServer())
-          .get(`/statistics/${path}`)
+          .get(`/api/statistics/${path}`)
           .set('Authorization', 'Bearer test-user')
           .query({ ...query, [key]: '' })
           .expect(400);
@@ -139,7 +141,7 @@ describe('StatisticsController HTTP', () => {
         const incomplete: Record<string, string> = { ...query };
         delete incomplete[key];
         await request(app.getHttpServer())
-          .get(`/statistics/${path}`)
+          .get(`/api/statistics/${path}`)
           .set('Authorization', 'Bearer test-user')
           .query(incomplete)
           .expect(400);
@@ -171,7 +173,7 @@ describe('StatisticsController HTTP', () => {
     { order: '' },
   ])('月排行拒绝非法输入 %j', async (invalid) => {
     await request(app.getHttpServer())
-      .get('/statistics/category-ranking/monthly')
+      .get('/api/statistics/category-ranking/monthly')
       .set('Authorization', 'Bearer test-user')
       .query({ ...cases[0][2], ...invalid })
       .expect(400);
@@ -189,14 +191,14 @@ describe('StatisticsController HTTP', () => {
     ['2025', '2026'],
   ])('年趋势拒绝非法年份 %j', async (year) => {
     await request(app.getHttpServer())
-      .get('/statistics/transaction-trend/yearly')
+      .get('/api/statistics/transaction-trend/yearly')
       .set('Authorization', 'Bearer test-user')
       .query({ year, type: 'income' })
       .expect(400);
   });
   it('收入二级分类提示明确，不静默转换', async () => {
     const response = await request(app.getHttpServer())
-      .get('/statistics/category-proportion/monthly')
+      .get('/api/statistics/category-proportion/monthly')
       .set('Authorization', 'Bearer test-user')
       .query({ month: '2026-10', type: 'income', categoryLevel: '2' })
       .expect(400);

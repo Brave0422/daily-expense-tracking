@@ -7,7 +7,7 @@ SwiftUI 原生工程，最低 iOS 17.0。使用 Observation、Swift Concurrency�
 ## 在 Mac 上打开
 
 1. 使用支持 iOS 17 SDK、Swift 5.9 或更高编译器的 Xcode，打开 `DailyExpenseTracking.xcodeproj`。工程采用 Swift 5 语言模式和完整并发检查。
-2. 将 `Config/Local.xcconfig.example` 复制为 `Config/Local.xcconfig`，填写实际 `API_BASE_URL`。不要添加 Web 开发代理的 `/api`。
+2. 将 `Config/Local.xcconfig.example` 复制为 `Config/Local.xcconfig`，填写包含 `/api` 前缀的实际 `API_BASE_URL`，例如 `http://192.168.1.100:3000/api`。
 3. 选择 `DailyExpenseTracking` Scheme 和 iPhone 模拟器，运行。真机需在 Signing & Capabilities 填自己的 Team 和唯一 Bundle ID。
 
 ```sh
@@ -16,7 +16,7 @@ cp Config/Local.xcconfig.example Config/Local.xcconfig
 open DailyExpenseTracking.xcodeproj
 ```
 
-默认 Debug 地址是 `http://localhost:3000`，它指向模拟器所在 Mac。如果后端在 Windows，请改成手机 / Mac 可达的 Windows 局域网地址，并确认后端监听地址、防火墙和数据库正常。`Local.xcconfig` 已忽略，不应放账号、密码或验证码。
+默认 Debug API 地址是 `http://localhost:3000/api`，它指向模拟器所在 Mac。如果后端在 Windows，请改成手机 / Mac 可达的 Windows 局域网地址，并确认后端监听地址、防火墙和数据库正常。`Local.xcconfig` 已忽略，不应放账号、密码或验证码。
 
 Debug 的 ATS 例外仅用于本地网络与 localhost。Release 独立使用 `Config/Release.xcconfig`，无 HTTP 例外，也不读取本机覆盖。发布前须设置正式 HTTPS 地址、Bundle ID 和签名；默认 `api.example.invalid` 会被启动校验阻止。对其他开发 HTTP 域名，需在 Debug plist 精确添加该域的例外并在设备上验证。
 
@@ -31,7 +31,7 @@ Debug 的 ATS 例外仅用于本地网络与 localhost。Release 独立使用 `C
 | `Features/Transactions` | 日明细、年内汇总、筛选、快照详情、完整录入 / 编辑、归档 |
 | `Features/Categories` / `Tags` | 有约束的配置维护、服务端搜索与流水标签事务草稿 |
 | `Features/Statistics` | 独立排行、实心饼图、完整时间轴柱图与触摸摘要 |
-| `Resources` | 111 个分类中心矢量 PDF、Asset Catalog、中文 String Catalog 与许可 |
+| `Resources` | 112 个分类中心矢量 PDF、Asset Catalog、中文 String Catalog 与许可 |
 | `DailyExpenseTrackingTests` | 金额、日期、请求、Cookie、刷新、身份隔离和查询竞态测试 |
 | `DailyExpenseTrackingUITests` | 公开认证页验证；使用干净模拟器，不内置账号 |
 

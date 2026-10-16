@@ -15,6 +15,7 @@ import { Test } from '@nestjs/testing';
 import type { NextFunction, Response } from 'express';
 import request from 'supertest';
 import type { App } from 'supertest/types';
+import { API_PREFIX } from '../../common/constants/api.constants';
 import { ResponseInterceptor } from '../../common/interceptors/response.interceptor';
 import type { RequestWithOptionalUser } from '../auth/types/authenticated-request.type';
 import { TransactionsController } from './transactions.controller';
@@ -49,6 +50,7 @@ describe('TransactionsController', () => {
       ],
     }).compile();
     app = module.createNestApplication();
+    app.setGlobalPrefix(API_PREFIX);
     app.use(
       (req: RequestWithOptionalUser, _res: Response, next: NextFunction) => {
         if (req.headers.authorization === 'Bearer test-user') {
@@ -76,10 +78,10 @@ describe('TransactionsController', () => {
     await app.close();
   });
 
-  describe('DELETE /transactions/:id/archive', () => {
+  describe('DELETE /api/transactions/:id/archive', () => {
     it('使用认证用户和路径id，返回删除成功且不返回流水数据', async () => {
       const response = await request(app.getHttpServer())
-        .delete('/transactions/101/archive?userId=999')
+        .delete('/api/transactions/101/archive?userId=999')
         .set('Authorization', 'Bearer test-user')
         .expect(200);
       expect(archive).toHaveBeenCalledWith(7, 101);
@@ -93,7 +95,7 @@ describe('TransactionsController', () => {
 
     it('未认证时拒绝删除', async () => {
       await request(app.getHttpServer())
-        .delete('/transactions/101/archive')
+        .delete('/api/transactions/101/archive')
         .expect(401);
       expect(archive).not.toHaveBeenCalled();
     });
@@ -102,7 +104,7 @@ describe('TransactionsController', () => {
       '非法路径id %s 在业务层之前拒绝',
       async (id) => {
         await request(app.getHttpServer())
-          .delete(`/transactions/${id}/archive`)
+          .delete(`/api/transactions/${id}/archive`)
           .set('Authorization', 'Bearer test-user')
           .expect(400);
         expect(archive).not.toHaveBeenCalled();
@@ -119,7 +121,7 @@ describe('TransactionsController', () => {
     ] as const)('保留服务层删除错误：%s', async (error, status, message) => {
       archive.mockRejectedValueOnce(error);
       const response = await request(app.getHttpServer())
-        .delete('/transactions/101/archive')
+        .delete('/api/transactions/101/archive')
         .set('Authorization', 'Bearer test-user')
         .expect(status);
       expect(response.body).toHaveProperty('message', message);
@@ -128,7 +130,7 @@ describe('TransactionsController', () => {
 
   it('使用认证用户，忽略伪造归属字段，转发完整参数并返回无流水数据的成功响应', async () => {
     const response = await request(app.getHttpServer())
-      .post('/transactions')
+      .post('/api/transactions')
       .set('Authorization', 'Bearer test-user')
       .send({ ...body, userId: 999, ownerUserId: 999, id: 99 })
       .expect(200);
@@ -153,7 +155,7 @@ describe('TransactionsController', () => {
 
   it('未认证时拒绝创建', async () => {
     await request(app.getHttpServer())
-      .post('/transactions')
+      .post('/api/transactions')
       .send(body)
       .expect(401);
     expect(createTransaction).not.toHaveBeenCalled();
@@ -165,8 +167,8 @@ describe('TransactionsController', () => {
       const req = request(app.getHttpServer());
       await (
         operation === 'create'
-          ? req.post('/transactions')
-          : req.patch('/transactions/101')
+          ? req.post('/api/transactions')
+          : req.patch('/api/transactions/101')
       )
         .set('Authorization', 'Bearer test-user')
         .send({
@@ -190,8 +192,8 @@ describe('TransactionsController', () => {
         const req = request(app.getHttpServer());
         return (
           operation === 'create'
-            ? req.post('/transactions')
-            : req.patch('/transactions/101')
+            ? req.post('/api/transactions')
+            : req.patch('/api/transactions/101')
         )
           .set('Authorization', 'Bearer test-user')
           .send({
@@ -238,8 +240,8 @@ describe('TransactionsController', () => {
         const req = request(app.getHttpServer());
         await (
           operation === 'create'
-            ? req.post('/transactions')
-            : req.patch('/transactions/101')
+            ? req.post('/api/transactions')
+            : req.patch('/api/transactions/101')
         )
           .set('Authorization', 'Bearer test-user')
           .send({
@@ -294,7 +296,7 @@ describe('TransactionsController', () => {
     { remark: 123 },
   ])('无效请求在进入业务层之前拒绝：%j', async (invalid) => {
     await request(app.getHttpServer())
-      .post('/transactions')
+      .post('/api/transactions')
       .set('Authorization', 'Bearer test-user')
       .send({ ...body, ...invalid })
       .expect(400);
@@ -303,7 +305,7 @@ describe('TransactionsController', () => {
 
   it('支持收入、合法闰日、最大精度金额和省略可选字段', async () => {
     await request(app.getHttpServer())
-      .post('/transactions')
+      .post('/api/transactions')
       .set('Authorization', 'Bearer test-user')
       .send({
         type: 'income',
@@ -327,7 +329,7 @@ describe('TransactionsController', () => {
 
   it('空文本及 NULL 可选文本有效，Unicode 长度按字符计算', async () => {
     await request(app.getHttpServer())
-      .post('/transactions')
+      .post('/api/transactions')
       .set('Authorization', 'Bearer test-user')
       .send({
         ...body,
@@ -354,14 +356,14 @@ describe('TransactionsController', () => {
       new BadRequestException('分类不存在或已归档'),
     );
     const response = await request(app.getHttpServer())
-      .post('/transactions')
+      .post('/api/transactions')
       .set('Authorization', 'Bearer test-user')
       .send(body)
       .expect(400);
     expect(response.body).toMatchObject({ message: '分类不存在或已归档' });
   });
 
-  describe('PATCH /transactions/:id', () => {
+  describe('PATCH /api/transactions/:id', () => {
     const updateBody = {
       categoryId: 12,
       amount: '17.28',
@@ -373,7 +375,7 @@ describe('TransactionsController', () => {
 
     it('使用认证用户和路径id，转发六个可编辑字段并返回无数据成功响应', async () => {
       const response = await request(app.getHttpServer())
-        .patch('/transactions/101')
+        .patch('/api/transactions/101')
         .set('Authorization', 'Bearer test-user')
         .send({ ...updateBody, userId: 999, ownerUserId: 999, id: 999 })
         .expect(200);
@@ -399,7 +401,7 @@ describe('TransactionsController', () => {
 
     it('未认证时拒绝编辑', async () => {
       await request(app.getHttpServer())
-        .patch('/transactions/101')
+        .patch('/api/transactions/101')
         .send(updateBody)
         .expect(401);
       expect(updateTransaction).not.toHaveBeenCalled();
@@ -409,7 +411,7 @@ describe('TransactionsController', () => {
       '显式提交 type=%j 时拒绝请求',
       async (type) => {
         const response = await request(app.getHttpServer())
-          .patch('/transactions/101')
+          .patch('/api/transactions/101')
           .set('Authorization', 'Bearer test-user')
           .send({ ...updateBody, type })
           .expect(400);
@@ -424,7 +426,7 @@ describe('TransactionsController', () => {
         const incompleteBody: Record<string, unknown> = { ...updateBody };
         delete incompleteBody[field];
         await request(app.getHttpServer())
-          .patch('/transactions/101')
+          .patch('/api/transactions/101')
           .set('Authorization', 'Bearer test-user')
           .send(incompleteBody)
           .expect(400);
@@ -443,7 +445,7 @@ describe('TransactionsController', () => {
       '%20101%20',
     ])('非法路径id %s 不进入业务层', async (id) => {
       await request(app.getHttpServer())
-        .patch(`/transactions/${id}`)
+        .patch(`/api/transactions/${id}`)
         .set('Authorization', 'Bearer test-user')
         .send(updateBody)
         .expect(400);
@@ -481,7 +483,7 @@ describe('TransactionsController', () => {
       { remark: '中'.repeat(101) },
     ])('非法编辑字段在进入业务层前被拒绝：%j', async (invalid) => {
       await request(app.getHttpServer())
-        .patch('/transactions/101')
+        .patch('/api/transactions/101')
         .set('Authorization', 'Bearer test-user')
         .send({ ...updateBody, ...invalid })
         .expect(400);
@@ -490,7 +492,7 @@ describe('TransactionsController', () => {
 
     it('允许清空文本和标签，接受合法闰日与最大精度金额', async () => {
       await request(app.getHttpServer())
-        .patch('/transactions/101')
+        .patch('/api/transactions/101')
         .set('Authorization', 'Bearer test-user')
         .send({
           ...updateBody,
@@ -516,7 +518,7 @@ describe('TransactionsController', () => {
 
     it('文本先去除首尾空格，Unicode 长度按字符校验', async () => {
       await request(app.getHttpServer())
-        .patch('/transactions/101')
+        .patch('/api/transactions/101')
         .set('Authorization', 'Bearer test-user')
         .send({ ...updateBody, title: ` ${'😀'.repeat(50)} `, remark: null })
         .expect(200);
@@ -548,7 +550,7 @@ describe('TransactionsController', () => {
     ] as const)('保留服务层错误：%s', async (error, status, message) => {
       updateTransaction.mockRejectedValueOnce(error);
       const response = await request(app.getHttpServer())
-        .patch('/transactions/101')
+        .patch('/api/transactions/101')
         .set('Authorization', 'Bearer test-user')
         .send(updateBody)
         .expect(status);

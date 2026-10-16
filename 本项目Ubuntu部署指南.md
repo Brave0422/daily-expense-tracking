@@ -31,15 +31,15 @@
 浏览器：https://expense.example.com
   └─ Nginx：80 / 443
        ├─ /、/login、/transactions 等 → web/dist
-       └─ /api/... → http://127.0.0.1:3000/...
+       └─ /api/... → http://127.0.0.1:3000/api/...
                        └─ NestJS → MySQL 127.0.0.1:3306
 ```
 
 本项目与一般示例不同的地方：
 
-1. 后端路由没有 `/api` 前缀，登录接口是 `POST /auth/login`。
-2. Web 默认调用 `/api`；线上必须由 Nginx 去掉该前缀。
-3. 后端 Refresh Cookie 的 Path 是 `/auth`；Web 入口要改写成 `/api/auth`。
+1. 后端路由统一使用 `/api` 前缀，登录接口是 `POST /api/auth/login`。
+2. Web 默认调用 `/api`；Vite 和线上 Nginx 均保留该前缀。
+3. 后端 Refresh Cookie 的 Path 是 `/api/auth`；Web 和原生客户端直接使用该路径，无需代理改写。
 4. 后端读取 `.env.production`，不是普通的 `.env`，且必须在启动前设置 `NODE_ENV=production`。
 5. 生产环境关闭 TypeORM 自动同步；首次上线必须建表并导入分类基础数据。
 6. Access Token 和 Refresh Token 使用两把独立密钥，不能照搬单 JWT 项目的配置。
@@ -262,7 +262,7 @@ sudo mysql -e 'SHOW TABLES FROM `daily-expense-tracking`;'
 sudo mysql -e 'SELECT COUNT(*) AS icon_count FROM `daily-expense-tracking`.category_icons; SELECT COUNT(*) AS template_count FROM `daily-expense-tracking`.category_templates;'
 ```
 
-当前初始化脚本应得到 **9 张表、111 个分类图标、83 条默认分类模板**。这些模板会在注册时用于初始化用户分类。
+当前初始化脚本应得到 **9 张表、112 个分类图标、84 条默认分类模板**。这些模板会在注册时用于初始化用户分类。
 
 不要将 `sql/mock-data.sql` 作为正式初始化步骤；它包含演示账号和假流水。`init.sql` 的 `IF NOT EXISTS` 也不会修复已经存在的旧表结构。
 
@@ -461,7 +461,7 @@ pm2 logs daily-expense-api --lines 100 --nostream
 ### 8.3 用项目真实接口检查后端
 
 ```bash
-curl -i --request POST http://127.0.0.1:3000/auth/login \
+curl -i --request POST http://127.0.0.1:3000/api/auth/login \
   --header 'Content-Type: application/json' \
   --data '{}'
 ```
@@ -469,10 +469,10 @@ curl -i --request POST http://127.0.0.1:3000/auth/login \
 **预期：HTTP 400，JSON 中包含邮箱或密码校验错误。** 这里故意使用空请求，不注册账号、不修改数据；收到预期的校验响应，说明请求已到达 NestJS 的真实登录接口。
 
 ```bash
-curl -i http://127.0.0.1:3000/categories/getAllIcons
+curl -i http://127.0.0.1:3000/api/categories/getAllIcons
 ```
 
-**预期：HTTP 401，提示“请先登录”。** 该接口受全局鉴权保护。当前项目没有 `/health`；根路径同样受到全局守卫保护，不能将它必须返回 `Hello World!` 当作部署标准。
+**预期：HTTP 401，提示“请先登录”。** 该接口受全局鉴权保护。当前项目没有 `/api/health`；服务欢迎接口 `GET /api` 同样受到全局守卫保护，不能将它必须返回 `Hello World!` 当作部署标准。
 
 ### 8.4 开机自启和日志轮转
 
@@ -561,16 +561,15 @@ server {
     error_log /var/log/nginx/daily-expense-error.log;
 
     location /api/ {
-        # 结尾的 / 必须保留：把 /api/auth/login 转成 /auth/login。
-        proxy_pass http://127.0.0.1:3000/;
+        # 不附加 URI：将 /api/auth/login 原样转发给后端。
+        proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # 登录、轮换、退出清除 Cookie 时都需要相同的 Path 改写。
-        proxy_cookie_path /auth /api/auth;
+        # 后端 Cookie Path 已为 /api/auth，无需改写。
     }
 
     location /assets/ {
@@ -583,7 +582,7 @@ server {
 }
 ```
 
-`proxy_pass` 结尾斜线决定是否替换路径前缀；`proxy_cookie_path` 改写的是响应头中的 Cookie Path。不能把后端也加上 `/api`，同时仍使用上面去前缀的规则。[Nginx 代理说明](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
+本项目后端统一使用 `/api`；`proxy_pass` 不附加 URI，保留完整请求路径。不要在代理中剥离 `/api`，也无需改写服务端的 `/api/auth` Cookie Path。[Nginx 代理说明](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
 
 ### 10.2 启用和验证
 
@@ -857,13 +856,13 @@ git switch --detach "$(cat ~/deploy-configs/expense.previous-commit)"
 
 ## 15. 原生 iOS 和历史 Flutter 接入
 
-### 15.1 为什么不能直接把 iOS 地址设成 Web 的 `/api`
+### 15.1 iOS 与 Web 使用统一 API 入口
 
-当前原生 iOS 的 Cookie 解析器明确要求 Path 为 `/auth`；Web 同源代理会改写成 `/api/auth`，因此 iOS 直接使用 `https://expense.example.com/api` 会违反当前客户端约定。
+后端和原生 iOS 的 Refresh Cookie Path 统一为 `/api/auth`。iOS 可直接配置 `https://expense.example.com/api`，与 Web 共用同一 API 入口。
 
-保持前面 Web 方案，另外给移动端提供一个保留原始路由的 API 子域名即可，两者都转到同一个 NestJS 进程，不需要部署第二套数据库。
+如需独立移动端 API 子域名，可按下一节配置；子域名同样保留 `/api`，转发到同一个 NestJS 进程，共用同一数据库。
 
-### 15.2 添加移动端 API 域名
+### 15.2 可选：添加移动端 API 域名
 
 DNS 添加 `api.expense.example.com` 的 A 记录，指向同一公网 IP。然后：
 
@@ -879,7 +878,7 @@ server {
     server_name api.expense.example.com;
 
     location / {
-        # 不增加 URI，也不去除路径，保留 /auth、/categories 等原始路由。
+        # 不附加 URI，保留 /api/auth、/api/categories 等完整接口路径。
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -890,14 +889,14 @@ server {
 }
 ```
 
-这里不要加入 Web 站点的 `proxy_cookie_path /auth /api/auth`。
+该入口同样直接使用后端的 `/api/auth` Cookie Path，无需配置 Cookie 路径改写。
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/daily-expense-mobile-api /etc/nginx/sites-enabled/daily-expense-mobile-api
 sudo nginx -t
 sudo systemctl reload nginx
 sudo /snap/bin/certbot --nginx -d api.expense.example.com --redirect
-curl -i --request POST https://api.expense.example.com/auth/login \
+curl -i --request POST https://api.expense.example.com/api/auth/login \
   --header 'Content-Type: application/json' \
   --data '{}'
 ```
@@ -909,7 +908,7 @@ curl -i --request POST https://api.expense.example.com/auth/login \
 在 Mac 上修改 `ios/Config/Release.xcconfig` 的正式地址：
 
 ```xcconfig
-API_BASE_URL = https:/$()/api.expense.example.com
+API_BASE_URL = https:/$()/api.expense.example.com/api
 ```
 
 保留 xcconfig 中用于避免 `//` 被识别为注释的 `$()` 写法。Release 不读取 `Local.xcconfig`，只改本地 Debug 覆盖文件不会改变正式包。
@@ -919,10 +918,10 @@ API_BASE_URL = https:/$()/api.expense.example.com
 历史 Flutter 若继续使用，在 `app/` 下构建时传入：
 
 ```bash
-flutter build appbundle --release --dart-define=API_BASE_URL=https://api.expense.example.com
+flutter build appbundle --release --dart-define=API_BASE_URL=https://api.expense.example.com/api
 ```
 
-同样不增加 `/api`。Android 正式签名需按 Flutter 工程发布要求另行配置。
+API 基础地址同样包含 `/api`。Android 正式签名需按 Flutter 工程发布要求另行配置。
 
 ## 16. 按现象排查问题
 
@@ -933,7 +932,7 @@ flutter build appbundle --release --dart-define=API_BASE_URL=https://api.expense
 | 显示 Nginx 欢迎页 | 域名命中的 server 块 | `sudo nginx -T`、核对 DNS 和 sites-enabled |
 | 页面 403 | dist 路径和目录权限 | `namei -l /var/www/daily-expense-tracking/web/dist/index.html` |
 | API 502 | 后端没运行或端口不同 | `pm2 status`、`pm2 logs daily-expense-api --lines 100 --nostream` |
-| API 404 | `/api` 去前缀规则错误 | 对照第 10 节的 `proxy_pass` 末尾 `/` |
+| API 404 | `/api` 被剥离或重复添加 | 对照第 10 节，保留 `/api` 且 `proxy_pass` 不附加 URI |
 | API 返回 HTML | API 请求被前端回退接收 | 核对请求地址和 `location /api/` |
 | `Unknown database` / `Table ... doesn't exist` | 正式库未初始化或库名不一致 | 第 6 节；不要临时启用 synchronize |
 | `Access denied for user` | 账号 Host、密码、TCP 连接 | 按 6.3 相同的 host / port / user 重测 |

@@ -2,11 +2,11 @@
 
 [返回主 PRD](../PRD.md) · [认证](03-authentication.md)
 
-核对日期：2026-10-15。来源为 [后端模块](../../service-nest/src/modules/)、[Web API 类型](../../web/src/api/) 与相关 Service 实现；本文件不要求新增接口。后续实现遇到变化需复核源码并更新契约，不按 REST 习惯猜路径。
+核对日期：2026-10-16。来源为 [后端模块](../../service-nest/src/modules/)、[Web API 类型](../../web/src/api/) 与相关 Service 实现；本文件不要求新增接口。后续实现遇到变化需复核源码并更新契约，不按 REST 习惯猜路径。
 
 ## 1. 通用传输（API-01）
 
-- 原生配置指向实际 NestJS 地址，无统一 `/api` 前缀；Web 的 `/api` 是开发代理规则。JSON 请求使用 `Content-Type: application/json`。
+- 原生 `API_BASE_URL` 指向包含 `/api` 的实际 API 基础地址，例如 `http://localhost:3000/api`；下表列出含前缀的完整接口路径，客户端端点相对于基础地址声明，不重复拼接 `/api`。JSON 请求使用 `Content-Type: application/json`。
 - 受保护请求带 Bearer；登录 / 刷新接收 Set-Cookie，刷新发送匹配的 Refresh Cookie。原生凭证层要求见 03。
 - 当前成功 HTTP 统一 200，封装为 `code`、`msg`、`success`、ISO 8601 `timestamp` 和可选 `data`。
 - void 写入的 JSON 可能没有 data；成功注册 / 密码操作 data 为 boolean；查询必须解码实际业务结构。不能强制所有成功响应都有非空 data。
@@ -19,13 +19,13 @@
 
 | 方法 / 路径 | JSON body | data / 行为 |
 | --- | --- | --- |
-| POST `/auth/register` | email、password、code | boolean；不直接建立会话 |
-| POST `/auth/login` | email、password | `{accessToken}`，Set-Cookie 写 Refresh Cookie |
-| POST `/auth/refresh` | 无 Token 请求体 | `{accessToken}`，轮换 Cookie |
-| POST `/auth/logout` | 无业务 body，需 Bearer | void，撤销当前会话并清 Cookie |
-| POST `/auth/resetPassword` | email、newPassword、code | boolean |
-| POST `/auth/changePassword` | newPassword、code，需 Bearer | boolean |
-| POST `/verification-codes/send` | purpose 与按场景需要的 email | void，可能有频控错误 |
+| POST `/api/auth/register` | email、password、code | boolean；不直接建立会话 |
+| POST `/api/auth/login` | email、password | `{accessToken}`，Set-Cookie 写 Refresh Cookie |
+| POST `/api/auth/refresh` | 无 Token 请求体 | `{accessToken}`，轮换 Cookie |
+| POST `/api/auth/logout` | 无业务 body，需 Bearer | void，撤销当前会话并清 Cookie |
+| POST `/api/auth/resetPassword` | email、newPassword、code | boolean |
+| POST `/api/auth/changePassword` | newPassword、code，需 Bearer | boolean |
+| POST `/api/verification-codes/send` | purpose 与按场景需要的 email | void，可能有频控错误 |
 
 purpose 严格使用 register / reset_password / change_password。前两者带邮箱，change_password 仅带 purpose 并带 Bearer。验证码六位数字字符串，邮箱 trim 后小写，密码 6–20 字符、不 trim。客户端校验不能代替后端验证。
 
@@ -35,11 +35,11 @@ purpose 严格使用 register / reset_password / change_password。前两者带�
 
 | 方法 / 路径 | 参数 / body | 返回 |
 | --- | --- | --- |
-| GET `/categories/getUserCategories` | type 必填；可选 includeArchived=true | 一级分类树数组 |
-| GET `/categories/getAllIcons` | 无 | 图标数组 |
-| POST `/categories/create` | type、name、iconKey；二级额外 parentId | void |
-| POST `/categories/update` | id、name、iconKey | void |
-| DELETE `/categories/:id/archive` | 路径 ID | void；一级存在有效二级时拒绝 |
+| GET `/api/categories/getUserCategories` | type 必填；可选 includeArchived=true | 一级分类树数组 |
+| GET `/api/categories/getAllIcons` | 无 | 图标数组 |
+| POST `/api/categories/create` | type、name、iconKey；二级额外 parentId | void |
+| POST `/api/categories/update` | id、name、iconKey | void |
+| DELETE `/api/categories/:id/archive` | 路径 ID | void；一级存在有效二级时拒绝 |
 
 分类字段：id、type、parentId（一级 null）、name、sortOrder、level（1 / 2）、iconKey、isDefault、backgroundColor，可选 archived；一级树项含 children。图标为 iconKey、backgroundColor。
 
@@ -49,22 +49,22 @@ type 为 expense / income。收入仅一级，支出两级；类型 / 父级 / �
 
 | 方法 / 路径 | 参数 / body | 返回 |
 | --- | --- | --- |
-| GET `/tags` | 可选 includeArchived=true | 标签数组 |
-| GET `/tags/search` | key，trim 后非空，最多 50 字符 | 有效标签数组 |
-| GET `/tags/check-name` | name | 同名有效标签或 null，只读 |
-| POST `/tags` | name | void |
-| PATCH `/tags/:id` | name | void |
-| DELETE `/tags/:id/archive` | 路径 ID | void，保留历史关联 |
+| GET `/api/tags` | 可选 includeArchived=true | 标签数组 |
+| GET `/api/tags/search` | key，trim 后非空，最多 50 字符 | 有效标签数组 |
+| GET `/api/tags/check-name` | name | 同名有效标签或 null，只读 |
+| POST `/api/tags` | name | void |
+| PATCH `/api/tags/:id` | name | void |
+| DELETE `/api/tags/:id/archive` | 路径 ID | void，保留历史关联 |
 
-标签模型为 id、name、可选 archived；未带 archived 的有效搜索结果按未归档处理。name trim 后非空、最多 50 字符。空搜索用 GET `/tags`。同名检查不代表已经创建，完整草稿规则见 06。
+标签模型为 id、name、可选 archived；未带 archived 的有效搜索结果按未归档处理。name trim 后非空、最多 50 字符。空搜索用 GET `/api/tags`。同名检查不代表已经创建，完整草稿规则见 06。
 
 ## 5. 流水写入
 
 | 方法 / 路径 | 行为 | 返回 |
 | --- | --- | --- |
-| POST `/transactions` | 创建流水与标签事务 | void |
-| PATCH `/transactions/:id` | 完整编辑，不允许改 type | void |
-| DELETE `/transactions/:id/archive` | 归档流水，可能归档独占标签 | void |
+| POST `/api/transactions` | 创建流水与标签事务 | void |
+| PATCH `/api/transactions/:id` | 完整编辑，不允许改 type | void |
+| DELETE `/api/transactions/:id/archive` | 归档流水，可能归档独占标签 | void |
 
 | 字段 | POST | PATCH |
 | --- | --- | --- |
@@ -99,8 +99,8 @@ Swift Encodable 必须显式编码 null 字段。流水表单里的新标签 / �
 
 | GET 路径 | 必填 | 可选 |
 | --- | --- | --- |
-| `/transactions/daily` | month=YYYY-MM | type、categoryIds、minAmount、maxAmount、tagIds、title、remark |
-| `/transactions/monthly-summary` | year=YYYY | type、categoryIds、minAmount、maxAmount |
+| `/api/transactions/daily` | month=YYYY-MM | type、categoryIds、minAmount、maxAmount、tagIds、title、remark |
+| `/api/transactions/monthly-summary` | year=YYYY | type、categoryIds、minAmount、maxAmount |
 
 “全部收支”省略 type，不能发 all。筛选金额允许零，最小不大于最大；标题最多 50、备注最多 100，trim 后空值省略。分类可选支出一级，表示其二级范围；多个标签按任一匹配。汇总拒绝标题 / 标签 / 备注，空值同样不能发送。没有 page、pageSize、cursor。
 
@@ -124,18 +124,18 @@ primary / secondary：id、name、iconKey、backgroundColor、archived。收入 
 
 分类项：id、name、iconKey、backgroundColor、archived、amount；expenseCategories 的一级项额外有 children（二级分类金额项）。incomeCategories 是一级项数组，不虚构 children。
 
-当前没有 GET `/transactions/:id`。详情 / 编辑数据来自当次日明细，缺快照时回列表重查，不能猜测端点。
+当前没有 GET `/api/transactions/:id`。详情 / 编辑数据来自当次日明细，缺快照时回列表重查，不能猜测端点。
 
 ## 7. 统计接口（API-03）
 
 | GET 路径 | 必填查询 |
 | --- | --- |
-| `/statistics/category-ranking/monthly` | type、categoryLevel、month、order |
-| `/statistics/category-ranking/yearly` | type、categoryLevel、year、order |
-| `/statistics/category-proportion/monthly` | type、categoryLevel、month |
-| `/statistics/category-proportion/yearly` | type、categoryLevel、year |
-| `/statistics/transaction-trend/monthly` | type、month |
-| `/statistics/transaction-trend/yearly` | type、year |
+| `/api/statistics/category-ranking/monthly` | type、categoryLevel、month、order |
+| `/api/statistics/category-ranking/yearly` | type、categoryLevel、year、order |
+| `/api/statistics/category-proportion/monthly` | type、categoryLevel、month |
+| `/api/statistics/category-proportion/yearly` | type、categoryLevel、year |
+| `/api/statistics/transaction-trend/monthly` | type、month |
+| `/api/statistics/transaction-trend/yearly` | type、year |
 
 type 只为 expense / income；categoryLevel 数值 1 / 2，收入仅 1；order 为 asc / desc。月端点仅 month、年端点仅 year。统计严格拒绝额外查询字段，不能把全局流水筛选对象直接展开到请求里。
 

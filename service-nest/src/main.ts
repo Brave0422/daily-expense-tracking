@@ -1,9 +1,16 @@
+/**
+ * @author Brave
+ * @date 未知（历史未记录）
+ * @description 创建后端应用，配置统一 API 前缀、认证中间件和全局请求处理。
+ */
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
+import { API_PREFIX } from './common/constants/api.constants';
 // import { HttpExceptionFilter } from "./common/filters/http-exception-filter";
 
 /**
@@ -27,6 +34,9 @@ async function bootstrap() {
   });
 
   const configService = app.get(ConfigService);
+
+  // Web、原生客户端和反向代理统一保留 /api 前缀。
+  app.setGlobalPrefix(API_PREFIX);
 
   // 全局注册日志拦截器
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -62,4 +72,7 @@ async function bootstrap() {
   // 监听端口
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  new ConsoleLogger('记账系统').error('后端服务启动失败', error);
+  process.exit(1);
+});

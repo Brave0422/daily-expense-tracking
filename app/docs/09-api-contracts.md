@@ -10,7 +10,7 @@
 
 ## 2. 通用传输
 
-- `API_BASE_URL` 指向 App 可访问的服务端；默认开发后端没有 `/api` 前缀。
+- `API_BASE_URL` 指向含 `/api` 前缀且 App 可访问的 API 基础地址，例如 `http://192.168.1.100:3000/api`。下表为完整接口路径，客户端端点相对于基础地址声明，避免重复拼接 `/api`。
 - JSON 请求使用 `Content-Type: application/json`。受保护接口带 Bearer Access Token；登录 / 刷新通过 Cookie 管理接收和发送 Refresh Token。
 - 成功 HTTP 状态当前统一为 200；JSON 包含 `code`、`msg`、`success`、`timestamp`，有业务结果时包含 `data`。
 - 无返回值写接口可能省略 `data`，不能将其判为解析失败；`data: null` 和缺失 `data` 也要区分于需要非空模型的查询结果。
@@ -25,13 +25,13 @@
 
 | 方法与路径 | 请求 | `data` / 行为 |
 | --- | --- | --- |
-| `POST /auth/register` | `email`、`password`、`code` | boolean；不建立登录会话，成功后调用登录 |
-| `POST /auth/login` | `email`、`password` | `{accessToken: string}`，另通过 Set-Cookie 返回 Refresh Cookie |
-| `POST /auth/refresh` | 无请求体 Token；携带 Refresh Cookie | `{accessToken: string}`，同时轮换 Refresh Cookie |
-| `POST /auth/logout` | 无业务请求体；需 Bearer | 无业务 data；撤销当前会话并清除 Cookie |
-| `POST /auth/resetPassword` | `email`、`newPassword`、`code` | boolean |
-| `POST /auth/changePassword` | `newPassword`、`code`；需 Bearer | boolean；邮箱由服务端取得 |
-| `POST /verification-codes/send` | 见下方用途 | 无业务 data；可能返回发送频控错误 |
+| `POST /api/auth/register` | `email`、`password`、`code` | boolean；不建立登录会话，成功后调用登录 |
+| `POST /api/auth/login` | `email`、`password` | `{accessToken: string}`，另通过 Set-Cookie 返回 Refresh Cookie |
+| `POST /api/auth/refresh` | 无请求体 Token；携带 Refresh Cookie | `{accessToken: string}`，同时轮换 Refresh Cookie |
+| `POST /api/auth/logout` | 无业务请求体；需 Bearer | 无业务 data；撤销当前会话并清除 Cookie |
+| `POST /api/auth/resetPassword` | `email`、`newPassword`、`code` | boolean |
+| `POST /api/auth/changePassword` | `newPassword`、`code`；需 Bearer | boolean；邮箱由服务端取得 |
+| `POST /api/verification-codes/send` | 见下方用途 | 无业务 data；可能返回发送频控错误 |
 
 验证码用途必须精确映射：注册为 `register`，忘记密码为 `reset_password`，修改密码为 `change_password`。前两者提交邮箱，修改密码只提交 purpose 并携带登录态。虽然后端枚举有其他值，v1 不实现账户注销。
 
@@ -41,11 +41,11 @@
 
 | 方法与路径 | 请求 | 结果 |
 | --- | --- | --- |
-| `GET /categories/getUserCategories` | 必填 `type=expense/income`；可选 `includeArchived=true` | 一级分类树数组，子项在 `children` |
-| `GET /categories/getAllIcons` | 无 | 图标选项，使用 `iconKey`、`backgroundColor` |
-| `POST /categories/create` | `type`、`name`、`iconKey`；二级增加 `parentId` | 无业务 data |
-| `POST /categories/update` | `id`、`name`、`iconKey` | 无业务 data；类型、父级与层级不可修改 |
-| `DELETE /categories/:id/archive` | 路径 id | 无业务 data；一级分类仍有未归档二级分类时拒绝删除，须先删除二级 |
+| `GET /api/categories/getUserCategories` | 必填 `type=expense/income`；可选 `includeArchived=true` | 一级分类树数组，子项在 `children` |
+| `GET /api/categories/getAllIcons` | 无 | 图标选项，使用 `iconKey`、`backgroundColor` |
+| `POST /api/categories/create` | `type`、`name`、`iconKey`；二级增加 `parentId` | 无业务 data |
+| `POST /api/categories/update` | `id`、`name`、`iconKey` | 无业务 data；类型、父级与层级不可修改 |
+| `DELETE /api/categories/:id/archive` | 路径 id | 无业务 data；一级分类仍有未归档二级分类时拒绝删除，须先删除二级 |
 
 分类字段包括 `id`、`type`、`parentId`、`name`、`sortOrder`、`level`、`iconKey`、`isDefault`、`backgroundColor`，历史查询可能有 `archived`。二级图标背景继承父级，客户端使用后端返回颜色，不开放背景色编辑。
 
@@ -55,12 +55,12 @@
 
 | 方法与路径 | 请求 | 结果 |
 | --- | --- | --- |
-| `GET /tags` | 可选 `includeArchived=true` | 标签数组，`id`、`name`、`archived` |
-| `GET /tags/search` | `key`，trim 后非空，最多 50 字符 | 未归档标签数组；未提供 archived 时按有效项解析 |
-| `GET /tags/check-name` | `name` | 同名未归档标签或 null；只查询，不创建 |
-| `POST /tags` | `name` | 无业务 data |
-| `PATCH /tags/:id` | `name` | 无业务 data |
-| `DELETE /tags/:id/archive` | 路径 id | 无业务 data；历史关联保留 |
+| `GET /api/tags` | 可选 `includeArchived=true` | 标签数组，`id`、`name`、`archived` |
+| `GET /api/tags/search` | `key`，trim 后非空，最多 50 字符 | 未归档标签数组；未提供 archived 时按有效项解析 |
+| `GET /api/tags/check-name` | `name` | 同名未归档标签或 null；只查询，不创建 |
+| `POST /api/tags` | `name` | 无业务 data |
+| `PATCH /api/tags/:id` | `name` | 无业务 data |
+| `DELETE /api/tags/:id/archive` | 路径 id | 无业务 data；历史关联保留 |
 
 名称 trim 后非空、最多 50 字符；当前用户未归档标签不允许重名。搜索为空时调用列表接口，不发送空 key。已有标签由 ID 识别，不按名字合并成另一个标签。
 
@@ -68,11 +68,11 @@
 
 | 方法与路径 | 请求 / 条件 | 结果 |
 | --- | --- | --- |
-| `POST /transactions` | CreateTransactionBody | 无业务 data；成功后重查 |
-| `PATCH /transactions/:id` | UpdateTransactionBody | 无业务 data；不允许更改 type |
-| `DELETE /transactions/:id/archive` | 路径 id | 无业务 data；可能同时归档无其他有效引用的标签 |
-| `GET /transactions/daily` | `month` 及日明细筛选 | DailyTransactionsResult |
-| `GET /transactions/monthly-summary` | `year` 及汇总筛选 | MonthlySummaryResult |
+| `POST /api/transactions` | CreateTransactionBody | 无业务 data；成功后重查 |
+| `PATCH /api/transactions/:id` | UpdateTransactionBody | 无业务 data；不允许更改 type |
+| `DELETE /api/transactions/:id/archive` | 路径 id | 无业务 data；可能同时归档无其他有效引用的标签 |
+| `GET /api/transactions/daily` | `month` 及日明细筛选 | DailyTransactionsResult |
+| `GET /api/transactions/monthly-summary` | `year` 及汇总筛选 | MonthlySummaryResult |
 
 ### 创建与编辑字段
 
@@ -111,12 +111,12 @@
 
 | GET 路径 | 必填查询 |
 | --- | --- |
-| `/statistics/category-ranking/monthly` | type、categoryLevel、month、order |
-| `/statistics/category-ranking/yearly` | type、categoryLevel、year、order |
-| `/statistics/category-proportion/monthly` | type、categoryLevel、month |
-| `/statistics/category-proportion/yearly` | type、categoryLevel、year |
-| `/statistics/transaction-trend/monthly` | type、month |
-| `/statistics/transaction-trend/yearly` | type、year |
+| `/api/statistics/category-ranking/monthly` | type、categoryLevel、month、order |
+| `/api/statistics/category-ranking/yearly` | type、categoryLevel、year、order |
+| `/api/statistics/category-proportion/monthly` | type、categoryLevel、month |
+| `/api/statistics/category-proportion/yearly` | type、categoryLevel、year |
+| `/api/statistics/transaction-trend/monthly` | type、month |
+| `/api/statistics/transaction-trend/yearly` | type、year |
 
 - type 只允许 expense 或 income，没有 all；categoryLevel 为数值 1 / 2，收入只能为 1；order 为 asc / desc。
 - month / year 按端点二选一；趋势不传 categoryLevel、order，占比不传 order。禁止传标签、分类 ID、标题、备注、金额区间或分页参数。
@@ -131,9 +131,9 @@
 
 ## 8. 首版不能假定存在的接口
 
-当前无 `GET /transactions/:id` 单笔详情、App JSON 双 Token 登录、当前用户资料查询、服务器分页、分类排序 / 重置 / 恢复、附件上传或预算接口。页面实现不得调用猜测出来的路径。
+当前无 `GET /api/transactions/:id` 单笔详情、App JSON 双 Token 登录、当前用户资料查询、服务器分页、分类排序 / 重置 / 恢复、附件上传或预算接口。页面实现不得调用猜测出来的路径。
 
-编辑入口使用当前日明细已有记录；进入编辑时缺少数据则回到列表重查，不能通过模拟记录补齐。App 能否展示邮箱取决于当前登录输入，Cookie 恢复不会返回邮箱，不依赖不存在的 `/users/me`。
+编辑入口使用当前日明细已有记录；进入编辑时缺少数据则回到列表重查，不能通过模拟记录补齐。App 能否展示邮箱取决于当前登录输入，Cookie 恢复不会返回邮箱，不依赖不存在的 `/api/users/me`。
 
 ## 9. 数据与解析要求
 

@@ -262,6 +262,17 @@
       "symbolId": "icon-expense-meal-food-daily-fruit"
     },
     {
+      "id": "instant-food",
+      "label": "方便速食",
+      "parentId": "meal-food",
+      "parentLabel": "正餐食品",
+      "direction": "EXPENSE",
+      "color": "#E96F51",
+      "file": "level2/expense-meal-food-instant-food.svg",
+      "iconfontName": "expense-meal-food-instant-food",
+      "symbolId": "icon-expense-meal-food-instant-food"
+    },
+    {
       "id": "leisure-snacks",
       "label": "休闲零食",
       "parentId": "snacks-drinks",
@@ -304,17 +315,6 @@
       "file": "level2/expense-snacks-drinks-desserts-bakery.svg",
       "iconfontName": "expense-snacks-drinks-desserts-bakery",
       "symbolId": "icon-expense-snacks-drinks-desserts-bakery"
-    },
-    {
-      "id": "instant-food",
-      "label": "方便速食",
-      "parentId": "snacks-drinks",
-      "parentLabel": "零食饮品",
-      "direction": "EXPENSE",
-      "color": "#F2A82F",
-      "file": "level2/expense-snacks-drinks-instant-food.svg",
-      "iconfontName": "expense-snacks-drinks-instant-food",
-      "symbolId": "icon-expense-snacks-drinks-instant-food"
     },
     {
       "id": "games",
@@ -480,6 +480,17 @@
       "file": "level2/expense-personal-care-skincare.svg",
       "iconfontName": "expense-personal-care-skincare",
       "symbolId": "icon-expense-personal-care-skincare"
+    },
+    {
+      "id": "medical-beauty",
+      "label": "医疗美容",
+      "parentId": "personal-care",
+      "parentLabel": "个人护理",
+      "direction": "EXPENSE",
+      "color": "#DC65A0",
+      "file": "level2/expense-personal-care-medical-beauty.svg",
+      "iconfontName": "expense-personal-care-medical-beauty",
+      "symbolId": "icon-expense-personal-care-medical-beauty"
     },
     {
       "id": "rent",

@@ -1,6 +1,6 @@
 #include "Shared.xcconfig"
 // 必须替换为正式HTTPS地址；占位地址会被启动配置校验阻止。
-API_BASE_URL = https:/$()/api.example.invalid
+API_BASE_URL = https:/$()/api.example.invalid/api
 INFOPLIST_FILE = Config/Info-Release.plist
 SWIFT_COMPILATION_MODE = wholemodule
 SWIFT_OPTIMIZATION_LEVEL = -O

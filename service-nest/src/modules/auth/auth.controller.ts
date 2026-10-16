@@ -28,6 +28,7 @@ import {
   CurrentUserId,
 } from './decorators/current-user.decorator';
 import type { AuthenticatedUser } from './interfaces/authenticated-user.interface';
+import { API_PREFIX } from '../../common/constants/api.constants';
 
 // Cookie 在浏览器中保存时使用的名字。
 const REFRESH_TOKEN_COOKIE_NAME = 'refresh_token';
@@ -71,7 +72,7 @@ export class AuthController {
       // 前后端只是端口不同或使用同一主域名时，一般可以使用 Lax 。Lax 可以阻止大部分跨站请求携带 Cookie，从而降低 CSRF 风险
       sameSite: 'lax',
       // 限制 Cookie 只发送给path指定的接口
-      path: '/auth',
+      path: `/${API_PREFIX}/auth`,
     };
   }
 

@@ -16,7 +16,7 @@ import type {
 } from './transaction.types'
 
 /**
- * POST /transactions：创建流水及已有标签关联，成功后调用方刷新账单。
+ * POST /api/transactions：创建流水及已有标签关联，成功后调用方刷新账单。
  * @param body - 符合 CreateTransactionBody 的创建请求，金额和日期使用字符串
  * @returns 创建完成后无返回数据；失败时抛出接口错误
  */
@@ -25,7 +25,7 @@ export async function createTransaction(body: CreateTransactionBody): Promise<vo
 }
 
 /**
- * PATCH /transactions/:id：完整更新可编辑字段及标签关联，成功后调用方刷新账单。
+ * PATCH /api/transactions/:id：完整更新可编辑字段及标签关联，成功后调用方刷新账单。
  * @param transactionId - 当前用户需要编辑的流水id
  * @param body - 符合 UpdateTransactionBody 的完整请求，不包含流水类型
  * @returns 编辑完成后无返回数据；失败时抛出接口错误
@@ -38,7 +38,7 @@ export async function updateTransaction(
 }
 
 /**
- * DELETE /transactions/:id/archive：删除流水及独占标签，成功后调用方刷新账单。
+ * DELETE /api/transactions/:id/archive：删除流水及独占标签，成功后调用方刷新账单。
  * @param transactionId - 当前用户需要删除的流水id
  * @returns 删除完成后无返回数据；失败时抛出接口错误
  */
@@ -47,7 +47,7 @@ export async function deleteTransaction(transactionId: number): Promise<void> {
 }
 
 /**
- * GET /transactions/daily：查询完整月总览、筛选合计与日明细。
+ * GET /api/transactions/daily：查询完整月总览、筛选合计与日明细。
  * @param query - 月份及已启用的筛选参数，金额单位为元
  * @param signal - 取消被更新条件替代的查询
  * @returns 后端按日期及录入顺序排列的结果，不在前端重排或重新求和
@@ -69,7 +69,7 @@ export async function getDailyTransactions(
 }
 
 /**
- * GET /transactions/monthly-summary：查询完整年总览、筛选合计与月分类汇总。
+ * GET /api/transactions/monthly-summary：查询完整年总览、筛选合计与月分类汇总。
  * @param query - 年份及类型、分类、金额条件，不包含日明细专用筛选
  * @param signal - 取消被更新条件或展示模式替代的查询
  * @returns 后端按月份及分类顺序排列的结果，金额不在前端重新求和

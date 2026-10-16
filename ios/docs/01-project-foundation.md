@@ -57,7 +57,7 @@ Feature 内按实际复杂度组织 Model / Service / Repository / ViewModel / V
 
 ## 4. 网络与环境（BASE-02）
 
-- 通过构建配置提供 `API_BASE_URL`。直连 NestJS 示例为 `http://localhost:3000`，没有 `/api`；Web 的 `/api` 是 Vite 代理约定。
+- 通过构建配置提供 `API_BASE_URL`。直连 NestJS 示例为 `http://localhost:3000/api`；Web、原生客户端及反向代理统一保留 `/api` 前缀。
 - 模拟器连接其所在 Mac 的本地后端可用 localhost；Windows 上的服务应填 Mac / 设备可达的 Windows 局域网地址。真机 localhost 指向手机自身。
 - Debug 如需访问开发 HTTP / 局域网，单独配置最小范围的 ATS 例外与所需本地网络说明，在设备验证；Release 只允许正式 HTTPS。
 - 不内置真实账号、密码或固定验证码。开发固定验证码只能由现有后端开发配置提供，不能让 iOS 绕过认证。

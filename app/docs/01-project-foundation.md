@@ -83,7 +83,7 @@ Riverpod 负责创建并注入 Dio、Cookie Jar、Repository 和页面状态；�
 ## 5. 配置与运行
 
 - API 地址通过 `--dart-define=API_BASE_URL=...` 注入，在集中配置类中读取和校验。
-- 默认接口路径直接为 `/auth`、`/transactions` 等，不照搬 Web 的 Vite `/api` 代理。
+- `API_BASE_URL` 包含统一 `/api` 前缀，例如 `http://192.168.1.100:3000/api`；端点声明使用相对路径 `/auth`、`/transactions`，最终请求为 `/api/auth/...`、`/api/transactions/...`。
 - 如果实际部署有网关前缀，地址与 Cookie Path 必须一并验证；不能盲目改写服务端 Cookie。
 - 真机使用可访问的局域网或部署地址；手机 `localhost` 不是开发电脑。生产环境使用 HTTPS。
 - Dio 的连接、发送和接收超时需显式配置，初版可从 15 秒开始，分别转换为可理解的错误。

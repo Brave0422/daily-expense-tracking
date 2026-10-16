@@ -88,7 +88,7 @@ struct RefreshCookie: Codable, Sendable, Equatable {
                                      hostOnly: attributes["domain"] == nil,
                                      path: cookie.path, expiresAt: expiry, secure: cookie.isSecure,
                                      httpOnly: cookie.isHTTPOnly, sameSite: attributes["samesite"])
-        guard snapshot.matches(url, now: now), snapshot.httpOnly, snapshot.path == "/auth" else {
+        guard snapshot.matches(url, now: now), snapshot.httpOnly, snapshot.path == "/api/auth" else {
             throw APIError.credential("会话 Cookie 范围或有效期不符合服务约定")
         }
         return snapshot

@@ -24,16 +24,16 @@
 
 1. 初始化当前 API 环境的 CredentialStore，读取并校验 Cookie 快照。
 2. 无凭证 / 已到期：清理该环境失效数据，进入登录，不发送无意义的 refresh。
-3. 有可用 Cookie：请求 `POST /auth/refresh`，校验 Access Token 和轮换 Cookie，安全保存完成后进入已登录。
+3. 有可用 Cookie：请求 `POST /api/auth/refresh`，校验 Access Token 和轮换 Cookie，安全保存完成后进入已登录。
 4. 刷新明确返回 401：统一清理当前身份并进入登录。
 5. 超时、断网、5xx：保留凭证，进入“暂时无法恢复，重试”；不把网络故障当作密码错误或主动退出。
 6. Keychain 暂不可读 / 写失败与“没有凭证”区分；显示可重试错误，不静默创建空身份。
 
-当前没有 `/users/me` 或资料查询接口。当前登录输入的邮箱可以在本次会话展示；仅通过 Cookie 恢复且没有可信邮箱时，管理页显示“已登录”，不伪造邮箱。此版不要求解析 JWT 作为用户资料来源。
+当前没有 `/api/users/me` 或资料查询接口。当前登录输入的邮箱可以在本次会话展示；仅通过 Cookie 恢复且没有可信邮箱时，管理页显示“已登录”，不伪造邮箱。此版不要求解析 JWT 作为用户资料来源。
 
 ## 3. URLSession 与 Keychain（AUTH-03）
 
-后端登录 / 刷新在 JSON 中只返回 `{accessToken}`，Refresh Token 来自 `Set-Cookie` 的 `refresh_token`。沿用服务端 `/auth` Path、HttpOnly、SameSite=Lax、到期时间，生产 Cookie 为 Secure。
+后端登录 / 刷新在 JSON 中只返回 `{accessToken}`，Refresh Token 来自 `Set-Cookie` 的 `refresh_token`。沿用服务端 `/api/auth` Path、HttpOnly、SameSite=Lax、到期时间，生产 Cookie 为 Secure。
 
 原生实现约束：
 
@@ -77,7 +77,7 @@ SessionCoordinator 统一执行：
 
 ## 6. 退出与清理（AUTH-06）
 
-用户确认退出后进入退出中，暂停新业务提交；协调已在途的 refresh，必要时使用有效 Access Token 调用受保护的 `POST /auth/logout`。退出中不启动额外竞争刷新。
+用户确认退出后进入退出中，暂停新业务提交；协调已在途的 refresh，必要时使用有效 Access Token 调用受保护的 `POST /api/auth/logout`。退出中不启动额外竞争刷新。
 
 - 服务端确认成功：递增身份代次，取消旧任务，清除内存、当前环境 Cookie / Keychain、缓存与草稿，清栈进入登录。
 - logout 明确失败 / 超时：说明“退出未完成，请重试”，不声称服务端会话已撤销；界面可保留当前会话状态，但不得自动跳入新账号。

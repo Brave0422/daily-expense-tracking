@@ -291,6 +291,10 @@
     "source": "web/src/assets/icons/categories/level2/expense-meal-food-daily-fruit.svg",
     "asset": "icon-expense-meal-food-daily-fruit.imageset/glyph.pdf"
   },
+  "icon-expense-meal-food-instant-food": {
+    "source": "web/src/assets/icons/categories/level2/expense-meal-food-instant-food.svg",
+    "asset": "icon-expense-meal-food-instant-food.imageset/glyph.pdf"
+  },
   "icon-expense-meal-food-staple-food": {
     "source": "web/src/assets/icons/categories/level2/expense-meal-food-staple-food.svg",
     "asset": "icon-expense-meal-food-staple-food.imageset/glyph.pdf"
@@ -339,6 +343,10 @@
     "source": "web/src/assets/icons/categories/level2/expense-personal-care-haircut.svg",
     "asset": "icon-expense-personal-care-haircut.imageset/glyph.pdf"
   },
+  "icon-expense-personal-care-medical-beauty": {
+    "source": "web/src/assets/icons/categories/level2/expense-personal-care-medical-beauty.svg",
+    "asset": "icon-expense-personal-care-medical-beauty.imageset/glyph.pdf"
+  },
   "icon-expense-personal-care-skincare": {
     "source": "web/src/assets/icons/categories/level2/expense-personal-care-skincare.svg",
     "asset": "icon-expense-personal-care-skincare.imageset/glyph.pdf"
@@ -358,10 +366,6 @@
   "icon-expense-snacks-drinks-desserts-bakery": {
     "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-desserts-bakery.svg",
     "asset": "icon-expense-snacks-drinks-desserts-bakery.imageset/glyph.pdf"
-  },
-  "icon-expense-snacks-drinks-instant-food": {
-    "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-instant-food.svg",
-    "asset": "icon-expense-snacks-drinks-instant-food.imageset/glyph.pdf"
   },
   "icon-expense-snacks-drinks-leisure-snacks": {
     "source": "web/src/assets/icons/categories/level2/expense-snacks-drinks-leisure-snacks.svg",

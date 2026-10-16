@@ -1,7 +1,7 @@
 -- 开发假数据：先执行 init.sql，再执行此脚本。
 -- 显式选择项目数据库，避免误用当前选中的其他数据库中的同名表。
 -- 如需其他数据库，请同时修改本文件和 init.sql 中的数据库名。
--- 新建 1 个用户，复制全部 83 个默认分类，添加 50 个标签、150 条流水和 300 条流水标签关联。
+-- 新建 1 个用户，复制全部 84 个默认分类，添加 50 个标签、150 条流水和 300 条流水标签关联。
 -- 默认账号 demo@example.com，密码 Demo123456；密码使用与应用一致的 bcrypt（10 轮）。
 -- 流水为最近 90 天内的 120 条支出、30 条收入，全部未归档，每条关联 2 个标签。
 -- 会话、验证码各补充 1 条已失效的记录，使全部 9 张表都有数据。
@@ -97,8 +97,8 @@ WHERE `sequence`.`number` <= 50
   )
 ORDER BY `sequence`.`number`;
 
--- 每 5 条流水中有 1 条收入；支出轮流使用 63 个二级分类，收入轮流使用 5 个一级分类。
--- 模板 ID 仅用于查找来源，category_id 始终写入当前用户真实的分类 ID。
+-- 每 5 条流水中有 1 条收入；支出轮流使用 64 个二级分类，收入轮流使用 5 个一级分类。
+-- 按实际可用分类数量循环选择，不依赖模板 ID 连续；category_id 始终写入当前用户真实的分类 ID。
 INSERT INTO `transactions` (
   `owner_user_id`, `type`, `amount`, `category_id`, `title`, `remark`, `occurred`
 )
@@ -114,13 +114,25 @@ SELECT
   CONCAT('示例流水', LPAD(`sequence`.`number`, 3, '0')),
   DATE_SUB(@mock_today, INTERVAL MOD(`sequence`.`number` - 1, 90) DAY)
 FROM `mock_data_numbers` AS `sequence`
-INNER JOIN `user_categories` AS `category`
-  ON `category`.`owner_user_id` = @mock_user_id
-  AND `category`.`source_template_id` = CASE
-    WHEN MOD(`sequence`.`number`, 5) = 0
-      THEN 16 + MOD(FLOOR((`sequence`.`number` - 1) / 5), 5)
-    ELSE 21 + MOD(`sequence`.`number` - 1 - FLOOR((`sequence`.`number` - 1) / 5), 63)
-  END
+INNER JOIN (
+  SELECT
+    `id`, `type`, `name`,
+    ROW_NUMBER() OVER (PARTITION BY `type` ORDER BY `source_template_id`) - 1 AS `position`,
+    COUNT(*) OVER (PARTITION BY `type`) AS `category_count`
+  FROM `user_categories`
+  WHERE `owner_user_id` = @mock_user_id
+    AND `source_template_id` IS NOT NULL
+    AND `archived_time` IS NULL
+    AND ((`type` = 'expense' AND `level` = 2) OR (`type` = 'income' AND `level` = 1))
+) AS `category`
+  ON `category`.`type` = CASE WHEN MOD(`sequence`.`number`, 5) = 0 THEN 'income' ELSE 'expense' END
+  AND `category`.`position` = MOD(
+    CASE WHEN MOD(`sequence`.`number`, 5) = 0
+      THEN FLOOR((`sequence`.`number` - 1) / 5)
+      ELSE `sequence`.`number` - 1 - FLOOR((`sequence`.`number` - 1) / 5)
+    END,
+    `category`.`category_count`
+  )
 WHERE NOT EXISTS (
   SELECT 1 FROM `transactions` AS `existing`
   WHERE `existing`.`owner_user_id` = @mock_user_id
@@ -173,7 +185,7 @@ COMMIT;
 
 DROP TEMPORARY TABLE `mock_data_numbers`;
 
--- 在全新初始化的数据库中，结果应为：分类 83、标签 50、流水 150、关联 300、会话 1、验证码 1。
+-- 在全新初始化的数据库中，结果应为：分类 84、标签 50、流水 150、关联 300、会话 1、验证码 1。
 SELECT
   @mock_user_id AS `user_id`,
   @mock_email AS `email`,

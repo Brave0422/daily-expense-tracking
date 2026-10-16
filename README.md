@@ -87,17 +87,17 @@ UI 优先使用 TDesign 业务组件，Tailwind 主要负责布局、间距和�
 
 1. 登录成功后，响应 JSON 返回 Access Token，Refresh Token 通过 `Set-Cookie` 写入 `refresh_token` Cookie。
 2. Web 将 Access Token 保存在内存中，业务请求通过 `Authorization: Bearer <accessToken>` 携带。
-3. `POST /auth/refresh` 从 Cookie 读取 Refresh Token，校验会话后签发新 Access Token，并轮换 Refresh Cookie。
+3. `POST /api/auth/refresh` 从 Cookie 读取 Refresh Token，校验会话后签发新 Access Token，并轮换 Refresh Cookie。
 4. Web 启动时尝试刷新以恢复会话；业务请求遇到 401 时，并发请求共享一次刷新任务，原请求最多重放一次。
 5. 退出登录时，服务端撤销当前会话并清除 Refresh Cookie。
 
-Refresh Cookie 使用 `HttpOnly`、`SameSite=Lax` 和 `/auth` 路径，生产环境开启 `Secure`。Web 不将长期认证凭证写入普通浏览器持久化存储。
+Refresh Cookie 使用 `HttpOnly`、`SameSite=Lax` 和 `/api/auth` 路径，生产环境开启 `Secure`。Web 不将长期认证凭证写入普通浏览器持久化存储。
 
 ### API 接入
 
-- 服务端默认地址为 `http://localhost:3000`，路由没有统一的 `/api` 前缀。
-- Web 开发环境请求 `/api/...`，由 Vite 代理到服务端并移除 `/api`；代理同时将 Cookie Path 从 `/auth` 改写为 `/api/auth`。
-- Web 可通过 `VITE_API_BASE_URL` 配置 API 地址；App 需要单独配置可访问的服务端地址。手机上的 `localhost` 指向手机自身。
+- 服务端统一使用 `/api` 前缀，默认 API 基础地址为 `http://localhost:3000/api`，例如 `POST /api/auth/login`。
+- Web 开发环境请求 `/api/...`，Vite 保留完整路径转发到服务端；生产 Nginx 也保留 `/api`，Cookie Path 直接使用服务端的 `/api/auth`。
+- Web 的 `VITE_API_BASE_URL` 默认为 `/api`；配置绝对地址时应包含 `/api`。App 的 `API_BASE_URL` 同样包含 `/api`，例如 `http://192.168.1.100:3000/api`。手机上的 `localhost` 指向手机自身。
 - 成功响应包含 `code`、`msg`、`success`、`timestamp`，有业务结果时通过 `data` 返回；无返回值的写入接口不保证包含 `data` 字段。
 - 错误响应使用实际 HTTP 状态码及 NestJS 的 `statusCode`、`message` 等字段；校验错误的 `message` 可能为字符串数组。
 - 新增、编辑、删除成功后，客户端重新查询相关列表或统计，不假定写入接口会返回完整实体。

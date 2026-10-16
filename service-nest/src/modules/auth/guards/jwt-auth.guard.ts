@@ -17,6 +17,7 @@ import { Public } from '../decorators/public.decorator';
 import { VerificationPurpose } from '../../verification-codes/enums/verification-purpose-enum';
 import { UsersService } from '../../users/users.service';
 import type { RequestWithOptionalUser } from '../types/authenticated-request.type';
+import { API_PREFIX } from '../../../common/constants/api.constants';
 
 interface VerificationCodeRequestBody {
   purpose?: unknown;
@@ -66,7 +67,7 @@ export class JwtAuthGuard implements CanActivate {
       VerificationPurpose.RESET_PASSWORD,
     ];
     if (
-      path === '/verification-codes/send' &&
+      path === `/${API_PREFIX}/verification-codes/send` &&
       typeof codePurpose === 'string' &&
       publicPurposes.includes(codePurpose)
     ) {

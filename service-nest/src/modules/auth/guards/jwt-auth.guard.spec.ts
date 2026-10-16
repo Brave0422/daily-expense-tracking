@@ -38,7 +38,7 @@ describe('JwtAuthGuard', () => {
 
   beforeEach(() => {
     request = {
-      path: '/categories/getUserCategories',
+      path: '/api/categories/getUserCategories',
       body: {},
       headers: { authorization: 'Bearer access-token' },
     };
@@ -83,5 +83,27 @@ describe('JwtAuthGuard', () => {
       UnauthorizedException,
     );
     expect(request.user).toBeUndefined();
+  });
+
+  it.each(['register', 'reset_password'])(
+    '带 /api 前缀的 %s 验证码请求允许匿名访问',
+    async (purpose) => {
+      request.path = '/api/verification-codes/send';
+      request.body = { purpose };
+      request.headers.authorization = '';
+
+      await expect(guard.canActivate(createContext())).resolves.toBe(true);
+      expect(authTokenService.verifyAccessToken).not.toHaveBeenCalled();
+    },
+  );
+
+  it('修改密码验证码仍要求登录', async () => {
+    request.path = '/api/verification-codes/send';
+    request.body = { purpose: 'change_password' };
+    request.headers.authorization = '';
+
+    await expect(guard.canActivate(createContext())).rejects.toThrow(
+      UnauthorizedException,
+    );
   });
 });

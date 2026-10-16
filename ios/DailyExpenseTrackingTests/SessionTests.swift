@@ -56,23 +56,23 @@ actor ScenarioTransport: HTTPTransport {
         /// 当前接口路径。
         let path = url.path
         counts[path, default: 0] += 1
-        if path == "/auth/login" {
+        if path == "/api/auth/login" {
             if scenario == .slowLogin {
                 try await Task.sleep(for: .milliseconds(String(data: request.httpBody ?? Data(), encoding: .utf8)?.contains("slow") == true ? 120 : 5))
             }
             return try response(url, token: "access-1")
         }
-        if path == "/auth/refresh" {
+        if path == "/api/auth/refresh" {
             // 留出多个业务请求共享等待窗口。
             try await Task.sleep(for: .milliseconds(30))
             if scenario == .refresh503 { return try response(url, status: 503, json: #"{"message":"暂时不可用"}"#) }
             if scenario == .refresh401 { return try response(url, status: 401, json: #"{"message":"已失效"}"#) }
             return try response(url, token: "access-2")
         }
-        if path == "/tags", request.value(forHTTPHeaderField: "Authorization") == "Bearer access-1" || scenario == .replay401 {
+        if path == "/api/tags", request.value(forHTTPHeaderField: "Authorization") == "Bearer access-1" || scenario == .replay401 {
             return try response(url, status: 401, json: #"{"message":"过期"}"#)
         }
-        if path == "/auth/logout" { return try response(url, json: #"{"code":200,"success":true,"msg":"成功"}"#) }
+        if path == "/api/auth/logout" { return try response(url, json: #"{"code":200,"success":true,"msg":"成功"}"#) }
         return try response(url, json: #"{"code":200,"success":true,"msg":"成功","data":[]}"#)
     }
 
@@ -80,7 +80,7 @@ actor ScenarioTransport: HTTPTransport {
     /// - Returns: 响应和 Cookie，不向日志输出敏感数据。
     private func response(_ url: URL, status: Int = 200, json: String = "", token: String? = nil) throws -> HTTPResult {
         /// 仅登录和刷新返回带路径、到期、HttpOnly 的 Cookie。
-        let headers = token == nil ? [:] : ["Set-Cookie": "refresh_token=test-cookie; Max-Age=3600; Path=/auth; HttpOnly; SameSite=Lax"]
+        let headers = token == nil ? [:] : ["Set-Cookie": "refresh_token=test-cookie; Max-Age=3600; Path=/api/auth; HttpOnly; SameSite=Lax"]
         /// 测试封装采用真实字段。
         let payload = token.map { value in #"{"code":200,"success":true,"msg":"成功","data":{"accessToken":""# + value + #""}}"# } ?? json
         return HTTPResult(data: Data(payload.utf8), response: try XCTUnwrap(HTTPURLResponse(url: url, statusCode: status, httpVersion: "HTTP/1.1", headerFields: headers)))
@@ -91,7 +91,7 @@ actor ScenarioTransport: HTTPTransport {
 final class SessionTests: XCTestCase {
     /// 创建测试会话；- Parameters: transport: 场景网络；store: 锁保护存储；- Returns: 隔离会话。
     private func session(_ transport: ScenarioTransport, store: MemoryCredentialStore) throws -> SessionCoordinator {
-        SessionCoordinator(configuration: AppConfiguration(baseURL: try XCTUnwrap(URL(string: "http://localhost:3000")), namespace: "test"), transport: transport, store: store)
+        SessionCoordinator(configuration: AppConfiguration(baseURL: try XCTUnwrap(URL(string: "http://localhost:3000/api")), namespace: "test"), transport: transport, store: store)
     }
 
     /// 同身份并发401共享一次刷新，全部得到重放结果。
@@ -111,7 +111,7 @@ final class SessionTests: XCTestCase {
             try await group.waitForAll()
         }
         /// 刷新计数在 actor 内获取，随后断言。
-        let refreshes = await transport.count("/auth/refresh")
+        let refreshes = await transport.count("/api/auth/refresh")
         XCTAssertEqual(refreshes, 1)
     }
 
@@ -143,9 +143,9 @@ final class SessionTests: XCTestCase {
         try await session.login(email: "test@example.com", password: "123456")
         do { _ = try await session.request("/tags", method: "GET", query: [], body: nil, protected: true); XCTFail("应失效") } catch {}
         /// 只允许一次刷新与两次业务发送。
-        let refreshes = await transport.count("/auth/refresh")
+        let refreshes = await transport.count("/api/auth/refresh")
         /// 首次与认证重放次数。
-        let requests = await transport.count("/tags")
+        let requests = await transport.count("/api/tags")
         XCTAssertEqual(refreshes, 1)
         XCTAssertEqual(requests, 2)
         XCTAssertNil(try store.read())
@@ -164,7 +164,7 @@ final class SessionTests: XCTestCase {
         do { _ = try await session.request("/tags", method: "GET", query: [], body: nil, protected: true); XCTFail("应阻断") } catch {}
         do { _ = try await session.request("/tags", method: "GET", query: [], body: nil, protected: true); XCTFail("不能继续业务") } catch {}
         /// 第二次读取没有发送给服务。
-        let requests = await transport.count("/tags")
+        let requests = await transport.count("/api/tags")
         XCTAssertEqual(requests, 1)
     }
 
@@ -197,7 +197,7 @@ final class SessionTests: XCTestCase {
         do { try await session.logout(); XCTFail("不能伪报本地退出完成") } catch {}
         do { _ = try await session.request("/tags", method: "GET", query: [], body: nil, protected: true); XCTFail("旧身份必须阻断") } catch {}
         /// 没有发出旧身份业务请求。
-        let requests = await transport.count("/tags")
+        let requests = await transport.count("/api/tags")
         XCTAssertEqual(requests, 0)
         store.fail()
         await session.discardCredentials()

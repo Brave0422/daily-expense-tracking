@@ -19,7 +19,7 @@
 创建一级支出 / 收入提交 type、name、iconKey；创建支出二级额外提交有效一级 parentId。父级与类型必须匹配，不能建立第三层。
 
 - 名称 trim 后必填，最多 50 字符；同类型、同父级下未归档分类不能重名。
-- 图标必选，来自 `GET /categories/getAllIcons`；不上传图片或随意编造 iconKey。
+- 图标必选，来自 `GET /api/categories/getAllIcons`；不上传图片或随意编造 iconKey。
 - 显示新分类预览；二级背景色遵循父级颜色，不提供用户颜色编辑。
 - 成功后关闭编辑页 / 面板并重新请求当前类型分类树，按服务端新增排序显示。
 - 失败保留输入与当前父级，展示后端错误；加载分类或图库失败时有重试。
@@ -29,7 +29,7 @@
 - 只修改 name 和 iconKey；id 取原记录，type、level、parentId 为只读。
 - 不通过编辑将收入变为支出、一级变为二级或移动到其他父级。
 - 修改默认分类的展示名称 / 图标使用同一接口，不篡改服务端模板。
-- 提交时调用当前的 `POST /categories/update`，不要凭 REST 命名习惯猜测 PATCH 路径。
+- 提交时调用当前的 `POST /api/categories/update`，不要凭 REST 命名习惯猜测 PATCH 路径。
 - 成功后刷新分类树，并使流水选项 / 历史展示与统计数据失效。
 
 ## 5. 删除（CAT-04）

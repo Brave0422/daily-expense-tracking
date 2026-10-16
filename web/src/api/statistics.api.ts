@@ -18,7 +18,7 @@ import type {
 } from './statistics.types'
 
 /**
- * GET /statistics/category-ranking/monthly，按月查询完整分类排行。
+ * GET /api/statistics/category-ranking/monthly，按月查询完整分类排行。
  * @param query 月份、类型、层级和排序，不提交 userId
  * @param signal 本板块的取消信号
  * @returns 异步返回月排行，金额保持元字符串
@@ -34,7 +34,7 @@ export async function getMonthlyCategoryRanking(
   return response.data.data
 }
 /**
- * GET /statistics/category-ranking/yearly，按年查询完整分类排行。
+ * GET /api/statistics/category-ranking/yearly，按年查询完整分类排行。
  * @param query 年份、类型、层级和排序，不含 month
  * @param signal 本板块的取消信号
  * @returns 异步返回全年排行
@@ -50,7 +50,7 @@ export async function getYearlyCategoryRanking(
   return response.data.data
 }
 /**
- * GET /statistics/category-proportion/monthly，按月查询全部分类占比。
+ * GET /api/statistics/category-proportion/monthly，按月查询全部分类占比。
  * @param query 月份、类型和层级，不含排序
  * @param signal 本板块的取消信号
  * @returns 异步返回按后端顺序排列的分类占比
@@ -66,7 +66,7 @@ export async function getMonthlyCategoryProportion(
   return response.data.data
 }
 /**
- * GET /statistics/category-proportion/yearly，按年查询全部分类占比。
+ * GET /api/statistics/category-proportion/yearly，按年查询全部分类占比。
  * @param query 年份、类型和层级，不含月份或排序
  * @param signal 本板块的取消信号
  * @returns 异步返回全年分类占比
@@ -82,7 +82,7 @@ export async function getYearlyCategoryProportion(
   return response.data.data
 }
 /**
- * GET /statistics/transaction-trend/monthly，查询完整每日轴及上月比较。
+ * GET /api/statistics/transaction-trend/monthly，查询完整每日轴及上月比较。
  * @param query 月份及类型，不含层级和排序
  * @param signal 本板块的取消信号
  * @returns 异步返回完整自然月趋势
@@ -98,7 +98,7 @@ export async function getMonthlyTransactionTrend(
   return response.data.data
 }
 /**
- * GET /statistics/transaction-trend/yearly，查询十二个月及上年比较。
+ * GET /api/statistics/transaction-trend/yearly，查询十二个月及上年比较。
  * @param query 年份及类型，不含月份、层级和排序
  * @param signal 本板块的取消信号
  * @returns 异步返回完整自然年趋势

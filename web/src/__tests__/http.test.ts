@@ -83,12 +83,18 @@ describe('authenticated HTTP client', () => {
     expect(authorization).toBe('Bearer access-token')
   })
 
+  it('keeps the /api prefix when resolving business and authentication URLs', () => {
+    expect(apiClient.getUri({ url: '/tags' })).toBe('/api/tags')
+    expect(apiClient.getUri({ url: '/auth/refresh' })).toBe('/api/auth/refresh')
+  })
+
   it('shares one refresh request across concurrent 401 responses and replays each request once', async () => {
     let accessToken = 'expired-token'
     let refreshCount = 0
     let replayCount = 0
     adapterHandler = async (config) => {
       if (config.url === '/auth/refresh') {
+        expect(axios.getUri(config)).toBe('/api/auth/refresh')
         refreshCount += 1
         await new Promise((resolve) => setTimeout(resolve, 10))
         return createResponse(config, {

@@ -25,9 +25,15 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## API prefix
+
+所有 HTTP 接口统一以 `/api` 开头，默认 API 基础地址为 `http://localhost:3000/api`，例如 `POST /api/auth/login` 和 `GET /api/categories/getAllIcons`。全局前缀在 `src/main.ts` 中注册，Controller 只声明资源相对路径。Refresh Cookie 的 Path 为 `/api/auth`，设置、轮换和清除时保持一致。
+
+Web 默认使用 `/api`；原生 App 和 Web 自定义绝对 API 地址均需包含 `/api`。Vite 和 Nginx 直接保留完整接口路径，不再剥离前缀或改写 Cookie Path。`FRONTEND_ORIGIN` 仍只填写前端源，不包含路径。
+
 ## Naming conventions
 
-- Database tables, resource module directories, resource Module/Controller/Service classes, and REST resource paths use plural names, such as `transactions`, `TagsService`, and `/verification-codes`.
+- Database tables, resource module directories, resource Module/Controller/Service classes, and REST resource paths use plural names, such as `transactions`, `TagsService`, and `/api/verification-codes`.
 - Entity classes and entity filenames represent one record and use singular names, such as `TransactionEntity` and `transaction.entity.ts`.
 - Single-value properties and foreign-key columns use singular names, such as `transactionId` and `transaction_id`; arrays and collection relations use plural names, such as `tagIds` and `tags`.
 - Capability modules that do not represent resource collections keep singular names, such as `auth` and `mail`.
@@ -37,7 +43,7 @@
 两个脚本默认使用 `daily-expense-tracking` 数据库，与当前 `.env.development` 中的 `DB_DATABASE` 一致。`init.sql` 会创建并选择该数据库，`mock-data.sql` 也会显式选择该数据库。在 MySQL 8.0 客户端中依次执行：
 
 ```sql
--- 创建项目数据库和全部 9 张表，并初始化 111 个分类图标和 83 个默认分类模板。
+-- 创建项目数据库和全部 9 张表，并初始化 112 个分类图标和 84 个默认分类模板。
 SOURCE sql/init.sql;
 
 -- 可选：添加开发用假数据。
@@ -48,7 +54,7 @@ SOURCE sql/mock-data.sql;
 
 遇到 `Unknown column 'password_hash'` 时，检查执行所在的数据库。其他数据库可能已有同名的 `users` 表，但列名和本项目不同，`IF NOT EXISTS` 不会修改这些已有表。使用更新后的两个脚本可自动选择项目数据库；如果之前在同一连接中执行失败，先执行 `ROLLBACK;`，再重新运行脚本。
 
-`mock-data.sql` 默认创建账号 `demo@example.com`，密码为 `Demo123456`，并添加该用户的全部 83 个默认分类、50 个标签、150 条最近 90 天内的流水（120 条支出、30 条收入）及 300 条流水标签关联。会话和验证码表各添加 1 条已失效的示例记录。所有业务 ID 均由数据库生成，分类父子关系使用真实用户分类 ID。
+`mock-data.sql` 默认创建账号 `demo@example.com`，密码为 `Demo123456`，并添加该用户的全部 84 个默认分类、50 个标签、150 条最近 90 天内的流水（120 条支出、30 条收入）及 300 条流水标签关联。会话和验证码表各添加 1 条已失效的示例记录。所有业务 ID 均由数据库生成，分类父子关系使用真实用户分类 ID。
 
 两个脚本可重复执行：基础图标和模板按主键更新，假数据只补充缺失的示例记录。假数据账号已存在时会复用该用户，保留其密码及已有数据；需要另一套假数据时，可修改 `mock-data.sql` 中的 `@mock_email`。
 
