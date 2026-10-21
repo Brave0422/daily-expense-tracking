@@ -1,0 +1,16 @@
+# 不把本机安装的依赖复制进 Linux 镜像。
+node_modules
+# 排除旧构建产物，镜像构建时重新生成。
+dist
+# 排除测试覆盖率报告。
+coverage
+# 排除 Git 历史和仓库元数据。
+.git
+# 排除可能含密码的默认环境文件。
+.env
+# 排除其他环境配置文件；运行参数通过 Compose 注入。
+.env.*
+# 排除运行日志。
+*.log
+# 排除本机 TypeScript 增量构建缓存。
+*.tsbuildinfo
