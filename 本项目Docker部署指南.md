@@ -1,6 +1,8 @@
 # Daily Expense Tracking：使用 Docker 部署到 Ubuntu 云服务器
 
-本文对应当前 `daily-expense-tracking` 仓库，参照[本项目 Ubuntu 部署指南](本项目Ubuntu部署指南.md)编写 Docker 版本，按“本地准备 → 本地验证 → 发布镜像 → 云端启动 → 验收 → 备份与更新”展开。本次文档整理日期：**2026-10-21**。示例发布标签只表示版本名，并非要求使用该日期。
+本文面向会开发前后端、能运行本项目，但第一次使用 Docker、还不熟悉服务器运维的程序员。每个操作小节先说明前提和新参数，再给命令，最后说明应该看到的结果；你不需要预先知道 build、push、端口映射或证书续期的含义。
+
+本文对应当前 `daily-expense-tracking` 仓库，参照[本项目 Ubuntu 部署指南](本项目Ubuntu部署指南.md)编写 Docker 版本，按“本地准备 → 本地验证 → 构建、打标签并推送镜像 → 云端拉取和启动 → 验收 → 备份与更新”展开。本次文档整理日期：**2026-10-21**。示例发布标签只表示版本名，并非要求使用该日期。
 
 默认是一台全新的 **Ubuntu 24.04 LTS 64 位 UEFI 版** 云服务器，包含 24.04.x 维护版本，部署 Web、NestJS API、MySQL。Windows/macOS 使用 Docker Desktop；云服务器使用 Docker Engine 和 Compose 插件。本教程提供需要新建的完整配置样例，**当前仓库尚未内置这些 Docker 配置**；照着操作时才创建它们。本文编写期间没有实际构建镜像或连接你的云服务器，上线前须逐节验证。
 
@@ -19,14 +21,14 @@
 | 3 | 本地仓库 | 创建 Dockerfile、忽略文件、Nginx 配置、初始化 SQL | 写好“如何打包程序”和“网页请求怎样进入后端”的说明书 | 第 4 节列出的文件齐全 |
 | 4 | 本地仓库 | 创建 Compose 和环境模板 | 定义三个服务如何连接、使用哪些变量、数据存在哪里 | 运行、构建和 HTTPS 覆盖模板及根目录环境模板齐全；第 5 节 |
 | 5 | 本地电脑 | 填本地私有配置，构建并启动一次 | 提前发现依赖、SQL、代理和环境变量的问题 | 页面 200、空登录请求 400 JSON；第 6 节 |
-| 6 | 本地电脑 → 镜像仓库 | 按服务器架构构建并推送 API/Web 版本 | 让服务器能下载已经打包好的程序 | 两个远程镜像标签和平台都正确；第 7 节 |
+| 6 | 本地电脑 → 镜像仓库 | 按架构构建 → 查看本地镜像 → 打仓库标签 → 登录 → 分别执行 push | 让服务器能下载已经打包好的程序 | 两个远程镜像标签和平台都正确；第 7 节 |
 | 7 | 云平台、服务器 | 配 DNS、安全组、SSH 用户，安装 Docker Engine | 给云端提供运行容器和接收公网请求的环境 | 域名指向公网 IP，deployer 可运行 Docker，80/443 可用；第 8 节 |
 | 8 | 本地 → 服务器 | 上传 Compose、环境模板、Nginx 配置与 SQL，在服务器填写正式 .env | 把运行方案、Nginx 配置、首次建库文件及正式密钥放到正确位置 | /opt/expense 文件齐全，占位符已替换；第 9 节 |
 | 9 | 服务器 | 拉取镜像，先启动 HTTP，再用 Certbot 申请证书并启用 HTTPS 覆盖配置 | 依次初始化数据库、连接后端、验证域名并提供加密入口 | db/api healthy、Nginx 配置通过、HTTPS 与续期演练成功；第 10 节 |
 | 10 | 浏览器与外部网络 | 验证 HTTPS、邮件、注册登录、流水和重建后的数据 | 证明用户真的能用，数据也不会随容器消失 | 第 11 节验收通过后再对外开放；已有账本先完成第 12 节 |
 | 11 | 服务器、备份存储 | 建备份任务，并在隔离数据库中恢复一次 | 防止磁盘或主机损坏后无法找回账本 | 备份可恢复且有异机副本；第 13 节 |
 
-后续发布的流程会更短：**改源码 → 测试 → 构建并推送新标签 → 服务器备份 → 改版本并拉取 → 必要时迁移数据库 → 启动并验收**，见第 14 节。Docker Desktop 不会自动替你把本地数据库搬到云端。
+后续发布的流程会更短：**改源码 → 测试 → build → tag → push → 服务器备份 → 改版本 → pull → 必要时迁移数据库 → up → 验收**，见第 14 节。Docker Desktop 不会自动替你把本地数据库搬到云端。
 
 ### 0.1 先认识几个会反复出现的词
 
@@ -49,6 +51,40 @@
 - 为便于逐行解释，多数命令写成完整一行。页面自动折行不代表要手动换行；一条命令执行成功后再执行下一条，失败就先排查。
 - 流程图、目录树是结构示意，无需粘贴执行。`203.0.113.10`、`expense.example.com`、`yourname`、中文占位符均要按自己的资源替换。
 - 根目录 `.env.example` 是公开模板；`.env.local` 是本地私有配置；服务器 `.env` 是正式私有配置。这三者用途不同。后端目录已有的 `.env.example` 不能直接代替根目录 Compose 模板。
+
+### 0.3 先分清：你究竟要制作几个镜像，运行几个容器
+
+本教程有 **3 个长期运行的业务容器，但只制作 2 个应用镜像**。镜像可以理解为装好程序和依赖的发布包，容器是从这个包启动出来的进程环境。
+
+| 服务名 | 运行什么 | 镜像从哪里来 | 你需要做什么 |
+| --- | --- | --- | --- |
+| `api` | NestJS 后端 | 用 `service-nest/Dockerfile` 构建 | 把后端源码、依赖和 Node 运行环境打包 |
+| `web` | Nginx + Vue 静态页面 | 以官方 Nginx 镜像为基础构建 | 加入前端打包文件和代理配置 |
+| `db` | MySQL | 直接下载官方 `mysql:8.4` | 填写密码，准备初始化 SQL，指定数据保存位置 |
+| `certbot` | 证书工具 | 直接下载官方 Certbot 镜像 | 申请或续期时临时运行，用完退出；不属于上面 3 个常驻容器 |
+
+准备 SQL 是配置官方 MySQL 的首次建表过程，不是制作 MySQL 镜像。账本保存在数据库卷里，也不在这些镜像中。
+
+### 0.4 先把几个动作分开，后面每一步都按这个顺序展开
+
+| 动作 | 命令 | 执行后发生什么 | 还没有发生什么 |
+| --- | --- | --- | --- |
+| 构建 | `docker build` | 按 Dockerfile 在电脑里生成镜像 | 还没有上传，也没有启动容器 |
+| 打标签 | `docker tag` | 给同一镜像增加符合仓库规则的名字 | 不重新编译，也不上传 |
+| 登录仓库 | `docker login` | 当前这台机器取得仓库访问凭据 | 不上传镜像，也不登录 Ubuntu |
+| 上传 | `docker push` | 将指定名字和版本的镜像上传镜像仓库 | 不会自动让服务器启动它 |
+| 下载 | `docker compose pull` | 在当前 Docker 主机下载配置指定的镜像 | 不会因此启动应用 |
+| 启动 | `docker compose up` | 按配置创建或更新容器，再启动服务 | 不会自动把本地真实账本迁入云端 |
+
+例如，写好了 Dockerfile，只是写好了“怎样打包”的文件；执行 build 才有镜像。写好了 Compose，也只是写好了“怎样运行”的清单；执行 up 才有运行中的容器。**第 7 节会把 build、tag、login、push 分开执行，不把上传藏进构建参数。**
+
+### 0.5 读到终端命令时，先确认这三个问题
+
+1. **在哪台机器？** Windows 本地 PowerShell 和 SSH 登录后的 Ubuntu 是两台机器。相同的 Docker 命令在两处操作的是各自的镜像和容器。
+2. **在哪个目录？** 本地通常是仓库根目录；服务器通常是 `/opt/expense`。相对路径根据当前目录查找。
+3. **这是命令还是文件内容？** 标为“文件内容”的 Dockerfile、YAML、Nginx、SQL 先粘贴到指定文件保存；不要直接当终端命令运行。
+
+示例命令前的 `#` 是注释，可以和命令一起复制。每个小步骤完成后先核对“应该看到什么”，失败时停在当前步骤处理。这里的教程面向首次创建新部署；已有服务更新、旧账本导入和恢复都放在后面的独立章节。
 
 ## 1. 先回答：可以在桌面端准备好，再放到云服务器运行吗
 
@@ -119,6 +155,10 @@ Nginx 只读使用这两个卷，Certbot 只在申请/续期时运行
 - 后端需要两把独立 JWT 密钥、验证码密钥、真实 SMTP 配置。
 - 当前没有 `/api/health`，也没有已经配置好的 `migration:run`。本文用真实登录接口的预期 400 响应进行进程检查。
 
+这条请求链可以分成三次连接来理解：浏览器访问域名，Nginx 收到 `/api/...` 后访问 `api:3000`，API 再通过 `db:3306` 读写账本。`api` 和 `db` 是 Compose 给容器的内部服务名，浏览器不能直接使用这些名字。只有 `web` 需要接受公网访问。
+
+你会看到两种“仓库”：Git 仓库保存源码，Docker Hub 镜像仓库保存 build 生成的发布包。把源码推送到 Git，不会自动得到 Docker 镜像；本教程会单独执行镜像的构建和推送。
+
 ### 2.1 版本与示例值
 
 | 项目 | 本文使用的值 |
@@ -138,6 +178,21 @@ Nginx 只读使用这两个卷，Certbot 只在申请/续期时运行
 **数据库版本与原教程的区别：** 原仓库 SQL 注明适用于 MySQL 8.0，而 MySQL 官方已宣布 8.0 于 2026 年 4 月结束生命周期。本文新部署选择 8.4 LTS；这不表示本仓库已经完成 8.4 全量兼容认证。首次部署应验证建表、分类初始化、登录、流水和统计；旧库升级须先在隔离库演练逻辑导入，不可把旧版本数据目录直接交给新镜像。[MySQL 8.0 发布说明](https://dev.mysql.com/doc/relnotes/mysql/8.0/en/)
 
 `8.4`、`stable-alpine` 和 Certbot 的 `latest` 都会随发布变化。首次验证后记录实际 digest，正式环境可改用 `mysql:8.4@sha256:实际摘要` 等引用。应用镜像标签同样应避免被覆盖；不要以 `latest` 作为回退依据。
+
+### 2.2 开始前准备这些真实资料
+
+| 准备项 | 从哪里获得 | 后面用在哪里 |
+| --- | --- | --- |
+| 本项目源码 | 已有工作目录，或第 4.0 节下载 | 编译 API 和前端 |
+| Docker Hub 账号 | 在 Docker Hub 注册，记下用户名 | 第 7 节创建两个镜像仓库并上传 |
+| Ubuntu 服务器 | 云平台创建 Ubuntu 24.04 LTS 64 位 UEFI 版，记下公网 IP、初始账号和登录方式 | 第 8 节 SSH 和安装 Docker |
+| 服务器 CPU 架构 | 云平台实例信息，之后用 `uname -m` 复核 | 第 7 节选择构建目标 |
+| 已拥有的域名 | 域名服务商购买或使用现有域名，选定子域名 | DNS、Nginx 和 HTTPS 证书 |
+| 发信邮箱 SMTP 资料 | 邮箱设置中启用 SMTP，取得主机、端口、账号与授权码 | 注册和找回密码的真实验证码 |
+
+`yourname` 是 Docker Hub 用户名，`deployer` 是稍后在 Ubuntu 创建的部署用户；两者不是同一个账号。`expense.example.com` 和 `203.0.113.10` 是不能照抄上线的示例，后面始终使用同一套自己的真实值。
+
+暂时不会创建服务器或 DNS 记录也可以继续到本地预演，但开始第 7 节前要知道目标 CPU 架构，第 8 节会逐项配置云端。首次照做时建议只走一条主线：Windows 本地构建，镜像仓库传输，Ubuntu 通过 SSH 运行。Mac 仅选择明确标为 Mac 的对应操作，不需要两套都做。
 
 ## 3. 在 Windows / Mac 安装并检查 Docker Desktop
 
@@ -240,7 +295,27 @@ daily-expense-tracking/
     └── nginx.conf                # 本地与首次申请证书使用的 HTTP 配置
 ```
 
+本节都是**创建文件**，还没有执行构建。先在编辑器文件树中新建相应目录和文件，再粘贴对应内容保存；`deploy/nginx` 不存在时先新建该目录。Windows 需要显示文件扩展名，避免误存为 `Dockerfile.txt` 或 `.env.example.txt`。
+
+先检查自己确实在仓库根目录。本地 PowerShell 执行下面两行，结果都应为 `True`：
+
+```powershell
+# 确认当前目录能找到后端依赖清单。
+Test-Path service-nest/package.json
+# 确认当前目录能找到前端依赖清单。
+Test-Path web/package.json
+```
+
+Dockerfile 中有两个容易误会的地方，先解释再复制：
+
+- **两个 `FROM` 是两个构建阶段，不是两个常驻容器。** 第一个阶段安装工具并编译，第二个阶段只带运行所需文件；最终得到一个 API 镜像。Web 同样最终只得到一个镜像。
+- **`RUN` 在构建时执行，`CMD` 在容器启动时执行。** 因此编译只在 build 时做，启动 API 时不会每次重新编译。
+- **`COPY` 从“构建上下文”读取文件。** 第 7 节会把 `service-nest` 指定为 API 上下文，所以其中的 `COPY package.json ...` 读取的是 `service-nest/package.json`，不是仓库根目录。
+- **`/app` 是镜像内部目录。** 它不是让你在 Windows 上额外创建一个 `/app` 文件夹。
+
 ### 4.1 API：`service-nest/Dockerfile`
+
+在编辑器新建该文件，将下面内容完整保存进去。它负责“如何把后端做成镜像”，不是终端脚本。`npm ci` 按锁文件安装依赖；编译工具只存在于构建阶段。
 
 ```dockerfile
 # 以项目要求的 Node 24.11.0 作为编译环境，并把这个阶段命名为 build。
@@ -283,6 +358,8 @@ CMD ["node", "dist/main.js"]
 
 ### 4.2 Web：`web/Dockerfile`
 
+在编辑器新建该文件并保存下面内容。Vue 的源码先在 Node 环境编译成 HTML、JS、CSS，最终由 Nginx 提供这些文件；正式服务器不运行 Vite 开发服务器。
+
 ```dockerfile
 # 使用项目要求的 Node 版本构建前端，并命名为 build 阶段。
 FROM node:24.11.0-bookworm-slim AS build
@@ -306,7 +383,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 ```
 
-`VITE_API_BASE_URL` 是构建时变量。这里构建为同源 `/api`，同一份镜像可以分别用于本地与正式域名，无需给每个域名重新打包。
+先区分两种配置时机：前端打包时使用的变量会写进生成的 JS；容器启动时的环境变量只是给运行中的进程读取。`VITE_API_BASE_URL` 是构建时变量。这里构建为同源 `/api`，同一份镜像可以分别用于本地与正式域名，无需给每个域名重新打包。
 
 ### 4.3 两个 `.dockerignore`
 
@@ -461,6 +538,8 @@ server {
 
 ### 4.5 准备初始化 SQL
 
+MySQL 直接使用官方镜像。我们只准备两份首次启动时交给它执行的 SQL：第一份建表和写入分类基础数据，第二份限制业务账号权限。这里还没有启动数据库，也没有导入你的旧账本。
+
 **本地 Windows PowerShell：**
 
 ```powershell
@@ -494,9 +573,31 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON `daily-expense-tracking`.* TO 'expense_a
 
 ## 5. 创建 Compose 和环境模板
 
-**这一步做什么、有什么用：** 把三个独立容器组合成一套应用，明确连接、配置、端口与数据保存方式。
+**这一步做什么、有什么用：** 把 MySQL、API、Web 三个业务容器组合成一套应用，明确各自镜像来源、连接、配置、端口与数据保存方式。
 
 **在哪里做、怎样算完成：** 在本地仓库根目录创建 compose.yaml、compose.build.yaml、compose.https.yaml 和 .env.example；下一节再填写本地私有值。
+
+### 5.0 先读懂这份运行清单，再复制配置
+
+Compose 是 Docker 的多服务管理工具。它读取 YAML 清单，为 `db`、`api`、`web` 创建各自容器并放进同一个内部网络。`certbot` 也写在清单里，但带有工具标记，普通启动不会让它常驻。
+
+| 配置项 | 本教程中表示什么 |
+| --- | --- |
+| `services` | 下面开始列服务；`db`、`api`、`web` 是服务名 |
+| `image` | 要用哪个镜像；直接写官方镜像，或写自己构建的镜像名和版本 |
+| `build` | 怎样从源码构建镜像；只放在额外的本地构建文件里 |
+| `environment` | 容器启动时实际收到的环境变量 |
+| `ports` | 宿主机端口怎样连接到容器端口 |
+| `volumes` | 容器中的文件怎样保存到容器外，或从宿主机读取配置 |
+| `depends_on`、`healthcheck` | 哪个依赖先准备好，怎样检查它已经可用 |
+
+例如 `127.0.0.1:8080:80` 从左到右是“宿主机地址：宿主机端口：容器端口”。浏览器访问电脑的 8080，Docker 转交给 Nginx 容器的 80。API 使用内部 3000、数据库使用内部 3306，并不意味着要把这两个端口都开放到公网。
+
+`db_data:/var/lib/mysql` 表示把数据库目录保存到名为 `db_data` 的持久卷；`./deploy/mysql-init:/docker-entrypoint-initdb.d:ro` 则把你准备的目录挂进去供首次初始化读取，`ro` 表示容器只能读它。前者保存账本，后者提供建表材料，二者作用不同。
+
+`${DB_PASSWORD:?请设置业务数据库密码}` 表示 Compose 在启动前从环境配置中取值，缺少时直接报错；`${MYSQL_IMAGE:-mysql:8.4}` 表示没填写时使用默认值。你只需在第 5.3 节模板中填写密码，不必在 YAML 里重复写明文。
+
+YAML 用缩进表示层级，使用空格，不要用 Tab。下面的配置逐行有注释；先完整保存，再按第 6 节检查，当前还不用执行它。
 
 ### 5.1 `compose.yaml`：本地与生产共用的运行定义
 
@@ -717,6 +818,8 @@ volumes:
 
 `depends_on: service_healthy` 用于首次启动等待；它不是持续故障恢复系统。`unhealthy` 本身不会触发重启，重启策略主要响应进程退出；后续仍要观察日志、告警和业务状态。[Compose 启动顺序](https://docs.docker.com/compose/how-tos/startup-order/)
 
+**这一小步的完成标志：**根目录出现 `compose.yaml`。写完此文件只定义了运行方案；Docker 此刻还没有为本项目创建容器。后面可以分别对它执行 pull（下载镜像）和 up（创建并启动）。
+
 ### 5.2 `compose.build.yaml`：只在需要构建时追加
 
 ```yaml
@@ -742,7 +845,15 @@ services:
 
 生产部署先用 `compose.yaml` 以 HTTP 启动，取得证书后自动合并 `compose.override.yaml`；服务器不需要业务源码或构建工具。
 
+`compose.build.yaml` 不是另一套应用，而是给同名的 `api`、`web` 服务补充“如何构建”的信息。本地使用两次 `-f` 合并运行清单和构建说明；生产服务器已经能下载成品镜像，所以无需业务源码和这份构建文件。
+
 ### 5.3 根目录 `.env.example`：生产配置模板
+
+这里的 `.env.example` 必须创建在**仓库根目录**，不是 `service-nest` 目录；两个文件虽然同名，用途不同。
+
+先认识四个名字：公开模板 `.env.example` 用来列出需要哪些值；本地复制成 `.env.local`；服务器复制成 `.env`；两份私有文件各自填写不同密码。Compose 先读取这些值，替换 YAML 中的 `${...}`，再把 `environment` 里列出的配置传给容器。只在 `.env` 写了一个变量，不代表所有容器都会自动收到它。
+
+下面先保存模板，第 6 节填写本地值，第 9 节填写正式值。用户名、域名、版本、密码和 SMTP 资料都需要逐项核对，中文占位符不能原样使用。
 
 ```dotenv
 # 指定 Compose 项目名；它决定容器、网络和卷的名称，正式部署后保持不变。
@@ -797,7 +908,7 @@ openssl rand -hex 32
 装有 Python 的 Windows 也可执行下面的命令，然后把输出手工填进对应字段：
 
 ```powershell
-# 生成一个 32 字节随机值并以 64 位十六进制输出；每个密码或密钥都要重新生成一次。
+# 生成一个 32 字节随机值并以 64 个十六进制字符输出；每个密码或密钥都要重新生成一次。
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
@@ -826,125 +937,289 @@ services:
 
 先不要在本地把它改名。第 10 节拿到正式证书后，在服务器复制为 `compose.override.yaml`；后续不带 `-f` 的 `docker compose` 会自动合并 `compose.yaml` 和这个覆盖文件，持续使用 HTTPS。显式传 `-f` 时必须把需要的覆盖文件一起列出。[Compose 文件合并说明](https://docs.docker.com/compose/how-tos/multiple-compose-files/merge/)
 
-## 6. 用 Docker Desktop 在本地预演
+## 6. 在电脑上一步步启动，先确认本地能运行
 
-**这一步做什么、有什么用：** 在自己的电脑先运行整套部署，提前发现构建、配置、数据库初始化和代理问题。
+**这一步做什么、有什么用：**先在自己的电脑跑通“数据库 → API → Nginx”，把构建、配置、建表和代理问题留在本地解决。
 
-**在哪里做、怎样算完成：** 本地仓库根目录执行。完成标志是三个服务启动、页面可打开且测试 API 返回预期 JSON。
+**在哪里做、怎样算完成：**本地仓库根目录的 PowerShell；Docker Desktop 已启动，第 4～5 节文件已保存。完成时应看到 3 个业务容器、本地首页 200、空登录请求 400 JSON。Mac 使用对应终端和 curl 命令。
 
-**本地 Windows PowerShell，在仓库根目录：**
+### 6.1 先创建并编辑本地配置
+
+先复制模板；如果 `.env.local` 已存在，只编辑已有文件，不要覆盖已保存的密码。
 
 ```powershell
-# 复制配置模板作为本地私有配置；如果已有此文件，请先保留已有内容。
+# 首次预演时从模板创建本地私有配置。
 Copy-Item .env.example .env.local
+# 用记事本打开刚创建的文件，按下面的说明编辑并保存。
+notepad .env.local
 ```
 
-Mac 终端执行以下命令（Windows 已复制则跳过）：
+Mac 对应复制命令如下，然后用自己的编辑器打开 `.env.local`：
 
 ```bash
-# 从公开模板复制出本地私有配置，后面只编辑 .env.local。
+# 首次预演时复制一份本地私有配置。
 cp .env.example .env.local
 ```
 
-填写本地专用密码、密钥及真实 SMTP，并将以下字段改成（只替换这些字段，其他密钥和邮件字段仍然保留）：
+先给模板中的 5 个密码/密钥字段各生成一个随机值，并填写真实 SMTP。然后把同一文件中的下列字段改成本地值；这是修改部分字段，不是删掉其他字段后只留下这几行。
 
 ```dotenv
-# 指定 Compose 项目名；它决定容器、网络和卷的名称，正式部署后保持不变。
+# 给本地预演单独命名，避免与云端数据卷混淆。
 COMPOSE_PROJECT_NAME=expense-local
-# 指定 API 镜像名；正式部署填自己的 Docker Hub 命名空间与仓库名，本地可用短名。
+# 使用本地 API 镜像名，不需要填写 Docker Hub 用户名。
 API_IMAGE=daily-expense-api
-# 指定 Web 镜像名；与实际构建或推送的仓库名一致。
+# 使用本地 Web 镜像名。
 WEB_IMAGE=daily-expense-web
-# 指定 API/Web 共用的镜像标签；正式环境必须是已经推送的版本。
+# 把这次预演镜像的版本标记为 local。
 APP_VERSION=local
-# 设置后端允许的完整网页来源，协议、域名和非默认端口要与浏览器一致。
+# 本地网页的完整来源，端口必须与 HTTP_PORT 一致。
 FRONTEND_ORIGIN=http://localhost:8080
-# 指定入口绑定地址；127.0.0.1 仅本机可访问，0.0.0.0 接受外部 IPv4 连接。
+# 仅允许自己的电脑通过回环地址访问预演入口。
 BIND_ADDRESS=127.0.0.1
-# 设置服务器或本机对外的 HTTP 端口，映射到 Web 容器的 80。
+# 浏览器访问本机 8080，转发到 Nginx 容器的 80。
 HTTP_PORT=8080
-# 设置服务器或本机对外的 HTTPS 端口，映射到 Web 容器的 443。
+# 只预留本机 8443 映射；本地 HTTP 配置不监听 HTTPS。
 HTTPS_PORT=8443
 ```
 
-本地不申请公网证书，不需要填写证书邮箱；第 10 节在申请命令中填写自己的真实邮箱。本地与云端项目名不同，数据卷相互独立。编辑 `.env.local` 时不需要设置后端目录中的环境文件；第 5.1 节的 `environment` 会将值传给容器。
+**应该得到：**一个填好真实值的 `.env.local`。API 完整镜像名由两段拼成：`API_IMAGE` 加冒号和 `APP_VERSION`，所以本地会是 `daily-expense-api:local`。Web 同理为 `daily-expense-web:local`。
 
-**Windows PowerShell / Mac 终端均可执行，每条单独运行：**
+### 6.2 执行前先读懂命令的固定前半段
+
+后面多条命令都重复 `docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml`。它只是说“用本地配置，把这两份清单合并起来”；末尾的 build、pull、up、ps 才是本次动作。这里故意不定义命令别名，便于看清每次执行的完整内容。
+
+| 写法 | 意思 |
+| --- | --- |
+| `--env-file .env.local` | 读取本地私有配置；不读取云服务器的正式密码 |
+| `-f compose.yaml` | 读取服务、网络、卷等运行定义 |
+| `-f compose.build.yaml` | 再补上 API/Web 的源码构建方式，顺序不能反过来 |
+| `config --quiet` | 检查配置和必填变量；成功时不打印完整内容，避免输出密码 |
 
 ```powershell
-# 合并运行和构建配置，读取本地变量并检查语法；quiet 避免打印展开后的密码。
+# 先检查文件、缩进和必填变量，正常时没有输出。
 docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml config --quiet
-# 在本机分别构建 API 与 Web 镜像，此时不上传到镜像仓库。
-docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml build
-# 后台启动三项服务，最多等待 300 秒让健康检查和启动条件满足。
-docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml up -d --wait --wait-timeout 300
-# 查看三个服务的运行状态，预期 db/api 为 healthy、web 为运行中。
-docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml ps
-# 查看最近 100 行日志，确认初始化、API 和网页入口没有报错。
-docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml logs --tail=100 db api web
 ```
 
-`config --quiet` 检查配置，不输出展开后的密钥。正常时没有输出；每条命令成功后才执行下一条。数据库首次初始化可能耗时数分钟；若超时先看日志，不要删除卷来“重试”。`--wait` 会等待 db、api 健康及 web 运行，仍需检查真实 HTTP。
+**通过后再继续。**出现“找不到文件”先核对当前目录；出现变量缺失先编辑 `.env.local`。这个检查不负责识别中文占位符是否已替换，需要你自己核对。
 
-Windows 使用 `curl.exe`，Mac 使用 `curl`：
+### 6.3 明确下载官方 MySQL，不自己制作数据库镜像
+
+`pull db` 是下载 db 服务的镜像。这里会根据 `MYSQL_IMAGE=mysql:8.4` 取得官方 MySQL，尚未创建数据库容器。
 
 ```powershell
-# 请求本地首页响应头，预期状态码为 200。
+# 下载官方 MySQL 镜像；已有相同镜像层时会复用本地缓存。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml pull db
+```
+
+**应该看到：**镜像下载完成或镜像已是可用状态。网络错误先处理网络，不要改初始化 SQL 来解决镜像下载失败。
+
+### 6.4 构建 API 与 Web，仍然不上传、不启动
+
+下面的 build 只处理两个有构建说明的服务。Docker 会在构建过程中下载 Dockerfile 的 Node、Nginx 基础镜像，再安装依赖、编译源码，并生成自己的应用镜像。
+
+```powershell
+# 按两个 Dockerfile 构建本地 API 和 Web 镜像。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml build api web
+# 列出本机镜像，核对是否出现两个应用名和 local 标签。
+docker image ls
+```
+
+**应该看到：**`daily-expense-api`、`daily-expense-web` 的标签是 `local`。此时得到的是镜像，Desktop 的 Images 页面能看到它们，Containers 页面还不一定有本项目。构建失败就先看最后一段错误，是 npm 下载失败还是 TypeScript 编译失败；不要继续 up。
+
+### 6.5 先启动数据库，核对首次建表
+
+先解释这次启动参数：`up` 表示创建并启动；`-d` 让容器在后台运行；`--wait` 等待健康检查通过；`--wait-timeout 300` 最多等 300 秒；末尾 `db` 表示此时只启动数据库。
+
+```powershell
+# 启动数据库并等待它完成首次初始化。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml up -d --wait --wait-timeout 300 db
+# 查看数据库状态，预期是 running 且 healthy。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml ps db
+```
+
+第一次会创建空数据卷，并执行挂载的 `01-init.sql` 和 `02-app-grants.sql`。`exec` 可以在已经运行的容器里执行命令；这里先用 `exec db sh` 进入 db 容器自己的 shell，再执行查询，避免不同 Windows PowerShell 版本对复杂引号的传递差异。
+
+```powershell
+# 在本地 PowerShell 打开 db 容器的 shell，下一段命令在该容器提示符里执行。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml exec db sh
+```
+
+**现在临时位于本地 db 容器内部。**下面用容器已经收到的账号和密码查询；美元变量保持原样，不要替换成明文。执行完查询后，第二条 exit 返回电脑的 PowerShell/Mac 终端，再继续后面的 Compose 命令。
+
+```bash
+# 用容器内的业务账号检查表、图标数和分类模板数。
+MYSQL_PWD="$MYSQL_PASSWORD" mysql -u"$MYSQL_USER" "$MYSQL_DATABASE" -e 'SHOW TABLES; SELECT COUNT(*) AS icon_count FROM category_icons; SELECT COUNT(*) AS template_count FROM category_templates;'
+# 退出数据库容器的 shell，回到本地终端。
+exit
+```
+
+**全新库预期：**9 张表，图标数 112，模板数 84。超时或报错时先看日志；`--tail=100` 表示只查看最近 100 行，不是再启动服务。
+
+```powershell
+# 数据库启动失败时读取日志，修复后再重试当前小步骤。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml logs --tail=100 db
+```
+
+不要通过删卷重复初始化来掩盖错误。已有卷不会因为改了 SQL、密码或重建容器而重新建库。
+
+### 6.6 再启动 API 和 Web，检查真实请求
+
+下面不再限定服务，Compose 会保留已经健康的 db，并继续启动 api、web；带工具标记的 Certbot 不会常驻启动。
+
+```powershell
+# 在数据库准备好后启动整套业务应用。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml up -d --wait --wait-timeout 300
+# 核对三个业务服务状态，db/api 应 healthy，web 应运行中。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml ps
+```
+
+浏览器打开 `http://localhost:8080`。下面再用 Windows 的 `curl.exe` 请求入口；`-I` 查看响应头，`-i` 同时显示响应头和内容，`-X POST` 指定 POST，`-H` 设置请求类型，`--data '{}'` 故意发送空对象。
+
+```powershell
+# 检查首页是否返回 200。
 curl.exe -I http://localhost:8080
-# 故意发送空登录数据，预期得到 API 的 400 JSON，证明反向代理已连通。
+# 检查 Nginx 是否把空登录请求交给 NestJS，预期 400 且内容为 JSON。
 curl.exe -i -X POST http://localhost:8080/api/auth/login -H "Content-Type: application/json" --data '{}'
 ```
 
-预期首页 200、空登录请求 **400 JSON**。打开 `http://localhost:8080` 检查页面、静态资源和页面刷新。Docker Desktop 的 Containers 页面应能看到该 Compose 应用及三个服务，可查看日志、停止和启动容器。
-
-本地仍以 `production` 运行，Refresh Cookie 会带 `Secure`；localhost 在部分浏览器有特殊待遇，本地 HTTP 结果不能替代正式 HTTPS 下的 Cookie 验收。生产验证码也不会使用开发固定值。
-
-暂停预演：
+Mac 把 `curl.exe` 换成 `curl`，其他参数不变。空登录请求的 400 是因为没有填写邮箱和密码，在这个测试里是预期结果；如果返回 HTML，说明落到了网页路由，不是 API。若出现 502，先看 api 是否健康。
 
 ```powershell
-# 停止并移除本地预演容器及默认网络；不加 -v，因此保留命名卷中的数据。
+# 有启动或请求错误时查看各服务最近日志，先找到最早失败的一层。
+docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml logs --tail=100 db api web
+```
+
+前端页面和子路由刷新也应正常。本地 API 仍以 production 模式运行，真实验证码需要 SMTP，Refresh Cookie 使用 Secure，因此本地 HTTP 不作为最终登录会话验收；云端完成 HTTPS 后，第 11 节再做完整注册、登录和流水验收。
+
+### 6.7 停止预演，再进入发布阶段
+
+确认当前目录与项目名都是本地后，再执行 down。它停止并移除容器和网络，保留命名卷；不要加会删除卷的 `-v`。
+
+```powershell
+# 停止本地预演，但保留本地数据库卷中的数据。
 docker compose --env-file .env.local -f compose.yaml -f compose.build.yaml down
 ```
 
-`down` 默认保留命名卷；不要添加 `-v`，它会删除本次 Compose 的命名卷。重建容器也不会清空账本。
+**本节结束时：**电脑里已有两个 `:local` 应用镜像和官方 MySQL 镜像，本地数据库保存在本地卷里。它们都还没有上传到镜像仓库，云服务器也还没有运行应用。下一节专门处理“构建发布版本、打标签、上传”。
 
-## 7. 发布镜像：让云服务器直接拉取
+## 7. 发布镜像：构建、打标签、登录、推送逐项完成
 
-**这一步做什么、有什么用：** 把已验证的程序打包成服务器可下载的指定版本。
+**这一步做什么、有什么用：**把本地验证过的源码做成目标服务器可下载的正式版本。
 
-**在哪里做、怎样算完成：** 本地仓库执行并上传到 Docker Hub。完成标志是 API/Web 两个标签存在，平台与服务器一致。
+**在哪里做、怎样算完成：**全程在本地仓库根目录执行；Docker Desktop 保持运行，第 6 节已通过。知道服务器 CPU 架构，并准备好 Docker Hub 账号。完成时必须在远程仓库看到两个完整版本标签，只有本地有镜像不算完成发布。
 
-### 7.1 准备镜像仓库
+### 7.1 先确定这次发布的名字，创建两个远程仓库
 
-在 Docker Hub 创建 `daily-expense-api`、`daily-expense-web` 两个仓库，按需要设为私有。以下 `yourname` 全部替换成自己的用户名；CLI 登录时按提示使用访问令牌，避免把令牌放到命令、文档或 Dockerfile 中。
+本节使用版本 `20261016-1`。它只是一个版本名，不要求当天发布。下一次发布改成新标签，不能覆盖正在使用的旧标签。
 
-**本地执行：**
+打开 [Docker Hub](https://hub.docker.com/)，登录自己的账号，进入 Repositories，创建两个仓库：`daily-expense-api` 和 `daily-expense-web`。选择自己账号的命名空间；需要保密时设为 Private。记下你真正的 Docker Hub 用户名，后面所有 `yourname` 都替换成它。GitHub 用户名不一定与它相同。
+
+| 本地构建后使用的名字 | 需要上传到的完整仓库名 |
+| --- | --- |
+| `daily-expense-api:20261016-1` | `yourname/daily-expense-api:20261016-1` |
+| `daily-expense-web:20261016-1` | `yourname/daily-expense-web:20261016-1` |
+
+完整名里的 `yourname` 是仓库所属账号，`daily-expense-api` 是仓库名，冒号后是版本。没有额外指定仓库主机时，Docker 默认使用 Docker Hub。第 9 节服务器配置必须拼出与右栏完全相同的名字。[镜像名字和标签](https://docs.docker.com/reference/cli/docker/image/tag/)
+
+### 7.2 第一步：只构建发布镜像，不上传
+
+本地预演用了 `:local`，这次生成正式版本 `:20261016-1`。之所以再构建一次，是要显式指定云服务器的平台；Mac 本地与云服务器可能使用不同 CPU 架构。
+
+下面按服务器 `x86_64` 演示。如果第 3.3 节确认是 `aarch64`，两条构建命令都改用 `linux/arm64`。不要为了使用同一条命令，把 ARM 服务器当作 amd64。
+
+执行前先看参数：
+
+| 参数或位置 | 表示什么 |
+| --- | --- |
+| `docker build` | 根据 Dockerfile 构建镜像；当前主线使用 Docker Desktop 默认构建器 |
+| `--platform linux/amd64` | 产物要能在 Linux amd64 服务器运行，与 Windows 宿主系统不同 |
+| `--file service-nest/Dockerfile` | 从仓库根目录找到 API 的 Dockerfile；`--file` 也可以缩写成 `-f` |
+| `--tag daily-expense-api:20261016-1` | 给构建结果一个本地名字和版本；这里的 `--tag` 常缩写为 `-t` |
+| 末尾的 `service-nest` | 构建上下文，即 Dockerfile 中 COPY 能读取的源码目录；它不是遗漏的参数名 |
+
+先构建 API，等待成功再构建 Web。现代 Docker 的 build 内部使用 BuildKit/Buildx，但本节不需要把上传动作合并进去。[Docker 构建说明](https://docs.docker.com/build/builders/)
 
 ```powershell
-# 登录本机 Docker Hub 账号，允许后面的命令推送镜像。
-docker login
+# 仅在电脑里构建 API 发布镜像，读取后端目录中的源码和锁文件。
+docker build --platform linux/amd64 --file service-nest/Dockerfile --tag daily-expense-api:20261016-1 service-nest
+# API 构建成功后，仅在电脑里构建 Web 发布镜像。
+docker build --platform linux/amd64 --file web/Dockerfile --tag daily-expense-web:20261016-1 web
 ```
 
-### 7.2 为服务器架构构建并推送
+**完成标志：**两次构建均成功结束，没有 npm、类型检查或编译错误。这个时候镜像仍在自己的电脑里，不在 Docker Hub，也没有启动新的容器。
 
-以下假设服务器是 `x86_64`；arm64 服务器将目标改为 `linux/arm64`。
+### 7.3 第二步：查看本地镜像，确认发布标签存在
 
-**本地仓库根目录执行：**
+`docker image ls` 只查询本机镜像列表，传入镜像名可以缩小结果范围。
 
 ```powershell
-# 为 amd64 服务器构建 API 镜像，标记发布版本并推送到自己的仓库。
-docker buildx build --platform linux/amd64 -f service-nest/Dockerfile -t yourname/daily-expense-api:20261016-1 --push service-nest
-# 为同一架构构建 Web 镜像，并推送相同发布版本。
-docker buildx build --platform linux/amd64 -f web/Dockerfile -t yourname/daily-expense-web:20261016-1 --push web
-# 检查远程 API 镜像是否存在，并记录平台与 digest。
+# 核对 API 的本地列表，必须有 20261016-1 标签。
+docker image ls daily-expense-api
+# 核对 Web 的本地列表，必须有同一个发布标签。
+docker image ls daily-expense-web
+```
+
+如果只有 `local` 而没有 `20261016-1`，上一小步没有得到本次版本，先处理再继续。
+
+### 7.4 第三步：给镜像添加用于上传的完整名字
+
+`docker tag` 的顺序是“现有镜像 → 新名字”。它为同一镜像增加一个名字，不重新编译，也不上传一份文件。例如自己的用户名为 `alice`，右侧应写成 `alice/daily-expense-api:20261016-1`；下面仍用 `yourname` 提醒你替换。
+
+```powershell
+# 给已经构建的 API 镜像增加自己的 Docker Hub 仓库全名。
+docker tag daily-expense-api:20261016-1 yourname/daily-expense-api:20261016-1
+# 给同版本 Web 镜像增加自己的 Docker Hub 仓库全名。
+docker tag daily-expense-web:20261016-1 yourname/daily-expense-web:20261016-1
+# 核对旧名和仓库全名都出现在本地列表中。
+docker image ls
+```
+
+**应该看到：**本地短名与对应的 `yourname/...` 全名指向相同镜像（常见显示为相同 IMAGE ID），不是重复编译了两份程序。若报 `No such image`，核对源名字、版本以及上一小步的构建结果。
+
+### 7.5 第四步：在这台电脑登录 Docker Hub
+
+这里登录的是镜像仓库，不是 Ubuntu。`--username` 用来明确指定准备上传的账号；按 CLI 提示提供该账号的访问令牌，用户名必须与仓库所属账号匹配。
+
+```powershell
+# 以自己的 Docker Hub 用户名登录本机 Docker 客户端，按提示输入访问令牌。
+docker login --username yourname
+```
+
+**预期：**显示 `Login Succeeded`。需要令牌时在 Docker Hub 的账号设置中创建有上传权限的 Personal Access Token，作为提示中的密码输入，不把令牌写进命令。登录失败先处理账号和权限，不能指望 push 自动修好。
+
+### 7.6 第五步：明确执行 push，把两个镜像上传
+
+**下面这两行才是上传动作。** 参数是刚才 tag 得到的仓库全名，必须包含用户名、仓库名和版本；`docker push` 不会读取源码，也不会重新执行 npm build。[Docker push 说明](https://docs.docker.com/reference/cli/docker/image/push/)
+
+```powershell
+# 把当前 API 发布镜像上传到自己的 Docker Hub API 仓库。
+docker push yourname/daily-expense-api:20261016-1
+# API 推送成功后，把同版本 Web 镜像上传到 Web 仓库。
+docker push yourname/daily-expense-web:20261016-1
+```
+
+**完成标志：**两条命令均成功，通常末尾显示该标签的 `digest: sha256:...`。出现 `Layer already exists` 表示仓库已有这一层，可正常复用。出现 `denied`、`unauthorized` 或仓库不存在，先核对登录账号、仓库名及权限，不继续服务器部署。
+
+### 7.7 第六步：去远程仓库核对，不只看 Desktop 的 Images
+
+在 Docker Hub 网页分别打开两个仓库的 Tags 页面，确认都有 `20261016-1`。也可以执行下面的只读查询；`docker buildx imagetools inspect` 是查看远程镜像信息，本命令不构建、不上传，也不启动容器。
+
+```powershell
+# 查询 Docker Hub 上的 API 标签、平台和镜像摘要。
 docker buildx imagetools inspect yourname/daily-expense-api:20261016-1
-# 检查远程 Web 镜像是否存在，并记录平台与 digest。
+# 查询 Docker Hub 上的 Web 标签、平台和镜像摘要。
 docker buildx imagetools inspect yourname/daily-expense-web:20261016-1
 ```
 
-如果希望同时支持两类服务器，将两条构建命令的 `--platform` 改为 `linux/amd64,linux/arm64`，并继续使用 `--push`。Docker Desktop 支持模拟构建，跨架构编译可能更慢；若某依赖不兼容，应修复构建或使用对应架构的构建机。
+确认目标平台与服务器一致。摘要 digest 是镜像内容的标识，可以连同源码提交 ID、版本名一起记录；第一次只需记住“远程标签存在，平台正确”，不必先学习摘要锁定。
 
-`--push` 将结果写到仓库，不保证结果出现在本地 Images 列表。检查仓库标签和镜像支持的平台；云端最终使用这个发布版本再次验收。源码提交 ID、版本标签和镜像 digest 建议一起记录。
+**本节结束时：**两个应用发布包已在镜像仓库。官方 MySQL 和 Certbot 无需自己构建或推送；服务器会直接下载官方镜像。Ubuntu 仍未运行应用，下一步准备服务器，第 10 节才会明确执行 pull 和 up。
+
+### 7.8 选读：为什么以前一条 build 命令里会出现 --push
+
+Buildx 提供 `--push`，表示构建完成后顺便上传，是“构建 + 推送”的合并写法。为了让首次学习能分清动作，主线已经拆成 build、tag、push，照做时不需要再补执行合并写法。
+
+只有一份发布物要同时支持 amd64 和 arm64 时，才需要进一步学习多平台构建、清单与仓库导出；不能仅把上面的单平台参数换成逗号列表，再假定普通本地镜像存储和 push 的行为完全一样。掌握主线后再参考 [Docker 多平台构建](https://docs.docker.com/build/building/multi-platform/)。
 
 ## 8. 准备 Ubuntu 云服务器
 
@@ -952,37 +1227,68 @@ docker buildx imagetools inspect yourname/daily-expense-web:20261016-1
 
 **在哪里做、怎样算完成：** DNS 和安全组在云平台配置；安装与权限在服务器配置。完成后能用 deployer 登录并运行 Docker。
 
-### 8.1 域名和安全组
+### 8.1 创建服务器、配置域名和公网入口
 
-DNS 将 `expense.example.com` 的 A 记录指向真实公网 IP。本文端口发布按 IPv4 配置；暂不使用 IPv6 时不要留一个无法访问的 AAAA 记录。
+到这里，你已经完成的是“发布包在镜像仓库”，接下来才操作云服务器。本节会在云平台、本地终端、服务器终端之间切换，先把窗口区分开：
 
-| 入站端口 | 来源 | 用途 |
+- **窗口 A：本地 PowerShell。** 进入本地仓库目录，后面运行 scp 上传文件，也从这里打开 SSH 连接。
+- **窗口 B：服务器 SSH 终端。** 本地执行 ssh 并登录成功后，这个终端里的命令就运行在 Ubuntu 上。窗口提示符通常变为 `用户名@服务器名`。后面明确标“服务器”的命令都在这里执行。
+
+**第一步，在云控制台创建或选定服务器。**系统选 Ubuntu 24.04 LTS、64 位、UEFI。记录公网 IPv4、初始登录账号（例如 ubuntu 或 root）、SSH 端口，以及登录密码或私钥文件。CPU 架构要与第 7 节构建平台一致；如果不一致，先回第 7 节为正确平台构建并推送新版本。
+
+**第二步，设置 DNS，把域名指向这台服务器。**在域名服务商的 DNS/解析管理页添加 A 记录。假设你拥有 `example.com`，计划用 `expense.example.com`：
+
+| DNS 字段 | 应填写什么 |
+| --- | --- |
+| 记录类型 | A，表示指向一个 IPv4 地址 |
+| 主机记录/名称 | 通常填 `expense`；有的平台要求完整域名，以平台说明为准 |
+| 记录值 | 你的服务器公网 IPv4，例如实际使用的那一个地址 |
+| TTL | 可以先用平台默认值，修改后需等待缓存更新 |
+
+`example.com` 是文档示例，必须换成自己拥有的域名。不使用 IPv6 时不要留一个指向错误地址的 AAAA 记录；证书机构可能优先尝试它。
+
+**第三步，在云平台设置安全组。**安全组是云平台在服务器外层设置的访问规则。进入该实例绑定的安全组/防火墙页面，添加入站允许规则：
+
+| 入站端口 | 来源 | 作用 |
 | --- | --- | --- |
-| TCP 22 或真实 SSH 端口 | 自己的管理 IP | SSH |
-| TCP 80 | 公网 | HTTP、证书验证和跳转 |
-| TCP 443 | 公网 | HTTPS |
+| TCP 22，或实际 SSH 端口 | 自己的管理公网 IP | 让你的电脑登录服务器 |
+| TCP 80 | 公网 | 网页初始访问、证书域名验证和后续跳转 |
+| TCP 443 | 公网 | 正式 HTTPS 访问 |
 
-不开放 API 3000、数据库 3306 或 Docker 管理端口 2375。出站需能访问 DNS、Docker 软件源、镜像仓库、证书服务及 SMTP。
+公网 IPv4 来源常写为 `0.0.0.0/0`，表示所有 IPv4 地址；只为 80/443 开放这个范围。3000、3306、2375 不开放到公网。出站连接需要能访问 DNS、软件源、镜像仓库、证书机构和 SMTP。
 
-**本地 Windows：**
+**第四步，在窗口 A 检查域名。**`Resolve-DnsName` 是 Windows DNS 查询命令，`-Type A` 只查 IPv4 记录；Mac 可在域名平台查询状态，或在安装了 dig 的终端执行对应查询。
 
 ```powershell
-# 检查域名 A 记录是否已经指向服务器的真实公网 IPv4。
+# 查询自己的正式子域名，检查返回的 IPAddress 是否等于真实服务器公网 IP。
 Resolve-DnsName expense.example.com -Type A
-# 以云平台提供的初始管理员账号登录服务器；按实际情况替换账号和 IP。
+```
+
+**预期：**返回你记录的公网 IPv4。旧地址或查不到时先检查 DNS，不能仅因为云控制台显示“已保存”就认定解析已经生效。
+
+**第五步，从窗口 A 登录服务器。**`ssh 账号@地址` 建立远程终端。使用云平台提供的真实初始账号；下面的 ubuntu 只是示例。首次连接先核对云平台给出的主机指纹，确认后按提示输入 yes。
+
+```powershell
+# 登录服务器的初始管理员；登录成功后，这个窗口就成为服务器窗口 B。
 ssh ubuntu@203.0.113.10
 ```
 
-默认账号若是 root 就换成 root；密钥登录增加 `-i 私钥路径`。首次连接核对云平台提供的主机指纹。自定义 SSH 端口时，`ssh` 使用小写 `-p`；后面的 `scp` 使用大写 `-P`。需要指定密钥时，两者都加相同的 `-i`，例如：
+密码登录时输入内容不会显示字符，这是正常现象。如果云平台要求私钥或自定义 SSH 端口，先用下面的完整写法代替上一行；`-i` 指定你电脑上的私钥，`-p` 指定 SSH 端口。两条登录命令只选适合自己的一条。
 
 ```powershell
-# 用实际私钥和自定义 2222 端口登录；路径、端口、账号、IP 都按自己的配置替换。
+# 使用指定私钥和自定义端口登录，先替换路径、2222、账号和 IP。
 ssh -i "$env:USERPROFILE/.ssh/id_ed25519" -p 2222 ubuntu@203.0.113.10
 ```
 
-Mac 把密钥路径改为自己主目录下的实际路径。后续示例省略这些可选参数，执行时继续带上自己需要的参数。
+**预期：**看到 Ubuntu 欢迎信息，提示符变为服务器账号。超时先检查 IP、SSH 端口和安全组；`Permission denied` 先检查账号、密码或私钥。没有登录成功就不要把后面的 sudo、apt 命令粘到本地运行。
+
+Mac 的 ssh 参数相同，私钥路径换成自己的实际路径。以后所有登录和上传都沿用相同真实端口与密钥；SCP 的端口参数会用大写 `-P`，到第 9 节再实际执行上传。
 
 ### 8.2 创建部署用户和目录
+
+先解释下面的主机管理操作：`sudo` 表示以管理员权限执行，可能要求输入当前账号密码；`adduser` 创建 Ubuntu 用户；`usermod -aG` 给用户追加一个组；`/opt/expense` 是我们约定的正式部署目录，与本地源码目录相互独立。
+
+`deployer` 是部署账号示例，不要求与 Docker Hub 用户名相同。已有这个账号时跳过 adduser，后续继续核对权限和登录方式。不要把“创建 Ubuntu 用户”理解为“创建应用里的记账用户”。
 
 **服务器管理员终端：**
 
@@ -996,6 +1302,15 @@ sudo install -d -o deployer -g deployer -m 750 /opt/expense
 ```
 
 如果已有 deployer，跳过创建账号。接着配置该用户的 SSH 登录，否则后面的 scp 会没有可用的登录方式。
+
+现在保持服务器管理员窗口 B 打开，回到电脑再新开一个本地 PowerShell 窗口 A。先准备要给 deployer 使用的 SSH 公钥，再编辑服务器授权文件：公钥 `.pub` 可以复制到服务器，配套的私钥只留在自己的电脑。
+
+如果已经有用于登录的密钥，继续使用它并找对应 `.pub` 文件；**不要生成新密钥覆盖已有文件**。确实没有可用密钥时，先在本地执行下面一条，按提示保存到一个未占用的路径，可设置私钥口令；后面查看和登录要使用你刚保存的实际文件名。
+
+```powershell
+# 仅在没有可用密钥时生成新的密钥对，提示覆盖已有文件时选择否。
+ssh-keygen -t ed25519
+```
 
 **本地 Windows PowerShell**，查看用于服务器登录的公钥。这里假定密钥名为 id_ed25519；云平台使用其他名称时改为对应的 `.pub` 文件：
 
@@ -1020,6 +1335,8 @@ sudo chown deployer:deployer /home/deployer/.ssh/authorized_keys
 # 限制公钥文件只有 deployer 可读写，满足 SSH 的权限要求。
 sudo chmod 600 /home/deployer/.ssh/authorized_keys
 ```
+
+编辑器打开后，把本地 `.pub` 文件的完整一行粘进去。如果原来有其他公钥，就追加在新行，保留原内容。`700` 表示 SSH 目录只有所有者能进入，`600` 表示授权文件只有所有者能读写；这些权限是登录检查的一部分。
 
 nano 保存方法：`Ctrl+O`、回车、`Ctrl+X`。Mac 在本地查看 `~/.ssh/` 中实际使用的 `.pub` 公钥即可。
 
@@ -1054,6 +1371,10 @@ if [ -d /sys/firmware/efi ]; then printf '%s\n' UEFI; else printf '%s\n' '非 UE
 UEFI 检测依据是当前系统是否存在 `/sys/firmware/efi` 目录。[Ubuntu UEFI 启动检查说明](https://help.ubuntu.com/community/UEFI)
 
 若实际输出不同，先核对 Docker 对该版本的支持情况。下面的软件源配置会自动读取实际发行代号；不要手工改成其他代号来绕过安装错误。
+
+接下来分清两个软件来源：`apt` 是 Ubuntu 安装软件的工具；这里给 apt 加入 Docker 官方软件源，再让 apt 安装 Docker Engine 和 Compose。Node、MySQL、Nginx 后面都从容器镜像运行，不在宿主机重复安装。
+
+下面的签名密钥用于验证安装包来源，和你的 SSH 密钥、数据库密码都不是同一回事。读取 `/etc/os-release` 是为了自动选 `noble` 软件源；后面的 `docker_repo_suite`、`docker_repo_arch` 是临时 shell 变量，不需要写进应用 `.env`。
 
 **服务器执行：**
 
@@ -1090,6 +1411,26 @@ sudo usermod -aG docker deployer
 sudo timedatectl set-timezone Asia/Shanghai
 ```
 
+**预期结果：**安装过程没有报错，hello-world 输出说明镜像拉取和容器运行成功的信息，然后测试容器自动删除。最后两条给 deployer 添加 Docker 权限并设置服务器时区；添加组不会立刻改变当前 SSH 会话。
+
+现在需要真正退出并重新登录，而不是继续在旧窗口测试：
+
+**服务器窗口 B：**
+
+```bash
+# 退出当前 SSH 会话，命令完成后回到本地终端。
+exit
+```
+
+**回到本地窗口后：**
+
+```powershell
+# 重新登录部署账号，让刚添加的 docker 组权限生效；有自定义参数时继续带上。
+ssh deployer@203.0.113.10
+```
+
+后面使用这个重新登录的服务器窗口 B。先核对下面四项，再继续防火墙配置。
+
 docker 组具有相当于 root 的主机管理能力，仅授予可信部署用户。**退出 SSH 后重新以 deployer 登录**，让组权限生效；后文 Docker 命令均在 deployer 下执行。
 
 ```bash
@@ -1105,7 +1446,7 @@ sudo systemctl is-enabled docker
 
 ### 8.4 防火墙与端口检查
 
-先确认真实 SSH 端口再启用 UFW：
+云安全组在服务器外层，UFW 是 Ubuntu 主机自己的防火墙。下面两层都要允许需要的连接。先确认真实 SSH 端口再启用 UFW，保持当前 SSH 窗口不要关闭；提示是否继续时确认已放行自己的 SSH 端口后再输入 y。
 
 ```bash
 # 先放行 SSH，防止启用防火墙后无法登录；自定义 SSH 端口须替换 22。
@@ -1126,63 +1467,121 @@ sudo ufw status numbered
 sudo ss -lntp
 ```
 
+**本小节完成标志：**规则列表包含实际 SSH、80、443；`ss -lntp` 没有显示其他进程占用 80/443。`LISTEN` 表示某个进程在等连接；如果这里已有旧网站，先确认它属于哪个应用，不能直接照抄停止命令影响旧服务。
+
 **Docker 发布端口的流量可能绕过 UFW 的常规规则**，不能认为 `ufw deny 3306` 一定能阻止被 Docker 发布的数据库端口。本文直接不发布 db/api，配合云安全组控制公网入口。[Docker 与防火墙说明](https://docs.docker.com/engine/network/packet-filtering-firewalls/)
 
 服务器 80/443 必须空闲；本文由容器内的 Nginx 占用它们。若已按原教程部署宿主机 Nginx，先备份旧配置、确认迁移窗口并停止冲突服务，再切换，不能让宿主机和容器同时占用同一端口。
 
-## 9. 上传运行文件，在云端创建生产配置
+## 9. 把运行配置上传服务器，再填写正式环境变量
 
-**这一步做什么、有什么用：** 将运行定义和初始化脚本放到云端，并单独填写正式密码与域名。
+**这一步做什么、有什么用：**镜像通过仓库传输，Compose、SQL、Nginx HTTPS 配置通过文件上传。这两条通道都需要，上传镜像不会自动上传这些文件。
 
-**在哪里做、怎样算完成：** 上传在本地执行；创建 .env 在服务器 /opt/expense 执行。完成后目录与模板值均已核对。
+**在哪里做、怎样算完成：**scp 在本地仓库根目录执行，mkdir、ls、nano 在服务器窗口 B 执行。前置条件是第 7 节两个发布镜像已推送，第 8 节 deployer 能登录。完成时文件齐全、正式配置已填、服务器可以访问镜像仓库。
 
-**服务器 deployer：**
+### 9.1 先在服务器准备接收目录
+
+`mkdir -p` 会创建需要的父目录，目录已经存在就保留。`/opt/expense` 已在第 8 节交给 deployer 管理。
 
 ```bash
-# 创建服务器上的部署子目录，稍后把初始化 SQL 上传到这里。
+# 服务器窗口 B：准备放初始化 SQL 和 Nginx 配置的目录。
 mkdir -p /opt/expense/deploy
 ```
 
-**本地仓库根目录，Windows / Mac 均可：**
+### 9.2 回到本地上传文件，不是在 SSH 里上传
+
+打开本地窗口 A 并进入仓库根目录，确保能看到 compose.yaml。`scp 源文件 用户@服务器:目标目录` 是从当前电脑上传到服务器；`-r` 表示递归复制整个目录。
 
 ```powershell
-# 从本地上传运行定义、HTTPS 覆盖模板和不含真实密钥的环境模板。
+# 本地窗口 A：上传运行清单、HTTPS 覆盖模板和不含真实密码的环境模板。
 scp compose.yaml compose.https.yaml .env.example deployer@203.0.113.10:/opt/expense/
-# 从本地上传初始化 SQL 与正式 Nginx 配置两个目录。
+# 本地窗口 A：上传两个配置目录，保留 SQL 和 HTTPS 文件的目录结构。
 scp -r deploy/mysql-init deploy/nginx deployer@203.0.113.10:/opt/expense/deploy/
 ```
 
-如果第 8 节的 SSH 使用了自定义端口和指定密钥，上传时也要带上。例如 Windows PowerShell：
+传输成功时会显示文件名和进度，命令正常返回。本地主目录中的 `.env.local` 不上传，正式密码在服务器单独填写；也不需要上传 node_modules、业务源码或 Desktop 虚拟磁盘。
+
+如果登录用了私钥和自定义端口，两条上传都要使用同一套参数。SCP 用大写 `-P`，不是 SSH 的小写 `-p`。下面是替代写法，和上面普通写法二选一；先按自己的真实参数修改。
 
 ```powershell
-# 以同一把私钥和自定义 SSH 端口上传运行配置；scp 的端口参数是大写 -P。
+# 用指定本地私钥和真实端口上传三个根目录文件。
 scp -i "$env:USERPROFILE/.ssh/id_ed25519" -P 2222 compose.yaml compose.https.yaml .env.example deployer@203.0.113.10:/opt/expense/
+# 用同样的密钥和端口上传两个目录，-r 保留目录内部文件。
+scp -i "$env:USERPROFILE/.ssh/id_ed25519" -P 2222 -r deploy/mysql-init deploy/nginx deployer@203.0.113.10:/opt/expense/deploy/
 ```
 
-这条是上一组上传命令的参数示例；初始化目录那条 `scp -r` 也同样加上实际的 `-i` 和 `-P`。
+### 9.3 回服务器检查文件已经落在正确位置
 
-服务器最终必须有根目录的 `compose.yaml`、`compose.https.yaml`、`.env.example`，以及 `/opt/expense/deploy/mysql-init/01-init.sql`、`02-app-grants.sql` 和 `/opt/expense/deploy/nginx/https.conf`。不要上传 `.env.local`、`node_modules` 或 Docker Desktop 的虚拟磁盘。
-
-**服务器执行：**
+`ls -l` 显示指定文件的信息；文件缺失会明确报错。这里不是只凭“scp 好像成功”继续，先核对真实路径。
 
 ```bash
-# 切换到服务器部署目录，后面的 Compose 命令在这里执行。
+# 服务器窗口 B：进入正式运行目录，后面普通 Compose 命令都在这里执行。
 cd /opt/expense
-# 让接下来创建的私有文件默认仅当前用户可访问。
+# 检查根目录的三份文件都已经收到。
+ls -l compose.yaml compose.https.yaml .env.example
+# 检查两份 SQL 和正式 Nginx 配置都在正确子目录。
+ls -l deploy/mysql-init/01-init.sql deploy/mysql-init/02-app-grants.sql deploy/nginx/https.conf
+```
+
+全部文件存在后再继续。若提示路径是目录而不是文件，先修正上传结构，不能直接挂载一个错误路径继续启动。
+
+### 9.4 创建服务器专用 .env，并逐项填写
+
+`umask 077` 让随后创建的文件默认不向其他用户开放；`chmod 600` 限制 .env 只有所有者可读写；`nano` 是终端文本编辑器。下面的复制仅用于首次部署，如果正式 `.env` 已存在就编辑已有文件，不覆盖现有密码。
+
+```bash
+# 后面新建的私有文件默认仅 deployer 可访问。
 umask 077
-# 首次部署时从模板创建正式环境文件；已有 .env 时不要覆盖。
+# 首次从模板创建正式配置，不使用本地预演的密码。
 cp .env.example .env
-# 限制正式配置文件只有文件所有者可读写。
+# 限制正式配置只有 deployer 可读写。
 chmod 600 .env
-# 打开正式配置文件，填写本服务器专用的密码、域名、镜像和 SMTP 参数。
+# 打开正式配置，完成下方各项替换后保存。
 nano .env
 ```
 
-将模板占位符全部换成正式值，尤其是镜像用户名、版本、HTTPS 来源、随机密钥和 SMTP。另核对 `deploy/nginx/https.conf` 中所有域名和证书路径；这些 Nginx 配置不会由 `.env` 自动替换。保持 `COMPOSE_PROJECT_NAME=expense`；生产端口为 80/443，绑定地址为 `0.0.0.0`。
+按这个顺序核对：
 
-nano 保存：`Ctrl+O`、回车、`Ctrl+X`。仓库已有 `.gitignore` 忽略 `.env`、`.env.*` 并放行 `.env.example`，但仍要在提交前检查，不能提交真实密钥。
+1. 把 API_IMAGE、WEB_IMAGE 的 `yourname` 换成第 7 节实际上传的账号名，保留 APP_VERSION=`20261016-1`，或换成你已经成功推送的真实标签。
+2. 保持正式项目名 `expense`，端口 80/443，绑定地址 `0.0.0.0`。项目名决定使用哪组卷，正式使用后不要随意改动。
+3. FRONTEND_ORIGIN 填 `https://你的真实域名`，没有 `/api` 后缀、没有路径；它表示浏览器来源，不是接口地址。
+4. 5 个密码和密钥字段分别生成新随机值；不要照抄中文占位符，也不要复用本地密码。
+5. MAIL_HOST、MAIL_PORT、MAIL_SECURE、MAIL_USER、MAIL_PASS 填真实 SMTP 资料。先在邮箱设置启用 SMTP/生成授权码，MAIL_PASS 填授权码或应用密码，不是随意编造的值；常用 587 对应 false、465 对应 true，以邮箱商为准。
 
-私有镜像需要在服务器执行 `docker login`，使用仅有拉取权限的令牌。Docker 凭据应留在部署账号的私有目录；不要把凭据复制到 Compose。
+镜像名的对应关系必须能对上：
+
+| 服务器 .env 字段 | 本例内容 | Compose 拼出的结果 |
+| --- | --- | --- |
+| API_IMAGE | `yourname/daily-expense-api` | 与 APP_VERSION 合成 `yourname/daily-expense-api:20261016-1` |
+| WEB_IMAGE | `yourname/daily-expense-web` | 与 APP_VERSION 合成 `yourname/daily-expense-web:20261016-1` |
+| APP_VERSION | `20261016-1` | 必须等于两个仓库已经存在的标签 |
+
+镜像字段只写到仓库名，不要在 API_IMAGE/WEB_IMAGE 里再加一次版本，否则会拼出两个冒号。`yourname` 必须已换成自己用户名。
+
+nano 保存按 `Ctrl+O`、回车，退出按 `Ctrl+X`。接着打开正式 HTTPS 配置，把所有示例域名及证书目录名改为同一个真实域名；`.env` 不会自动替换这个文件里的文本。
+
+```bash
+# 单独编辑正式域名、跳转地址、证书目录；此时还没有启用 HTTPS。
+nano deploy/nginx/https.conf
+```
+
+### 9.5 私有仓库在服务器另行登录，再做配置预检
+
+本地的 docker login 只给本地电脑授权，不会自动给云服务器授权。若第 7 节用了私有仓库，现在在服务器执行下面命令，使用有拉取权限的账号和令牌；公有仓库可以跳过登录。
+
+```bash
+# 服务器窗口 B：登录镜像仓库，不是再次登录 Ubuntu。
+docker login --username yourname
+```
+
+看到 `Login Succeeded` 后继续。凭据由 Docker 保存在部署用户的私有配置中，不写进 Compose。然后检查 .env 和 YAML 能否组合成合法配置：
+
+```bash
+# 核对正式配置和必填变量，成功时安静返回，不打印密码。
+docker compose config --quiet
+```
+
+**本节结束时：**服务器已经有运行定义、建库文件、正式配置和 HTTPS 配置模板，但还没有执行本项目 pull 或 up。下一节先下载镜像，再从数据库开始启动。
 
 ## 10. 首次启动、申请证书与启用 HTTPS
 
@@ -1190,47 +1589,96 @@ nano 保存：`Ctrl+O`、回车、`Ctrl+X`。仓库已有 `.gitignore` 忽略 `.
 
 **在哪里做、怎样算完成：**除标注的公网检查外，服务器 deployer 在 /opt/expense 执行。完成标志是基础数据正确、HTTPS 可访问、续期演练成功且定时任务已保存。
 
-### 10.1 先使用 HTTP 配置启动三个常驻服务
+### 10.1 先拉取镜像，再按数据库 → API → HTTP 入口启动
 
-第一次部署时根目录**还没有 `compose.override.yaml`**，因此 Web 使用镜像里的 HTTP 配置；数据库卷为空时才会初始化。若这套部署已经启用 HTTPS，保留现有覆盖文件和证书，直接按第 14 节更新，不要重新走首次申请流程。
+前置条件：第 9 节已完成，当前是服务器窗口 B 的 `/opt/expense`。第一次部署还没有 `compose.override.yaml`，Nginx 使用镜像里的 HTTP 配置。已有 HTTPS 部署直接按第 14 节更新，不要重新走首次申请流程。
 
-**服务器 `/opt/expense`：**
+**第一步，检查文件。**`test -s` 检查路径是非空文件，成功时没有输出；任一条失败就先修正文件，再继续。
 
 ```bash
-# 检查运行定义与正式变量，不输出展开后的密码。
+# 检查正式配置和变量。
 docker compose config --quiet
-# 检查建表脚本存在且不为空；失败时先补齐文件，不继续启动。
+# 核对首次建表脚本。
 test -s deploy/mysql-init/01-init.sql
-# 检查业务账号权限脚本存在且不为空。
+# 核对首次授权脚本。
 test -s deploy/mysql-init/02-app-grants.sql
-# 检查准备好的正式 Nginx 配置文件存在；此时只是检查文件，尚未启用。
+# 核对后面要启用的 HTTPS 配置，此时先不启用。
 test -s deploy/nginx/https.conf
-# 拉取三个常驻服务使用的镜像；Certbot 首次 run 时会另行拉取。
-docker compose pull
-# 按 db → api → web 的依赖顺序启动，最多等待 300 秒。
+```
+
+**第二步，明确下载镜像。**`pull` 只下载，不创建容器。本次分别下载官方 MySQL 和第 7 节推送的两个应用发布包；Certbot 到使用前再下载。
+
+```bash
+# 从官方仓库下载 compose.yaml 指定的 MySQL 版本。
+docker compose pull db
+# 从自己的镜像仓库下载 APP_VERSION 指定的 API 与 Web 版本。
+docker compose pull api web
+```
+
+**预期：**三个镜像全部可用。`unauthorized` 先解决服务器仓库登录；`not found` 先对照仓库全名和标签；平台不匹配就回第 7 节构建正确平台。只有下载成功，才进入启动步骤。
+
+**第三步，只启动数据库。**`up -d` 创建并后台运行容器，`--wait` 等待健康检查，300 秒是本次等待上限。Compose 此时才创建网络、数据库卷并挂载服务器上的 SQL；SQL 不是事先打进 MySQL 镜像的。
+
+```bash
+# 先创建并启动 MySQL，等待首次初始化完成。
+docker compose up -d --wait --wait-timeout 300 db
+# 核对数据库容器是否 running 且 healthy。
+docker compose ps db
+```
+
+超时先执行下面的只读日志检查，找出 SQL、密码或磁盘方面的真实错误，不要直接删除数据卷。
+
+```bash
+# 读取数据库最近 100 行日志，启动成功时也可用来核对初始化过程。
+docker compose logs --tail=100 db
+```
+
+**第四步，核对业务表。**`exec -T db` 是在已经运行的 db 内执行命令；后面的 `sh -c` 和单引号脚本让容器使用它自己的账号密码。命令里的 `$MYSQL_PASSWORD` 等保持原样，不要替换成明文。
+
+```bash
+# 用业务账号检查真实表和基础数据，而不是只检查 MySQL 进程存在。
+docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysql -u"$MYSQL_USER" "$MYSQL_DATABASE" -e "SHOW TABLES; SELECT COUNT(*) AS icon_count FROM category_icons; SELECT COUNT(*) AS template_count FROM category_templates;"'
+# 记录当前项目实际使用的持久卷名称，方便后续备份与排错。
+docker volume ls --filter label=com.docker.compose.project=expense
+```
+
+全新库预期 **9 张表、112 个图标、84 条分类模板**。已有账本要迁移时，在此暂停，按第 12 节完成备份与导入，再回来启动应用；首次只建新库的读者继续下一步。
+
+**第五步，再启动 API 和 Web。**数据库健康不等于后端已经运行，后端运行也不等于 Nginx 能代理；下面依次检查。
+
+```bash
+# 保留已经健康的 db，并继续启动 API 与 Web；Certbot 工具不会常驻启动。
 docker compose up -d --wait --wait-timeout 300
-# 查看状态，预期 db/api healthy、web 运行；certbot 不在常驻服务中。
+# 预期 db/api healthy、web running，不应出现反复重启或退出。
 docker compose ps
-# 查看初始化、后端和 HTTP 入口最近 100 行日志。
-docker compose logs --tail=100 db api web
-# 检查 Nginx HTTP 配置，预期显示 syntax is ok 和 test is successful。
+# 查看后端和入口日志，确认没有数据库连接或 Nginx 配置错误。
+docker compose logs --tail=100 api web
+# 在运行中的 Web 内检查 Nginx 配置，预期 syntax is ok 和 test is successful。
 docker compose exec -T web nginx -t
 ```
 
-此时仅 HTTP 可用，443 虽已做端口映射，但 Nginx 尚未监听它。**先不要在这个 HTTP 临时入口进行正式登录或录入真实账本。** 第 11 节的完整业务验收在 HTTPS 启用后进行。
-
-```bash
-# 列出正式部署的命名卷，记录 expense_db_data 和证书相关卷的真实名称。
-docker volume ls --filter label=com.docker.compose.project=expense
-# 用业务账号检查表及分类初始化是否成功。
-docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" exec mysql -u"$MYSQL_USER" "$MYSQL_DATABASE" -e "SHOW TABLES; SELECT COUNT(*) AS icon_count FROM category_icons; SELECT COUNT(*) AS template_count FROM category_templates;"'
-```
-
-全新库应是 **9 张表、112 个图标、84 条分类模板**。已有真实数据按实际核对，不重新跑初始化覆盖旧库。若需要迁入旧账本，可在正式开放前按第 12 节导入，再继续完整验收。
+此时只有 HTTP，443 只是预留端口映射，还没有 Nginx 的 TLS 监听。先不开放正式登录或录入真实账本；下一小节先验证域名并申请证书，再启用 HTTPS。
 
 ### 10.2 验证 HTTP 域名访问，然后申请证书
 
 Certbot 的 webroot 模式在共享卷里写入随机验证文件，证书服务通过你的公网域名的 80 端口读取文件，以证明你能控制该域名。申请和续期时都要保持这条路径可达。[Certbot webroot 文档](https://eff-certbot.readthedocs.io/en/stable/using.html#webroot)
+
+先明确工具命令的层次，避免把 Certbot 当作第四个常驻应用：
+
+| 写法 | 本次作用 |
+| --- | --- |
+| `docker compose pull certbot` | 下载工具镜像，尚不运行 |
+| `docker compose run certbot ...` | 以该服务配置启动一次性工具容器，执行后面的 Certbot 命令 |
+| `--rm` | 一次性容器退出后删除容器本身，共享证书卷仍保留 |
+| `--entrypoint sh` | 仅这次改用容器里的 shell，便于写测试文件；真正申请时不带这个参数 |
+| `-c '...'` | 把引号中的内容交给 shell 执行；变量、路径按示例保留 |
+
+先在服务器下载工具镜像，明确把“下载”和“运行”分开：
+
+```bash
+# 下载官方 Certbot 工具镜像，等待完成后才运行下面的测试工具。
+docker compose pull certbot
+```
 
 **服务器执行，写入一个不含敏感信息的测试文件：**
 
@@ -1241,12 +1689,31 @@ docker compose run --rm --entrypoint sh certbot -c 'mkdir -p /var/www/certbot/.w
 
 **本地 Mac 或外部 Linux 终端检查；Windows 把 curl 换成 curl.exe：**
 
+这次 curl 的 `-f` 会把 HTTP 错误视为失败，`-sS` 隐藏进度但保留错误信息。预期响应是测试文件原文 `expense-acme-ok`；先知道这一点，再执行命令，不能只看网页是否能打开。
+
 ```bash
 # 从公网读取测试文件，必须返回 expense-acme-ok，不能是网页 HTML。
 curl -fsS http://expense.example.com/.well-known/acme-challenge/deploy-check
 ```
 
 如果失败，先检查 DNS、安全组、服务器 80 端口和 Nginx 的验证路径，不要继续反复申请。这里的域名必须已替换为真实域名，不能用示例域名或单纯用 IP 申请本教程的域名证书。
+
+这里检查的是“公网 80 是否能找到验证文件”，不是申请证书本身。服务器自己能访问并不足以替代外部网络验证。
+
+真正申请前，先读懂下一条的参数：
+
+| 参数 | 含义 |
+| --- | --- |
+| `certonly` | 只申请/保存证书，不自动修改 Nginx 配置 |
+| `--webroot` | 通过现有 Nginx 返回验证文件，不再额外占用 80 端口 |
+| `-w /var/www/certbot` | 把验证文件写进与 Nginx 共享的 webroot 目录 |
+| `--cert-name` | 固定证书保存目录名，必须与 HTTPS 配置里的 live 子目录一致 |
+| `-d` | 要给哪个真实域名申请证书，不是运行后台容器的 `up -d` |
+| `--email` | 证书账户联系邮箱，填写自己的真实邮箱 |
+| `--agree-tos` | 同意证书服务条款 |
+| `--non-interactive` | 参数已填齐，使用非交互方式执行 |
+
+同样是 `-d`，在不同程序中含义不同：`docker compose up -d` 是后台运行，而这里 Certbot 的 `-d` 是域名。先看清它属于哪条命令，不需要靠猜。
 
 **回到服务器 `/opt/expense` 申请证书。先替换域名与邮箱，两个域名参数保持一致：**
 
@@ -1260,6 +1727,10 @@ docker compose run --rm certbot certonly --webroot -w /var/www/certbot --cert-na
 `certbot` 带有 `profiles: [tools]`，平时 `up` 不会启动它；上面显式执行 `run certbot` 会自动启用这个工具服务，用完即退出，不需要多启动一个常驻进程。[Compose profiles 说明](https://docs.docker.com/compose/how-tos/profiles/)
 
 ### 10.3 拿到证书后再启用 HTTPS
+
+先理解这次切换：证书已经保存在卷里，但 Nginx 仍在运行原来的 HTTP 配置。我们把已有 HTTPS 模板复制成默认覆盖文件，让 Compose 下次创建 Web 时多挂载一份正式配置。
+
+接下来 `config --quiet` 只检查清单，`run --rm --no-deps web nginx -t` 临时检查 Nginx 和证书，`--no-deps` 表示不拉起或重建 API/db，最后 `up --force-recreate web` 才真正替换 Web 容器。`run` 默认不发布服务端口，所以预检不会与现有 HTTP 入口抢端口。每条通过后才执行下一条。
 
 **服务器执行；先确认没有其他用途的 `compose.override.yaml`，如果已有则先合并审核，不能盲目覆盖：**
 
@@ -1283,6 +1754,10 @@ docker compose logs --tail=100 web
 若一次性 `nginx -t` 失败，现有 HTTP 入口还在运行。修正域名、证书路径或配置语法后重新检查，再重建 Web；不要通过跳过检查来继续上线。
 
 ### 10.4 演练续期，并配置定时续期检查
+
+这一步是“上线后保持证书有效”的工作，不是再次首次申请。`renew` 读取证书卷里保存的续期配置；`--dry-run` 用测试环境演练，不覆盖当前正式证书。真正定时运行用 `--quiet` 减少正常输出，失败仍记录错误。
+
+下面会保存一个可重复执行的脚本，再交给 Ubuntu 的 cron 定时调用。`crontab -e` 是编辑当前用户的任务表，不是让你把 cron 规则直接粘到 shell。脚本中 `nginx -t` 先检查、`nginx -s reload` 再重新读取证书，不需要停止数据库或重启整套应用。
 
 证书不会因为 Nginx 正在运行而自动续期。Certbot 更新证书文件后，Nginx 也需要重新加载。先用测试环境演练续期，不替换当前正式证书：
 
@@ -1339,6 +1814,10 @@ Certbot 成功返回也可能表示“暂时不需要续期”，不能据此判
 
 ### 11.1 从公网检查入口和接口
 
+执行前先知道预期结果：HTTP 请求应跳转到 HTTPS，HTTPS 页面应返回 200。空登录请求故意不填必填字段，所以 400 JSON 才表示请求到了真实 API；不带令牌访问受保护接口得到 401 也是预期。不要把这两个刻意设计的响应当作部署失败。
+
+下面 `-I` 只看响应头，`-i` 看响应头和正文；`-X POST`、`-H`、`--data` 分别设置请求方法、请求头和请求体。本地 Windows 逐条把 curl 改成 curl.exe，整行执行即可。
+
 **本地 Mac 或服务器 Bash，最好另从外部网络复测：**
 
 ```bash
@@ -1380,43 +1859,108 @@ docker compose ps
 
 再次确认测试流水存在。安排合适时间执行 `sudo reboot`，重新登录后检查 Docker 服务、容器和业务数据。`restart: unless-stopped` 不会把你主动停止的容器自动恢复；停机维护后需再次 `docker compose up -d`。
 
-## 12. 把本地真实账本迁移到容器数据库
+## 12. 有旧账本时才做：导出、上传、导入
 
-**这一步做什么、有什么用：** 把已有真实账本从旧环境迁到云端，避免上线后得到一套空账本。
+**这一步做什么、有什么用：**把旧数据库中的真实用户和账目迁到云端。没有旧账本就跳过本节，继续做新部署的 HTTPS 和业务验收。
 
-**在哪里做、怎样算完成：** 有旧数据才做本节。先在隔离数据库演练；正式导入期间停止写入，导入后回第 11 节验收。
+**在哪里做、怎样算完成：**旧库导出在本地，文件上传在本地，导入在服务器。服务器 db 已在第 10.1 节启动，API/Web 尚未正式开放；如果原来已经对外运行，则维护期间停止所有写入，并先按第 13 节备份当前状态。完成标志是旧用户、流水、分类和统计都能在新环境核对。
 
-本节可替换“只使用全新空库”的数据流程。已有账本时，第 10 节先确认容器和空库可用，再完成本节导入，最后回到第 11 节正式验收，对外开放前停止旧环境写入。先暂停旧环境写入、做好备份；涉及 MySQL 8.0 → 8.4 时，先按第 13 节在隔离环境验证导入和业务，再执行正式迁移。
+### 12.1 先决定什么时候停旧系统
 
-**本地 Windows，需有兼容的 MySQL 导出工具：**
+先按本节导出和上传一份旧库 SQL，再在第 12.4 节的隔离数据库试导入，特别是 MySQL 8.0 → 8.4 的情况。演练通过后，真正切换时先停止旧环境写入，重新导出并上传最终 SQL，才按第 12.5 节导入正式库；新旧两套系统不能同时继续录账。
+
+镜像只保存程序，不会把本地 MySQL 数据卷装进去。这里用 mysqldump 把数据导出为 SQL，再通过文件导入云端；不要复制 MySQL 的数据目录给另一版本直接使用。
+
+### 12.2 在旧库所在电脑导出业务库
+
+先准备兼容的 MySQL 客户端导出工具，下面的 mysqldump 命令需要本地已经能找到该程序。用户名、主机地址改成旧库实际值，`--password` 会交互询问密码，不要把明文拼在参数后。
+
+| 参数 | 作用 |
+| --- | --- |
+| `--single-transaction` | 为当前 InnoDB 业务表取得一致性快照；导出期间不执行建表/改表等 DDL |
+| `--no-tablespaces`、`--set-gtid-purged=OFF` | 避免把不需要的表空间/GTID 管理信息带入本次逻辑迁移 |
+| `--databases daily-expense-tracking` | 只导出本项目业务库，不导出 mysql 系统库和服务器账号 |
+| `--result-file` | 让导出工具直接写 SQL 文件，避免旧版 PowerShell 重定向改变编码 |
+
+**本地 PowerShell：**
 
 ```powershell
-# 在本地创建导出文件存放目录；可换成自己有权限的目录。
+# 为导出创建本地目录，可换成有权限的实际路径。
 New-Item -ItemType Directory -Force D:/expense-backups
-# 交互输入本地管理员密码，一致性导出本项目业务库；result-file 避免 PowerShell 改变 SQL 编码。
+# 连接旧数据库并按提示输入密码，导出本项目业务库。
 mysqldump --host=127.0.0.1 --user=你的本地管理员 --password --single-transaction --no-tablespaces --set-gtid-purged=OFF --databases daily-expense-tracking --result-file=D:/expense-backups/expense.sql
-# 把导出的 SQL 上传到服务器部署账号的主目录。
+# 检查导出文件存在、修改时间是本次操作，Length 不为 0。
+Get-Item D:/expense-backups/expense.sql
+```
+
+导出失败先处理旧库连接和权限，不能拿空文件继续上传。旧库本身在 Docker 里时，可以参考第 13 节的容器内导出方法，不要求为此再安装一台本地数据库。
+
+### 12.3 从本地把 SQL 上传服务器
+
+scp 的方向仍然是电脑 → 服务器，必须在本地窗口 A 执行；有私钥或自定义 SSH 端口时，沿用第 9 节的参数。
+
+```powershell
+# 将本次导出的业务 SQL 上传到 deployer 主目录。
 scp D:/expense-backups/expense.sql deployer@203.0.113.10:/home/deployer/
 ```
 
-使用 `--result-file` 避免旧版 PowerShell 重定向改变编码；不要原样复制本地 MySQL 数据目录。若本地 MySQL 也在 Docker 中，可使用第 13 节的容器内导出方式。
+### 12.4 先把这份旧 SQL 导入隔离容器演练
 
-**服务器，只对已经确认的目标库操作：**
+下面操作在服务器 `/opt/expense` 执行，使用独立项目名 `expense-import-test`，所有数据库命令都带这个 `-p`，因此使用另一组容器和卷，不触碰正式 `expense` 的数据库。只启动 db，不启动会发邮件或写入业务的 API/Web。
+
+这次传的是未压缩的 `~/expense.sql`，直接用 `<` 传给 MySQL；第 13.3 节的 `.sql.gz` 则先用 gzip 解压，不能混用。
 
 ```bash
-# 切换到服务器的正式部署目录。
+# 服务器窗口 B：进入配置目录，下面用另一个项目名隔离数据。
 cd /opt/expense
-# 将导出的真实账本 SQL 设为仅当前用户可读写。
+# 限制旧账本文件只有当前部署用户可读写。
 chmod 600 ~/expense.sql
-# 停止网页和 API，暂停通过本部署产生的业务写入。
+# 创建隔离数据库，不启动正式应用。
+docker compose -p expense-import-test up -d --wait --wait-timeout 300 db
+# 把同一份旧 SQL 直接导入隔离数据库，不使用 gzip。
+docker compose -p expense-import-test exec -T db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -uroot' < ~/expense.sql
+# 查询隔离库恢复后的用户和流水数量，与旧环境核对。
+docker compose -p expense-import-test exec -T db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -uroot -e "SELECT COUNT(*) FROM \`daily-expense-tracking\`.users; SELECT COUNT(*) FROM \`daily-expense-tracking\`.transactions;"'
+# 演练结束后停止隔离容器，保留测试卷供核查，不删除正式卷。
+docker compose -p expense-import-test down
+```
+
+导入无错误、表结构和关键数据正确后，才进入正式切换。还应在独立测试部署中验证业务兼容性；若试导入失败，先修复兼容问题，正式库保持原状。真正停旧系统后，按第 12.2～12.3 节重新导出和上传最终 SQL，不把早期演练快照当成最终数据。
+
+### 12.5 在服务器停止写入，再导入明确的目标
+
+SQL 可能含 DROP TABLE，导入会覆盖目标数据。目标已经存有真实账目时，先完成第 13 节备份，再做下面操作；纯新部署只有初始化基础数据时，确认目标就是准备接收旧账本的新库。
+
+`< ~/expense.sql` 是让 MySQL 客户端读取这个 SQL 文件；这份文件里的 CREATE DATABASE/USE 会决定数据库对象，因此不能只靠命令末尾换个库名就认为已经隔离。
+
+```bash
+# 服务器窗口 B：进入正式部署目录。
+cd /opt/expense
+# 限制真实账本导出文件只有 deployer 可读写。
+chmod 600 ~/expense.sql
+# 停止 Web 和 API；如果尚未启动也无需创建它们，数据库继续运行。
 docker compose stop web api
-# 以数据库管理员身份将 SQL 导入正式 db；执行前须已备份目标并确认导入对象。
+# 用管理员账号将审核过的业务 SQL 导入正式 db，等待成功结束后再继续。
 docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -uroot' < ~/expense.sql
-# 导入成功后重新启动服务，再按第 11 节核对账本和登录。
+```
+
+导入正常结束通常没有额外输出；出现 SQL 错误就停在这里检查，不继续开放应用。数据库账号仍由云端初始化管理，不用把旧库的 mysql 系统库复制过来。
+
+### 12.6 核对数据，再返回首次上线流程
+
+```bash
+# 查询导入后的用户与流水数量，和旧环境的记录核对。
+docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -uroot -e "SELECT COUNT(*) FROM \`daily-expense-tracking\`.users; SELECT COUNT(*) FROM \`daily-expense-tracking\`.transactions;"'
+```
+
+首次部署的读者回到第 10.1 节第五步启动应用，再申请证书，最后做第 11 节的用户和金额核对。已启用 HTTPS 的维护迁移则使用下列命令恢复服务；原有 HTTPS 覆盖文件继续保留。
+
+```bash
+# 仅在维护迁移完成且数据核对通过后，重新启动正式应用。
 docker compose up -d --wait --wait-timeout 300
 ```
 
-SQL 可能包含 DROP TABLE，目标已有数据时必须先备份，不可直接覆盖。导出文件只含本项目业务库，不包含 `mysql` 系统库和账号；正式业务账号仍由云端初始化配置管理。核对用户、流水、分类、统计与邮件后再停止使用旧环境，避免两边继续写入。
+不要在“首次部署尚未启动”的分支和“已运行系统维护”的分支之间来回复制命令。验收通过后停用旧环境，防止新旧两边继续写入不同账本。
 
 ## 13. 数据备份、定时任务与恢复演练
 
@@ -1431,6 +1975,12 @@ SQL 可能包含 DROP TABLE，目标已有数据时必须先备份，不可直�
 另需私下备份 `.env`、Compose（包括已启用的 `compose.override.yaml`）、`deploy/nginx/https.conf`、初始化/迁移 SQL 和续期脚本。`certbot_conf` 卷保存私钥、账户、`renewal`、`live` 和 `archive`，应完整保留目录与符号链接并按敏感数据备份；不要只复制 `live` 中的链接。运行中的 MySQL 数据目录不能简单打包充当一致性备份。
 
 ### 13.2 创建可重复执行的备份脚本
+
+本节分成四个动作：**创建脚本文件 → 手工运行一次 → 在隔离库恢复 → 保存定时任务**。备份文件生成了不等于恢复一定可用，所以别只做到文件大小检查就结束。
+
+先看脚本里几个符号：`|` 把导出的 SQL 交给 gzip 压缩；`>` 写入文件；`$(date ...)` 取得当前时间用于文件名；`set -euo pipefail` 让导出或压缩任一失败时终止脚本。mysqldump 的 `--single-transaction` 为当前 InnoDB 表导出一致性快照，`--quick` 按行读取，`--routines --events --triggers` 同时保留相关对象，`--databases` 明确只导出本项目业务库。
+
+脚本内使用 `/usr/bin/docker` 是因为定时任务的 PATH 可能比交互终端短；备份任务读取同一个部署目录与 `.env`，所以执行用户必须是有 Docker 权限的 deployer。
 
 **服务器 deployer：**
 
@@ -1478,22 +2028,17 @@ chmod 700 ~/bin/backup-expense
 ~/bin/backup-expense
 # 查看生成的备份文件及大小；仍需后续恢复演练证明可用。
 ls -lh ~/expense-backups
-# 编辑当前 deployer 用户的定时任务表，把下一段 cron 规则加入其中。
-crontab -e
 ```
 
-添加 deployer 的定时任务：
-
-```cron
-# 按服务器时区每天 03:30 执行备份，并将标准输出和错误追加到备份日志。
-30 3 * * * /home/deployer/bin/backup-expense >> /home/deployer/expense-backups/backup.log 2>&1
-```
-
-每天服务器时区 03:30 备份；检查日志和磁盘，制定保留周期，并通过自己控制的方式保留异机副本。仅看文件大小或 `gzip -t` 不能证明数据库可恢复。
+手工运行成功后，先完成下一小节的隔离恢复演练，再在第 13.4 节配置定时任务。
 
 ### 13.3 使用另一组 Compose 卷做恢复演练
 
 选择磁盘和内存足够的测试服务器，或在本服务器上仅启动隔离数据库。下面用不同项目名 `expense-restore`，不发布数据库端口，不启动会发邮件的 API。
+
+执行前先理解隔离方式：`-p expense-restore` 为这次演练指定另一个 Compose 项目名，因而使用另一套容器、网络和数据卷。正式库仍叫 daily-expense-tracking，但它位于另一台容器里；**下面每条恢复命令都保留 `-p expense-restore`**，不能省掉。
+
+先从 `ls -lh ~/expense-backups` 结果选一个真实文件，替换下面的“实际时间”。`gzip -t` 只检查压缩完整性，`gzip -dc` 是解压并写到管道，真正证明可恢复的是导入后能核对表和账目。
 
 **服务器 Bash：**
 
@@ -1520,58 +2065,170 @@ docker compose -p expense-restore down
 
 正式恢复顺序：停 web/api 及所有写入者 → 备份当前状态 → 确认目标备份 → 将上面导入命令改成正式 Compose 项目执行 → 启动 → 完整验收。旧备份会覆盖之后的写入，不能把恢复数据库当作普通代码回退。
 
+### 13.4 恢复演练成功后，再保存每天的备份任务
+
+下面在服务器 deployer 终端执行。`crontab -e` 打开当前用户的定时任务编辑器，保存后 cron 才会按时运行脚本。
+
+```bash
+# 打开 deployer 的任务表，追加备份规则并保留已有证书续期规则。
+crontab -e
+```
+
+先手工确认打印“备份完成”且生成本次的 `.sql.gz`；没有通过就先修复脚本或数据库连接。运行 `crontab -e` 后进入的是任务表编辑器：首次提示选择编辑器时可选 nano，追加下面这一行并保存，保留第 10.4 节已有的续期任务。
+
+cron 五个时间字段按“分、时、日、月、星期”排列，`30 3 * * *` 是每天 03:30。`>>` 是追加日志，`2>&1` 让错误也写入同一个日志；这行要写进 crontab，不是在 Bash 提示符下直接执行。
+
+添加 deployer 的定时任务：
+
+```cron
+# 按服务器时区每天 03:30 执行备份，并将标准输出和错误追加到备份日志。
+30 3 * * * /home/deployer/bin/backup-expense >> /home/deployer/expense-backups/backup.log 2>&1
+```
+
+每天服务器时区 03:30 备份；检查日志和磁盘，制定保留周期，并通过自己控制的方式保留异机副本。仅看文件大小或 `gzip -t` 不能证明数据库可恢复。
+
+保存后可以用 `crontab -l` 查看当前任务表；确认备份和证书续期规则都存在，不是只执行过一次脚本。
+
+```bash
+# 查看刚保存的定时任务，核对路径、时间和日志目录。
+crontab -l
+```
+
 ## 14. 后续发布、配置修改与回退
 
 **这一步做什么、有什么用：** 以可核对的版本更新程序，并在旧代码仍兼容数据库时回退应用。
 
 **在哪里做、怎样算完成：** 本地构建并推送新镜像；服务器备份、换版本、拉取、迁移及验收。首次上线时可先读过再查用。
 
-### 14.1 发布新版本
+### 14.1 发布新版本：仍然逐项构建、推送、下载、切换
 
-本地直接执行下面提到的 npm 检查，需要已安装项目要求的 Node 24.11.0，并在两个目录各自安装锁文件中的依赖；也可以让已有 CI 执行。Docker 主部署流程中的 Node 已在镜像内，不要求云服务器另装 Node。不要在没有 Node 的本地终端直接执行 npm 命令。
+先明确：只把新源码提交到 Git，正在运行的容器不会改变；只在电脑 build，新镜像也不会自动出现在服务器。这里完整走一次第二次发布，本例从 `20261016-1` 更新到 `20261017-1`，它们都是版本名而非必须匹配当天日期。
 
-1. 本地/CI 完成项目已有测试及构建：后端 `npm test -- --runInBand`，前端 `npm run test:unit -- --run`，两个目录各自执行 `npm run build`。
-2. 为目标架构构建并推送两个新镜像，例如 `20261017-1`；保留旧标签。
-3. 阅读新版本配置和数据库变更，确认所需迁移 SQL，备份后再操作。
+#### 14.1.1 在本地验证代码
 
-**服务器先保存当前配置并备份：**
+此处假定本地开发环境已使用 Node 24.11.0；没有本地 Node 的团队可让已有 CI 完成检查。镜像中的 Node 不会自动让 Windows 终端拥有 npm，也不要求服务器另装 Node。
+
+`Push-Location` 临时进入目录，`Pop-Location` 回到原目录。下面每一行成功后再执行下一行；任一测试或构建失败先修复，不继续发布。首次 npm ci 可能需要下载依赖。
+
+```powershell
+# 本地仓库根目录：进入后端目录，执行该项目已有的检查。
+Push-Location service-nest
+# 按后端锁文件准备依赖。
+npm ci
+# 执行后端测试。
+npm test -- --runInBand
+# 检查后端能编译。
+npm run build
+# 回到仓库根目录。
+Pop-Location
+# 进入前端目录。
+Push-Location web
+# 按前端锁文件准备依赖。
+npm ci
+# 执行前端已有单元测试并退出运行。
+npm run test:unit -- --run
+# 检查前端类型与构建产物。
+npm run build
+# 回到仓库根目录，供下面 Docker 命令读取路径。
+Pop-Location
+```
+
+#### 14.1.2 构建新版本、打标签，然后明确推送
+
+参数与第 7 节相同，版本改为新标签；根据真实服务器架构保留 amd64 或改用 arm64。下面都在**本地仓库根目录**执行，yourname 使用自己第 7 节的真实用户名。
+
+```powershell
+# 构建 API 新版本，只生成本地镜像。
+docker build --platform linux/amd64 --file service-nest/Dockerfile --tag daily-expense-api:20261017-1 service-nest
+# 构建 Web 新版本，只生成本地镜像。
+docker build --platform linux/amd64 --file web/Dockerfile --tag daily-expense-web:20261017-1 web
+# 核对本地确实出现两个新版本标签。
+docker image ls
+# 给 API 新镜像添加仓库全名。
+docker tag daily-expense-api:20261017-1 yourname/daily-expense-api:20261017-1
+# 给 Web 新镜像添加仓库全名。
+docker tag daily-expense-web:20261017-1 yourname/daily-expense-web:20261017-1
+# 确认当前电脑使用有推送权限的仓库账号。
+docker login --username yourname
+# 明确上传 API 新版本。
+docker push yourname/daily-expense-api:20261017-1
+# 明确上传 Web 新版本。
+docker push yourname/daily-expense-web:20261017-1
+```
+
+两次 push 成功后，到 Docker Hub 的两个仓库 Tags 页面确认 `20261017-1` 都存在。保留旧标签 `20261016-1`，不要删除或覆盖。发布会短暂停机，先安排维护时间；数据库大版本升级不与这次普通应用更新混在一起。
+
+#### 14.1.3 在服务器备份当前状态，再修改版本配置
+
+先读本版本的配置和数据库变更说明：没有迁移时走普通更新，有迁移时使用下一小节的独立分支。备份脚本必须已按第 13 节创建并验证。
 
 ```bash
-# 进入正式部署目录。
+# 服务器窗口 B：进入正式部署目录。
 cd /opt/expense
-# 让接下来保存的配置副本仅当前用户可访问。
+# 让保存的旧配置只对 deployer 开放。
 umask 077
-# 给现有 .env 保存带时间戳的副本，便于核对旧版本配置。
+# 保存当前配置副本，便于核对原来的版本和字段。
 cp .env ".env.before-$(date +%Y%m%d_%H%M%S)"
-# 运行已经验证过的数据库备份脚本。
+# 执行已验证的备份脚本，看到成功文件路径后再继续。
 ~/bin/backup-expense
-# 把 APP_VERSION 改为已推送的新版本，按需要补充新配置。
+# 编辑正式配置，只将 APP_VERSION 改成已推送的 20261017-1，并按版本说明补配置。
 nano .env
 ```
 
-只将 `APP_VERSION` 改成已推送的新标签，按版本需要补充配置。接着：
+不要改正式项目名、数据卷和已有密码。保存后先检查配置、下载新镜像，此时旧容器仍在运行，用户还没有切换到新程序。
 
 ```bash
-# 检查新版本的运行定义和变量是否完整。
+# 检查修改后的正式配置，成功时没有额外输出。
 docker compose config --quiet
-# 在旧服务仍运行时先下载新 API/Web 镜像，减少停机等待。
+# 从仓库下载新标签，下载失败先修复，旧程序此时仍可运行。
 docker compose pull api web
-# 停止网页和 API，为必要的数据库升级准备维护窗口。
+```
+
+只有拉取成功后才进入维护切换：
+
+```bash
+# 停止 Web 与 API，数据库保留运行，进入维护窗口。
 docker compose stop web api
 ```
 
-若本次提供了经过审核的结构迁移，在此时以管理员身份导入真实迁移 SQL；仓库当前没有可直接调用的通用迁移命令，不要重新导入 `init.sql` 代替升级，也不要开启生产同步。
+#### 14.1.4 仅本版本确实有迁移时执行；无迁移直接跳到下一小节
+
+本仓库没有可直接调用的通用 migration:run。只有新版本提供了真实迁移 SQL、已审核并在测试库验证时，才按管理员流程执行；**不要把第 4 节 init.sql 当成升级脚本重新导入**。
+
+如有 SQL 迁移，先在本地把真实文件上传至 `/opt/expense/deploy/`，再核对服务器实际文件名。下面两个路径是待替换的说明性占位符，不能原样执行。没有迁移文件时，本小节所有命令都跳过。
+
+**有迁移才在本地执行：**
+
+```powershell
+# 将本版本真实迁移文件上传服务器，先把本地文件名替换为实际路径。
+scp ./本版本实际迁移.sql deployer@203.0.113.10:/opt/expense/deploy/
+```
+
+**有迁移才回到服务器执行：**
 
 ```bash
-# 仅当本版本确实有此迁移文件且已审核时执行，并先替换为真实路径；无迁移就跳过。
+# 确认真实迁移文件已经上传且不为空，先替换下面的文件名。
+test -s deploy/本版本实际迁移.sql
+# 用管理员账号执行已备份、已验证的迁移，成功后才启动新版本。
 docker compose exec -T db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -uroot daily-expense-tracking' < deploy/本版本实际迁移.sql
-# 使用新版本配置启动服务并等待健康检查。
+```
+
+迁移失败停在这里处理，不能继续 up，也不能不核对数据库状态就盲目回退应用。
+
+#### 14.1.5 启动新版本，重新验收
+
+有迁移且已成功，或本次本来没有迁移，都会到这一步。服务器原有的 `compose.override.yaml` 继续自动加载，不需要重新申请证书，也不要删数据库卷。
+
+```bash
+# 按新镜像版本更新并启动应用，等待就绪。
 docker compose up -d --wait --wait-timeout 300
-# 查看新版本 API 与网页日志，随后执行第 11 节业务验收。
+# 检查三个业务服务的状态。
+docker compose ps
+# 检查 API 和入口最近日志。
 docker compose logs --tail=100 api web
 ```
 
-重复第 11 节验收。这是一套短暂停机发布流程，不承诺零中断；数据库版本升级应另行安排，不和每次业务镜像发布混在一起。
+随后按第 11 节重新验收 HTTPS、真实邮箱验证码、登录、流水读写和刷新会话。新容器 healthy 只是启动检查通过，不能省略浏览器业务验收。确认后记录当前和上一个版本，保留镜像与备份。
 
 ### 14.2 不同改动分别怎样生效
 
@@ -1589,18 +2246,35 @@ docker compose logs --tail=100 api web
 
 `docker compose restart` 重新启动现有容器，不会自动把修改后的环境变量重新注入。
 
-### 14.3 回退应用镜像
+### 14.3 回退应用镜像：先确认旧代码能用当前数据库
 
-核对更新前保存的配置，确认旧代码兼容当前数据库结构后，把 `.env` 的 `APP_VERSION` 改回旧标签，然后：
+本例把程序从 `20261017-1` 换回 `20261016-1`。回退镜像只换程序，不会撤销数据库迁移或抹掉新产生的账目。先核对旧代码能读取当前表结构；有破坏性迁移时先制定单独恢复方案，不直接照抄下面步骤。
+
+**服务器 `/opt/expense`：**
 
 ```bash
-# 将 APP_VERSION 改回兼容的旧标签后，拉取该版本 API/Web 镜像。
+# 确保正在操作正式部署目录。
+cd /opt/expense
+# 编辑配置，只把 APP_VERSION 改回保留的旧标签 20261016-1，保留当前有效密钥。
+nano .env
+# 检查旧版本配置仍完整可用。
+docker compose config --quiet
+# 先下载旧应用镜像，下载失败时不要停止当前应用。
 docker compose pull api web
-# 按当前配置重建为旧应用版本，等待启动后再次验收。
-docker compose up -d --wait --wait-timeout 300
 ```
 
-不要直接恢复整份旧 `.env` 而遗漏已经轮换的密钥或数据库密码。回退镜像不会撤销数据库迁移，也不会恢复数据卷中的旧数据；有破坏性迁移时需单独设计恢复方案。
+确认旧镜像已经拉取成功，再在维护窗口切换：
+
+```bash
+# 停止新版本应用，保持数据库运行。
+docker compose stop web api
+# 用配置指定的旧镜像重新启动应用，继续加载 HTTPS 覆盖。
+docker compose up -d --wait --wait-timeout 300
+# 检查回退后的应用日志。
+docker compose logs --tail=100 api web
+```
+
+回退后仍然执行第 11 节验收，不直接把整份旧 `.env` 覆盖回来，以免恢复已经失效的密码或密钥。
 
 ## 15. 可选：从电脑通过 SSH 管理云端 Docker
 
@@ -1611,6 +2285,8 @@ docker compose up -d --wait --wait-timeout 300
 如果希望在本地终端检查云端容器，Docker CLI 支持 SSH Context。先确认 `ssh deployer@真实IP` 可用，且该用户有服务器 Docker 权限。[Docker 官方 SSH 连接说明](https://docs.docker.com/engine/security/protect-access/)
 
 **本地 Windows / Mac：**
+
+Context 是给一组 Docker 连接信息起的名字；下面 `expense-cloud` 指向云端，`--context expense-cloud` 只让这一条命令连接远端。先理解这个目标切换，再执行只读检查，不能把云端当作本地预演环境清理。
 
 ```powershell
 # 创建通过 SSH 连接云服务器 Docker 的命名连接，不会切换默认连接。
@@ -1631,7 +2307,33 @@ Docker Desktop 的本地图形界面也不等于远程服务器控制台；不�
 
 ### 15.1 不使用镜像仓库时
 
-可在本地为服务器平台构建并 `--load`，再使用 `docker image save -o expense-images.tar 镜像1 镜像2`，通过 `scp` 传输后在云端 `docker image load -i expense-images.tar`。生产 Compose 填加载进去的同名标签，再 `up -d`，不要继续对不存在的远程标签执行 `pull`。
+这是替代第 7 节的传输办法，第一次学习按主线使用仓库即可，不需要两种路线都做。前置条件是已经完成第 7.2～7.3 节，电脑里有目标架构的两个发布镜像。
+
+先解释：`docker image save` 把指定镜像写成归档文件，`-o` 指定输出文件；scp 传输这个归档；服务器 `docker image load -i` 从输入文件把镜像导入。归档不包含运行中的数据库数据。
+
+**本地仓库根目录：**
+
+```powershell
+# 将两个已经构建的正式镜像保存为一个归档，不需要 tag 或 push 到仓库。
+docker image save -o expense-images.tar daily-expense-api:20261016-1 daily-expense-web:20261016-1
+# 将归档上传到已经按第 8 节准备好的服务器目录。
+scp expense-images.tar deployer@203.0.113.10:/opt/expense/
+```
+
+**服务器窗口 B：**
+
+```bash
+# 进入正式目录，读取服务器刚收到的归档。
+cd /opt/expense
+# 将归档内两个镜像加载到服务器本地镜像列表。
+docker image load -i expense-images.tar
+# 核对两个短名镜像和 20261016-1 标签都已出现。
+docker image ls
+# 编辑正式配置，将 API_IMAGE/WEB_IMAGE 改为上面加载的短名。
+nano .env
+```
+
+这里 API_IMAGE 填 `daily-expense-api`、WEB_IMAGE 填 `daily-expense-web`、APP_VERSION 填 `20261016-1`，才能找到加载的镜像。其余上传配置、初始化、HTTPS、验收仍逐项按第 9～11 节执行；第 10.1 节下载时只执行官方数据库的 `pull db`，跳过 `pull api web`，因为这两个短名并未发布到远程仓库。
 
 镜像归档仍不含 Compose、密钥或命名卷数据；首次还需让服务器能拉取 MySQL 镜像，或将它一同保存传输。频繁更新更适合镜像仓库。
 
