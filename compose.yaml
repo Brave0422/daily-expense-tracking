@@ -1,0 +1,208 @@
+# 定义三个常驻服务，以及按需使用的证书工具。
+services:
+  # 定义 MySQL 服务；其他容器使用 db 这个名字访问它。
+  db:
+    # 读取数据库镜像配置；未指定时使用 mysql:8.4。
+    image: ${MYSQL_IMAGE:-mysql:8.4}
+    # 进程退出后自动重启，并在主机重启后恢复；手动停止的容器不会自动恢复。
+    restart: unless-stopped
+    # 下面的参数会作为环境变量传入当前容器。
+    environment:
+      # 将该容器的运行时区设置为 Asia/Shanghai。
+      TZ: Asia/Shanghai
+      # 设置首次建库的管理员密码，使用独立随机值；不会自动更改已有数据库账号。
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请设置数据库管理员密码}
+      # 让 MySQL 首次初始化时创建本项目业务库。
+      MYSQL_DATABASE: daily-expense-tracking
+      # 让 MySQL 首次初始化时创建业务账号 expense_app。
+      MYSQL_USER: expense_app
+      # 从 Compose 环境文件读取业务密码，供 MySQL 首次创建账号使用。
+      MYSQL_PASSWORD: ${DB_PASSWORD:?请设置业务数据库密码}
+    # 为 MySQL 追加启动参数，统一字符集、排序规则和时区。
+    command:
+      # 将 MySQL 默认字符集设为 utf8mb4，支持中文和表情符号。
+      - --character-set-server=utf8mb4
+      # 设置默认排序规则，与项目 SQL 的字符集约定一致。
+      - --collation-server=utf8mb4_unicode_ci
+      # 设置数据库会话默认时区为东八区。
+      - --default-time-zone=+08:00
+    # 挂载持久数据或只读初始化脚本。
+    volumes:
+      # 把数据库文件保存到命名卷，不留在可被重建的容器层里。
+      - db_data:/var/lib/mysql
+      # 把宿主机初始化目录只读挂载给 MySQL；仅空数据目录首次启动时执行。
+      - ./deploy/mysql-init:/docker-entrypoint-initdb.d:ro
+    # 定义如何判断当前服务已准备好接收请求。
+    healthcheck:
+      # 下面的参数组成一次健康检查命令。
+      test:
+        # 通过容器里的 shell 执行下一行检查，支持环境变量与重定向。
+        - CMD-SHELL
+        # 用业务账号查分类模板表，检查可连接且表已建好；$$ 将变量留给容器内 shell。
+        - MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP -h 127.0.0.1 -u"$${MYSQL_USER}" "$${MYSQL_DATABASE}" -e 'SELECT 1 FROM category_templates LIMIT 1' >/dev/null 2>&1
+      # 设置两次健康检查之间的间隔。
+      interval: 10s
+      # 单次健康检查最多等待 5 秒。
+      timeout: 5s
+      # 连续失败达到该次数后，将容器标记为 unhealthy。
+      retries: 18
+      # 给予首次初始化宽限期，期间的失败不计入重试次数。
+      start_period: 60s
+    # 设置当前容器的日志保存方式，避免日志无限增长。
+    logging:
+      # 使用带轮转机制的 Docker local 日志驱动。
+      driver: local
+      # 设置日志轮转的大小和保留份数。
+      options:
+        # 单份日志达到约 10 MB 后轮转。
+        max-size: "10m"
+        # 最多保留 3 份日志文件。
+        max-file: "3"
+  # 定义 NestJS 后端服务。
+  api:
+    # 组合 API 镜像名与版本；缺少任一必填值就报错。
+    image: ${API_IMAGE:?请设置API镜像}:${APP_VERSION:?请设置发布版本}
+    # 进程退出后自动重启，并在主机重启后恢复；手动停止的容器不会自动恢复。
+    restart: unless-stopped
+    # 添加轻量 init 进程，帮助转发退出信号和回收子进程。
+    init: true
+    # 下面的参数会作为环境变量传入当前容器。
+    environment:
+      # 在启动 API 前设为 production，关闭 TypeORM 自动同步并启用生产认证行为。
+      NODE_ENV: production
+      # 将该容器的运行时区设置为 Asia/Shanghai。
+      TZ: Asia/Shanghai
+      # 让 NestJS 在容器内部监听 3000 端口。
+      PORT: "3000"
+      # 通过 Compose 服务名 db 连接 MySQL；这里不能写 localhost。
+      DB_HOST: db
+      # 连接 db 容器内部的 MySQL 3306 端口。
+      DB_PORT: "3306"
+      # 让 API 使用只有日常读写权限的业务账号。
+      DB_USER: expense_app
+      # 指定 API 连接本项目业务库，与 MYSQL_DATABASE 保持一致。
+      DB_DATABASE: daily-expense-tracking
+      # 设置 expense_app 业务数据库密码；API 与数据库初始化必须使用相同值。
+      DB_PASSWORD: ${DB_PASSWORD:?请设置业务数据库密码}
+      # 设置 Access Token 签名密钥，每个环境独立随机生成。
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?请设置Access密钥}
+      # 设置 Access Token 有效期为 15 分钟。
+      JWT_ACCESS_EXPIRES_IN: 15m
+      # 设置 Refresh Token 签名密钥，不能与 Access 密钥相同。
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?请设置Refresh密钥}
+      # 设置 Refresh Token 有效期为 7 天。
+      JWT_REFRESH_EXPIRES_IN: 7d
+      # 设置当前部署的令牌签发者标识。
+      JWT_ISSUER: daily-expense-tracking-production
+      # 设置后端允许的完整网页来源，协议、域名和非默认端口要与浏览器一致。
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?请设置Web来源}
+      # 设置验证码校验密钥，使用另一份独立随机值。
+      VERIFICATION_CODE_SECRET: ${VERIFICATION_CODE_SECRET:?请设置验证码密钥}
+      # 明确留空开发固定验证码；生产环境使用真实邮件验证码。
+      DEV_VERIFICATION_CODE: ""
+      # 填写邮箱服务商提供的 SMTP 主机地址。
+      MAIL_HOST: ${MAIL_HOST:?请设置SMTP主机}
+      # 填写 SMTP 端口，常用 587；以服务商要求为准。
+      MAIL_PORT: ${MAIL_PORT:-587}
+      # 配置连接时是否立即使用 TLS；常用 587=false、465=true。
+      MAIL_SECURE: ${MAIL_SECURE:-false}
+      # 填写用于发送验证码的完整邮箱账号。
+      MAIL_USER: ${MAIL_USER:?请设置SMTP账号}
+      # 填写 SMTP 授权码或应用专用密码，不要填示例占位符。
+      MAIL_PASS: ${MAIL_PASS:?请设置SMTP授权码}
+      # 设置发件人显示名称；真实发件地址由 MAIL_USER 指定。
+      MAIL_FROM: 日常记账
+      # 设置邮件验证码 5 分钟内有效。
+      MAIL_CODE_EXPIRES_MINUTES: "5"
+      # 设置同一邮箱重发验证码的最短间隔为 60 秒。
+      MAIL_CODE_RESEND_SECONDS: "60"
+    # 指定启动依赖，避免下游服务过早连接。
+    depends_on:
+      # 指定需要等待的数据库服务。
+      db:
+        # 等待上面指定的服务通过健康检查后再启动当前服务。
+        condition: service_healthy
+    # 定义如何判断当前服务已准备好接收请求。
+    healthcheck:
+      # 下面的参数组成一次健康检查命令。
+      test:
+        # 直接执行后面的程序和参数，不额外经过 shell。
+        - CMD
+        # 使用 API 镜像中已有的 Node 作为检查程序。
+        - node
+        # 告诉 Node 执行下一项 JavaScript 字符串。
+        - -e
+        # 向本容器 API 发送空登录请求；仅预期的 400 响应算健康，网络失败算不健康。
+        - "fetch('http://127.0.0.1:3000/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(r=>process.exit(r.status===400?0:1)).catch(()=>process.exit(1))"
+      # 设置两次健康检查之间的间隔。
+      interval: 30s
+      # 单次健康检查最多等待 5 秒。
+      timeout: 5s
+      # 连续失败达到该次数后，将容器标记为 unhealthy。
+      retries: 5
+      # 给予首次初始化宽限期，期间的失败不计入重试次数。
+      start_period: 40s
+    # 设置当前容器的日志保存方式，避免日志无限增长。
+    logging:
+      # 使用带轮转机制的 Docker local 日志驱动。
+      driver: local
+      # 设置日志轮转的大小和保留份数。
+      options:
+        # 单份日志达到约 10 MB 后轮转。
+        max-size: "10m"
+        # 最多保留 3 份日志文件。
+        max-file: "3"
+  # 定义 Nginx 网页入口与 API 反向代理服务。
+  web:
+    # 组合 Web 镜像名和发布标签。
+    image: ${WEB_IMAGE:?请设置Web镜像}:${APP_VERSION:?请设置发布版本}
+    # 进程退出或服务器重启后恢复服务，手动停止的容器除外。
+    restart: unless-stopped
+    # 只有 Web 向宿主机发布端口。
+    ports:
+      # 将宿主机 HTTP 端口映射到容器 80，本地默认只绑定回环地址。
+      - "${BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-8080}:80"
+      # 预留 HTTPS 映射；启用 HTTPS 配置后容器才会监听 443。
+      - "${BIND_ADDRESS:-127.0.0.1}:${HTTPS_PORT:-8443}:443"
+    # Nginx 只读取验证文件和证书，不负责修改它们。
+    volumes:
+      # 读取 Certbot 生成的 HTTP-01 域名验证文件。
+      - certbot_www:/var/www/certbot:ro
+      # 读取完整证书目录，包括 live 符号链接及其 archive 目标。
+      - certbot_conf:/etc/letsencrypt:ro
+    # 等后端就绪后再启动网页入口。
+    depends_on:
+      # 指定要等待的 API 服务。
+      api:
+        # 只有 API 健康后才启动 Web。
+        condition: service_healthy
+    # 限制容器日志占用的磁盘空间。
+    logging:
+      # 使用带轮转功能的本地日志驱动。
+      driver: local
+      # 配置每份日志大小及保留数量。
+      options:
+        # 每份日志最多约 10 MB。
+        max-size: "10m"
+        # 最多保留 3 份日志文件。
+        max-file: "3"
+  # 定义申请和续期证书的工具，不作为常驻业务服务启动。
+  certbot:
+    # 选择 Certbot 镜像；验证后可将变量固定到明确版本或 digest。
+    image: ${CERTBOT_IMAGE:-certbot/certbot:latest}
+    # 普通 up 不启动此服务，run certbot 时会按需启用。
+    profiles: [tools]
+    # Certbot 需要写入证书及验证文件，Nginx 挂载同一组卷只读访问。
+    volumes:
+      # 保存账户、续期配置、证书版本和私钥。
+      - certbot_conf:/etc/letsencrypt
+      # 写入 HTTP-01 验证文件供 Nginx 通过 80 端口返回。
+      - certbot_www:/var/www/certbot
+# 声明三个命名卷，删除或重建容器不会自动删除这里的数据。
+volumes:
+  # 保存数据库数据，正式项目名后续保持不变。
+  db_data:
+  # 保存证书与账户完整目录，按含私钥的敏感数据管理。
+  certbot_conf:
+  # 保存 HTTP-01 验证文件，Nginx 与 Certbot 共享。
+  certbot_www:
