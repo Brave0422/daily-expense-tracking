@@ -169,7 +169,7 @@ Nginx 只读使用这两个卷，Certbot 只在申请/续期时运行
 | SSH 用户 | `deployer` |
 | 服务器部署目录 | `/opt/expense` |
 | 正式 Compose 项目名 | `expense`，后续保持不变 |
-| Node 镜像 | `node:24.11.0-bookworm-slim`，与 Web engines 一致 |
+| Node 镜像 | `node:24.22.1-bookworm-slim`（LTS），与前后端 engines 一致 |
 | MySQL 镜像 | `mysql:8.4`，8.4 LTS 系列 |
 | Web 运行镜像 | `nginx:stable-alpine` |
 | 证书工具镜像 | `certbot/certbot:latest`，按需执行，验证后固定 digest |
@@ -318,8 +318,8 @@ Dockerfile 中有两个容易误会的地方，先解释再复制：
 在编辑器新建该文件，将下面内容完整保存进去。它负责“如何把后端做成镜像”，不是终端脚本。`npm ci` 按锁文件安装依赖；编译工具只存在于构建阶段。
 
 ```dockerfile
-# 以项目要求的 Node 24.11.0 作为编译环境，并把这个阶段命名为 build。
-FROM node:24.11.0-bookworm-slim AS build
+# 以项目要求的 Node 24.22.1 作为编译环境，并把这个阶段命名为 build。
+FROM node:24.22.1-bookworm-slim AS build
 # 将后续构建命令的工作目录设为镜像内的 /app。
 WORKDIR /app
 # 安装 bcrypt 可能用到的编译工具，并在同一层清除 apt 索引以减小镜像。
@@ -333,7 +333,7 @@ COPY . .
 # 将 TypeScript 编译到 dist，再移除运行时不需要的开发依赖。
 RUN npm run build && npm prune --omit=dev
 # 重新从干净的 Node 镜像开始运行阶段，不带上前一阶段的编译工具。
-FROM node:24.11.0-bookworm-slim AS runtime
+FROM node:24.22.1-bookworm-slim AS runtime
 # 安装 HTTPS 请求所需的根证书和时区数据，并清理 apt 索引。
 RUN apt-get update  && apt-get install -y --no-install-recommends ca-certificates tzdata  && rm -rf /var/lib/apt/lists/*
 # 在 Node 启动前设置生产模式与时区；生产模式会关闭自动同步数据库表。
@@ -362,7 +362,7 @@ CMD ["node", "dist/main.js"]
 
 ```dockerfile
 # 使用项目要求的 Node 版本构建前端，并命名为 build 阶段。
-FROM node:24.11.0-bookworm-slim AS build
+FROM node:24.22.1-bookworm-slim AS build
 # 将构建工作目录设为镜像内的 /app。
 WORKDIR /app
 # 先复制依赖清单和锁文件，便于复用依赖缓存。
@@ -2106,7 +2106,7 @@ crontab -l
 
 #### 14.1.1 在本地验证代码
 
-此处假定本地开发环境已使用 Node 24.11.0；没有本地 Node 的团队可让已有 CI 完成检查。镜像中的 Node 不会自动让 Windows 终端拥有 npm，也不要求服务器另装 Node。
+此处假定本地开发环境已使用 Node 24.22.1；没有本地 Node 的团队可让已有 CI 完成检查。镜像中的 Node 不会自动让 Windows 终端拥有 npm，也不要求服务器另装 Node。
 
 `Push-Location` 临时进入目录，`Pop-Location` 回到原目录。下面每一行成功后再执行下一行；任一测试或构建失败先修复，不继续发布。首次 npm ci 可能需要下载依赖。
 

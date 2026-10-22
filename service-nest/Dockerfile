@@ -1,5 +1,5 @@
-# 以项目要求的 Node 24.11.0 作为编译环境，并把这个阶段命名为 build。
-FROM node:24.11.0-bookworm-slim AS build
+# 以项目要求的 Node 24.22.1 作为编译环境，并把这个阶段命名为 build。
+FROM node:24.22.1-bookworm-slim AS build
 # 将后续构建命令的工作目录设为镜像内的 /app。
 WORKDIR /app
 # 安装 bcrypt 可能用到的编译工具，并在同一层清除 apt 索引以减小镜像。
@@ -13,7 +13,7 @@ COPY . .
 # 将 TypeScript 编译到 dist，再移除运行时不需要的开发依赖。
 RUN npm run build && npm prune --omit=dev
 # 重新从干净的 Node 镜像开始运行阶段，不带上前一阶段的编译工具。
-FROM node:24.11.0-bookworm-slim AS runtime
+FROM node:24.22.1-bookworm-slim AS runtime
 # 安装 HTTPS 请求所需的根证书和时区数据，并清理 apt 索引。
 RUN apt-get update  && apt-get install -y --no-install-recommends ca-certificates tzdata  && rm -rf /var/lib/apt/lists/*
 # 在 Node 启动前设置生产模式与时区；生产模式会关闭自动同步数据库表。

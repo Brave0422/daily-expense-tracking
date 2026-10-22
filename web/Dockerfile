@@ -1,5 +1,5 @@
 # 使用项目要求的 Node 版本构建前端，并命名为 build 阶段。
-FROM node:24.11.0-bookworm-slim AS build
+FROM node:24.22.1-bookworm-slim AS build
 # 将构建工作目录设为镜像内的 /app。
 WORKDIR /app
 # 先复制依赖清单和锁文件，便于复用依赖缓存。

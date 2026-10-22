@@ -25,6 +25,8 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 
 ## Project Setup
 
+Use Node.js **24.22.1 (LTS)**, as specified in `package.json` and the repository root `.nvmrc`.
+
 ```sh
 npm install
 ```

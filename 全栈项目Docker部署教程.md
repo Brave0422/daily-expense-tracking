@@ -171,7 +171,7 @@ Mac 在终端用 `cd /你的项目绝对路径` 进入根目录，用 `ls` 确�
 | 前端产物 | `web/dist/`，静态 SPA | SSR 项目不可照搬静态容器 |
 | 前端接口变量 | `VITE_API_BASE_URL=/api` | 源码是否实际读取这个变量 |
 | 后端目录 | `server/` | 真实目录 |
-| Node 版本 | Node 24.11.0 示例（按项目验证后更新） | engines、原生依赖、项目验证版本 |
+| Node 版本 | Node.js 24.22.1（LTS） | engines、原生依赖、项目验证版本 |
 | 后端构建 | `npm run build` | 是否需要编译 |
 | 正式入口 | `dist/main.js` | TypeScript 输出可能是其他路径 |
 | 监听 | `0.0.0.0:3000` | 监听 localhost 会阻止其他容器访问 |
@@ -316,8 +316,8 @@ Dockerfile 中的单词是 **Dockerfile 指令**，由 `docker build` 读取。�
 **本地新建 `server/Dockerfile`：**
 
 ```dockerfile
-# 使用固定 Node 24.11.0 的 Debian 精简镜像，开始构建阶段，安装依赖并编译源码。
-FROM node:24.11.0-bookworm-slim AS build
+# 使用固定 Node 24.22.1 的 Debian 精简镜像，开始构建阶段，安装依赖并编译源码。
+FROM node:24.22.1-bookworm-slim AS build
 # 将当前镜像中后续命令的工作目录设为 /app。
 WORKDIR /app
 # 安装原生 Node 依赖编译所需的 Python、make 和 C++ 工具，再清理软件源缓存。
@@ -331,8 +331,8 @@ COPY . .
 # 编译后端，再移除运行时不需要的开发依赖。
 RUN npm run build && npm prune --omit=dev
 
-# 使用固定 Node 24.11.0 的 Debian 精简镜像，开始正式运行阶段，和构建阶段保持相同 Node 版本。
-FROM node:24.11.0-bookworm-slim AS runtime
+# 使用固定 Node 24.22.1 的 Debian 精简镜像，开始正式运行阶段，和构建阶段保持相同 Node 版本。
+FROM node:24.22.1-bookworm-slim AS runtime
 # 安装 HTTPS CA 证书和时区数据，再清理软件源缓存以缩小镜像。
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata && rm -rf /var/lib/apt/lists/*
 # 将运行模式设为 production，并将容器时区统一为 UTC。
@@ -355,7 +355,7 @@ CMD ["node", "dist/main.js"]
 
 需要适配的地方：
 
-- Node 版本遵循自己的项目。`24.11.0-bookworm-slim` 在本教程用于演示固定版本，构建/运行阶段保持一致；它不是“当前最新版本”的承诺。正式发布应选经过兼容和安全验证的版本，必要时记录并固定 digest，按计划升级。
+- Node 版本遵循自己的项目。`24.22.1-bookworm-slim` 在本教程用于演示固定版本，构建/运行阶段保持一致；它不是“当前最新版本”的承诺。正式发布应选经过兼容和安全验证的版本，必要时记录并固定 digest，按计划升级。
 - 若项目有运行时模板、Prisma 生成物、静态资源、迁移文件等，按需要额外 COPY；不能假定只有 dist 和 node_modules 就足够。
 - 若是 monorepo/workspace，锁文件和公共包通常在仓库根目录，需要调整构建上下文和 COPY 路径。
 - 若是纯 JavaScript API，没有 build 脚本，改为复制真实入口和必要源码，不能照搬 `npm run build`。
@@ -368,8 +368,8 @@ CMD ["node", "dist/main.js"]
 **本地新建 `web/Dockerfile`：**
 
 ```dockerfile
-# 使用固定 Node 24.11.0 的 Debian 精简镜像，开始构建阶段，安装依赖并编译源码。
-FROM node:24.11.0-bookworm-slim AS build
+# 使用固定 Node 24.22.1 的 Debian 精简镜像，开始构建阶段，安装依赖并编译源码。
+FROM node:24.22.1-bookworm-slim AS build
 # 将当前镜像中后续命令的工作目录设为 /app。
 WORKDIR /app
 # 先复制 npm 清单和锁文件，便于依赖未变化时复用构建缓存。

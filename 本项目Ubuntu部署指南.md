@@ -21,7 +21,7 @@
 | 数据库账号 | `expense_app` | 本项目专用账号 |
 | PM2 进程名 | `daily-expense-api` | 按本文保持一致 |
 | 后端端口 | `3000` | 如果服务器已占用，修改 PM2、Nginx及检查命令 |
-| Node.js | `24.11.0` | 当前 `web/package.json` 的 engines 明确声明此版本 |
+| Node.js | `24.22.1`（LTS） | 根目录 `.nvmrc`、`web/package.json` 和 `service-nest/package.json` 的 engines 统一固定此版本 |
 
 文中的 `<数据库密码>`、`<SMTP授权码>` 等是需要替换的占位符，不能原样保留。SQL、配置文件和 Bash 是不同语法；只在对应的位置粘贴。
 
@@ -182,15 +182,15 @@ export NVM_DIR="$HOME/.nvm"
 安装当前项目要求的 Node.js：
 
 ```bash
-nvm install 24.11.0
-nvm use 24.11.0
-nvm alias default 24.11.0
+nvm install 24.22.1
+nvm use 24.22.1
+nvm alias default 24.22.1
 node -v
 npm -v
 command -v node
 ```
 
-Node 应输出 `v24.11.0`，路径应位于 `/home/deployer/.nvm/`。这是当前仓库的版本约束；以后升级 Node 时应同时核对 engines、锁文件和构建结果。
+Node 应输出 `v24.22.1`，路径应位于 `/home/deployer/.nvm/`。这是当前仓库的版本约束；以后升级 Node 时应同时核对 engines、锁文件和构建结果。
 
 不要使用 `sudo npm install`；它会绕过当前用户的 nvm 环境，还可能造成目录权限问题。
 
@@ -408,7 +408,7 @@ envFilePath: `.env.${process.env.NODE_ENV ?? 'development'}`
 
 ```bash
 cd /var/www/daily-expense-tracking/service-nest
-nvm use 24.11.0
+nvm use 24.22.1
 npm ci --include=dev
 npm test -- --runInBand
 npm run build
@@ -499,7 +499,7 @@ PM2 保存进程列表和创建 systemd 服务是两件事，必须都完成；�
 
 ```bash
 cd /var/www/daily-expense-tracking/web
-nvm use 24.11.0
+nvm use 24.22.1
 ```
 
 默认 API 地址本来就是 `/api`。为了把生产选择记录清楚，可以在服务器创建：
@@ -803,7 +803,7 @@ sudo mysql daily-expense-tracking < service-nest/sql/本次版本的实际迁移
 
 ```bash
 cd /var/www/daily-expense-tracking/service-nest
-nvm use 24.11.0
+nvm use 24.22.1
 npm ci --include=dev
 npm test -- --runInBand
 npm run build

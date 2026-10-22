@@ -157,7 +157,7 @@ PRD 以 iOS 17.0 为最低部署基线；实际 Xcode、Swift 编译器与 SDK �
 
 ### 环境准备
 
-- Node.js：Web 的 `package.json` 当前声明版本为 `24.11.0`。
+- Node.js：前后端统一使用 `24.22.1`（LTS），根目录 `.nvmrc` 和两个项目的 `package.json` engines 均固定为此版本。
 - npm：两个子项目均使用 `package-lock.json`，可通过 `npm ci` 安装锁定依赖。
 - MySQL：创建数据库并配置连接信息。
 - SMTP：使用真实邮件验证码时配置；开发环境可使用固定验证码跳过邮件发送。

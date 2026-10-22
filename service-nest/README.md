@@ -60,6 +60,8 @@ SOURCE sql/mock-data.sql;
 
 ## Project setup
 
+Use Node.js **24.22.1 (LTS)**, as specified in `package.json` and the repository root `.nvmrc`.
+
 ```bash
 $ npm install
 ```
